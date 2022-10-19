@@ -7,19 +7,19 @@ description:
 
 ## Hello world!
 
+[![Open in Gitpod](https://gitpod.io/button/open-in-gitpod.svg)](https://gitpod.io/#https://github.com/shuttle-hq/shuttle-examples/tree/main/salvo/hello-world)
+
 Simple 'Hello world' app using Salvo.
 
-Create a new directory (`mkdir`) and move into it (`cd`) -- afterwards, execute
-the following command to initialize shuttle inside with the Salvo boilerplate.
+Create a new directory (`mkdir`) and move into it (`cd`) -- afterwards, execute the following command to initialize shuttle inside with the Salvo boilerplate.
 
 ```bash
 cargo shuttle init --salvo
 ```
 
-Make sure that your `cargo.toml` file looks as the one below -- having the right
-dependencies is key!
+Make sure that your `Cargo.toml` file looks like the one below -- having the right dependencies is key!
 
-```toml cargo.toml
+```toml
 [package]
 name = "hello-world"
 version = "0.1.0"
@@ -29,12 +29,11 @@ edition = "2021"
 
 [dependencies]
 salvo = "0.34.3"
-shuttle-service = { version = "0.5.2", features = ["web-salvo"] }
+shuttle-service = { version = "0.6.0", features = ["web-salvo"] }
 ```
-
 Your `lib.rs` should look like this:
 
-```rust lib.rs
+```Rust
 use salvo::prelude::*;
 
 #[handler]
@@ -49,9 +48,11 @@ async fn salvo() -> shuttle_service::ShuttleSalvo {
     Ok(router)
 }
 ```
-
+Create a project, this will start an isolated deployer container for you under the hood:
+```bash
+cargo shuttle project new
+```
 Finally, to deploy your app, all you need to do is:
-
 ```bash
 cargo shuttle deploy
 ```

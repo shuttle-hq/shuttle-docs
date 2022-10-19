@@ -5,43 +5,34 @@ description: "Serenity is a Rust library for the Discord API."
 
 ## Hello world bot
 
+[![Open in Gitpod](https://gitpod.io/button/open-in-gitpod.svg)](https://gitpod.io/#https://github.com/shuttle-hq/shuttle-examples/tree/main/serenity/hello-world)
+
 ### Prerequisites
 
-In this example we will deploy a Serenity bot with Shuttle that responds to the
-`!hello` command with `world!`. To run this bot we need a valid Discord Token.
-To get started log in to the
-[Discord developer portal](https://discord.com/login?redirect_to=%2Fdevelopers%2Fapplications).
+In this example we will deploy a Serenity bot with Shuttle that responds to the `!hello` command with `world!`. To run this bot we need a valid Discord Token. To get started log in to the [Discord developer portal](https://discord.com/developers/applications).
 
-1. Click the New Application button, name your application and click Create.
+1. Click the New Application button, name your application and click Create. 
 2. Navigate to the Bot tab in the lefthand menu, and add a new bot.
-3. On the bot page click the Reset Token button to reveal your token. Put this
-   token in your Secrets.toml. It's very important that you don't reveal your
-   token to anyone, as it can be abused. Create a .gitignore file to omit your
-   Secrets.toml from version control.
-4. For the sake of this example, you also need to scroll down on the bot page to
-   the Message Content Intent section and enable that option.
+3. On the bot page click the Reset Token button to reveal your token. Put this token in your `Secrets.toml`. It's very important that you don't reveal your token to anyone, as it can be abused. Create a `.gitignore` file to omit your `Secrets.toml` from version control.
+4. For the sake of this example, you also need to scroll down on the bot page to the Message Content Intent section and enable that option.
 
 To add the bot to a server we need to create an invite link.
-
+ 
 1. On your bot's application page, open the OAuth2 page via the lefthand panel.
-2. Go to the URL Generator via the lefthand panel, and select the bot scope as
-   well as the Send Messages permission in the Bot Permissions section.
-3. Copy the URL, open it in your browser and select a Discord server you wish to
-   invite the bot to.
+2. Go to the URL Generator via the lefthand panel, and select the `bot` scope as well as the `Send Messages` permission in the Bot Permissions section.
+3. Copy the URL, open it in your browser and select a Discord server you wish to invite the bot to.
 
 ### Coding time
 
-Create a new directory (`mkdir`) and move into it (`cd`) -- afterwards, execute
-the following command to initialize shuttle inside with the Salvo boilerplate.
+Create a new directory (`mkdir`) and move into it (`cd`) -- afterwards, execute the following command to initialize shuttle inside with the Salvo boilerplate.
 
 ```bash
 cargo shuttle init --serenity
 ```
 
-Make sure that your `cargo.toml` file looks as the one below -- having the right
-dependencies is key!
+Make sure that your `Cargo.toml` file looks like the one below -- having the right dependencies is key!
 
-```toml cargo.toml
+```toml
 [package]
 name = "hello-world"
 version = "0.1.0"
@@ -50,23 +41,22 @@ edition = "2021"
 [lib]
 
 [dependencies]
-log = "0.4.17"
+anyhow = "1.0.62"
 serenity = { version = "0.11.5", default-features = false, features = ["client", "gateway", "rustls_backend", "model"] }
-shuttle-service = { version = "0.5.2", features = ["bot-serenity", "secrets", "sqlx-postgres"] }
-sqlx = { version = "0.6", features = ["runtime-tokio-native-tls", "postgres"] }
+shuttle-secrets = "0.6.0"
+shuttle-service = { version = "0.6.0", features = ["bot-serenity"] }
+tracing = "0.1.35"
 ```
+Your `lib.rs` should look like this:
 
-Your lib.rs should look like this:
-
-```rust lib.rs
-use log::{error, info};
+```Rust
+use anyhow::anyhow;
 use serenity::async_trait;
 use serenity::model::channel::Message;
 use serenity::model::gateway::Ready;
 use serenity::prelude::*;
-use shuttle_service::error::CustomError;
-use shuttle_service::SecretStore;
-use sqlx::PgPool;
+use shuttle_secrets::SecretStore;
+use tracing::{error, info};
 
 struct Bot;
 
@@ -86,12 +76,15 @@ impl EventHandler for Bot {
 }
 
 #[shuttle_service::main]
-async fn serenity(#[shared::Postgres] pool: PgPool) -> shuttle_service::ShuttleSerenity {
-    // Get the discord token set in `Secrets.toml` from the shared Postgres database
-    let token = pool
-        .get_secret("DISCORD_TOKEN")
-        .await
-        .map_err(CustomError::new)?;
+async fn serenity(
+    #[shuttle_secrets::Secrets] secret_store: SecretStore,
+) -> shuttle_service::ShuttleSerenity {
+    // Get the discord token set in `Secrets.toml`
+    let token = if let Some(token) = secret_store.get("DISCORD_TOKEN") {
+        token
+    } else {
+        return Err(anyhow!("'DISCORD_TOKEN' was not found").into());
+    };
 
     // Set gateway intents, which decides what events the bot will be notified about
     let intents = GatewayIntents::GUILD_MESSAGES | GatewayIntents::MESSAGE_CONTENT;
@@ -104,68 +97,59 @@ async fn serenity(#[shared::Postgres] pool: PgPool) -> shuttle_service::ShuttleS
     Ok(client)
 }
 ```
-
 And your `Secrets.toml` file should look like this (and have your token inside):
 
-```toml Secrets.toml
+```toml
 DISCORD_TOKEN = 'the contents of my discord token'
 ```
 
+Create a project, this will start an isolated deployer container for you under the hood:
+```bash
+cargo shuttle project new
+```
+Finally, to deploy your app, all you need to do is:
+```bash
+cargo shuttle deploy
+```
 ## Todo list bot
+
+[![Open in Gitpod](https://gitpod.io/button/open-in-gitpod.svg)](https://gitpod.io/#https://github.com/shuttle-hq/shuttle-examples/tree/main/shuttle/postgres)
 
 ### Prerequisites
 
-In this example we will deploy a Serenity bot with Shuttle that can add, list
-and complete todos using
-[Application Commands](https://discord.com/developers/docs/interactions/application-commands).
-To persist the todos we need a database. We will have Shuttle provison a
-PostgreSQL database for us by enabling the `sqlx-postgres` feature for
-shuttle-service and passing `#[shared::Postgres] pool: PgPool` as an argument to
-our `main` function.
+In this example we will deploy a Serenity bot with Shuttle that can add, list and complete todos using [Application Commands](https://discord.com/developers/docs/interactions/application-commands). To persist the todos we need a database. We will have Shuttle provison a PostgreSQL database for us by enabling the `sqlx-postgres` feature for `shuttle-service` and passing `#[shared::Postgres] pool: PgPool` as an argument to our `main` function.
 
-To run this bot we need a valid Discord Token. To get started log in to the
-[Discord developer portal](https://discord.com/login?redirect_to=%2Fdevelopers%2Fapplications).
+To run this bot we need a valid Discord Token. To get started log in to the [Discord developer portal](https://discord.com/developers/applications).
 
-1. Click the New Application button, name your application and click Create.
+1. Click the New Application button, name your application and click Create. 
 2. Navigate to the Bot tab in the lefthand menu, and add a new bot.
-3. On the bot page click the Reset Token button to reveal your token. Put this
-   token in your `Secrets.toml`. It's very important that you don't reveal your
-   token to anyone, as it can be abused. Create a .gitignore file to omit your
-   `Secrets.toml` from version control.
+3. On the bot page click the Reset Token button to reveal your token. Put this token in your `Secrets.toml`. It's very important that you don't reveal your token to anyone, as it can be abused. Create a `.gitignore` file to omit your `Secrets.toml` from version control.
 
 To add the bot to a server we need to create an invite link.
-
+ 
 1. On your bot's application page, open the OAuth2 page via the lefthand panel.
-2. Go to the URL Generator via the lefthand panel, and select the
-   `applications.commands` scope.
-3. Copy the URL, open it in your browser and select a Discord server you wish to
-   invite the bot to.
+2. Go to the URL Generator via the lefthand panel, and select the `applications.commands` scope.
+3. Copy the URL, open it in your browser and select a Discord server you wish to invite the bot to.
 
 For this example we also need a `GuildId`.
 
-1. Open your Discord client, open the User Settings and navigate to Advanced.
-   Enable Developer Mode.
-2. Right click the Discord server you'd like to use the bot in and click Copy
-   Id. This is your Guild ID.
+1. Open your Discord client, open the User Settings and navigate to Advanced. Enable Developer Mode.
+2. Right click the Discord server you'd like to use the bot in and click Copy Id. This is your Guild ID.
 3. Store it in `Secrets.toml` and retrieve it like we did for the Discord Token.
 
-For more information please refer to the
-[Discord docs](https://github.com/serenity-rs/serenity)as well as the Serenity
-repo (opens new window)for more examples.
+For more information please refer to the [Discord docs](https://discord.com/developers/docs/getting-started) as well as the [Serenity repo](https://github.com/serenity-rs/serenity) for more examples.
 
 ### Coding time
 
-Create a new directory (`mkdir`) and move into it (`cd`) -- afterwards, execute
-the following command to initialize shuttle inside with the Salvo boilerplate.
+Create a new directory (`mkdir`) and move into it (`cd`) -- afterwards, execute the following command to initialize shuttle inside with the Salvo boilerplate.
 
 ```bash
 cargo shuttle init --serenity
 ```
 
-Make sure that your `cargo.toml` file looks as the one below -- having the right
-dependencies is key!
+Make sure that your `Cargo.toml` file looks like the one below -- having the right dependencies is key!
 
-```toml cargo.toml
+```toml
 [package]
 name = "serenity-postgres"
 version = "0.1.0"
@@ -174,18 +158,20 @@ edition = "2021"
 [lib]
 
 [dependencies]
-log = "0.4.17"
+anyhow = "1.0.62"
 serde = "1.0"
 serenity = { version = "0.11.5", default-features = false, features = ["client", "gateway", "rustls_backend", "model"] }
-shuttle-service = { version = "0.5.2", features = ["bot-serenity", "secrets", "sqlx-postgres"] }
+shuttle-secrets = "0.6.0"
+shuttle-service = { version = "0.6.0", features = ["bot-serenity"] }
+shuttle-shared-db = { version = "0.6.0", features = ["postgres"] }
 sqlx = { version = "0.6", features = ["runtime-tokio-native-tls", "postgres"] }
+tracing = "0.1.35"
 ```
-
 Your `lib.rs` should look like this:
 
-```rust lib.rs
+```Rust
 // lib.rs
-use log::{error, info};
+use anyhow::Context as _;
 use serenity::async_trait;
 use serenity::model::application::command::CommandOptionType;
 use serenity::model::application::interaction::application_command::CommandDataOptionValue;
@@ -193,14 +179,15 @@ use serenity::model::application::interaction::{Interaction, InteractionResponse
 use serenity::model::gateway::Ready;
 use serenity::model::id::GuildId;
 use serenity::prelude::*;
-use shuttle_service::error::CustomError;
-use shuttle_service::SecretStore;
+use shuttle_secrets::SecretStore;
 use sqlx::{Executor, PgPool};
+use tracing::{error, info};
 
 mod db;
 
 struct Bot {
     database: PgPool,
+    guild_id: String,
 }
 
 #[async_trait]
@@ -261,14 +248,7 @@ impl EventHandler for Bot {
     async fn ready(&self, ctx: Context, ready: Ready) {
         info!("{} is connected!", ready.user.name);
 
-        // Get the guild id set in `Secrets.toml` from the Postgres secrets storage
-        let guild_id = self
-            .database
-            .get_secret("GUILD_ID")
-            .await
-            .expect("guild_id is set in Secrets.toml");
-
-        let guild_id = GuildId(guild_id.parse().unwrap());
+        let guild_id = GuildId(self.guild_id.parse().unwrap());
 
         let _ = GuildId::set_application_commands(&guild_id, &ctx.http, |commands| {
             commands.create_application_command(|command| {
@@ -317,19 +297,28 @@ impl EventHandler for Bot {
 }
 
 #[shuttle_service::main]
-async fn serenity(#[shared::Postgres] pool: PgPool) -> shuttle_service::ShuttleSerenity {
-    // Get the discord token set in `Secrets.toml` from the Postgres secrets storage
-    let token = pool
-        .get_secret("DISCORD_TOKEN")
-        .await
-        .map_err(CustomError::new)?;
+async fn serenity(
+    #[shuttle_shared_db::Postgres] pool: PgPool,
+    #[shuttle_secrets::Secrets] secret_store: SecretStore,
+) -> shuttle_service::ShuttleSerenity {
+    // Get the discord token set in `Secrets.toml`
+    let token = secret_store
+        .get("DISCORD_TOKEN")
+        .context("'DISCORD_TOKEN' was not found")?;
+    // Get the guild_id set in `Secrets.toml`
+    let guild_id = secret_store
+        .get("GUILD_ID")
+        .context("'GUILD_ID' was not found")?;
 
     // Run the schema migration
     pool.execute(include_str!("../schema.sql"))
         .await
-        .map_err(CustomError::new)?;
+        .context("failed to run migrations")?;
 
-    let bot = Bot { database: pool };
+    let bot = Bot {
+        database: pool,
+        guild_id,
+    };
     let client = Client::builder(&token, GatewayIntents::empty())
         .event_handler(bot)
         .await
@@ -341,7 +330,7 @@ async fn serenity(#[shared::Postgres] pool: PgPool) -> shuttle_service::ShuttleS
 
 Your `db.rs` should look like this:
 
-```rust db.rs
+```rust
 // db.rs
 use sqlx::{FromRow, PgPool};
 use std::fmt::Write;
@@ -398,10 +387,9 @@ pub(crate) async fn list(pool: &PgPool, user_id: i64) -> Result<String, sqlx::Er
     Ok(response)
 }
 ```
+Your `schema.sql` should look like this:
 
-Your schema.sql should look like this:
-
-```sql schema.sql
+```sql
 DROP TABLE IF EXISTS todos;
 
 CREATE TABLE todos (
@@ -410,17 +398,18 @@ CREATE TABLE todos (
   note TEXT NOT NULL
 );
 ```
+And your `Secrets.toml` should look like this (make sure to replace the default values):
 
-And your Secrets.toml should look like this (make sure to replace the default
-values):
-
-```toml Secrets.toml
+```toml
 DISCORD_TOKEN = 'the contents of my discord token'
 GUILD_ID = "123456789"
 ```
 
-Finally, to deploy your bot, all you need to do is:
-
+Create a project, this will start an isolated deployer container for you under the hood:
+```bash
+cargo shuttle project new
+```
+Finally, to deploy your app, all you need to do is:
 ```bash
 cargo shuttle deploy
 ```

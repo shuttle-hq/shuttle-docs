@@ -7,19 +7,19 @@ description:
 
 ## Hello world!
 
+[![Open in Gitpod](https://gitpod.io/button/open-in-gitpod.svg)](https://gitpod.io/#https://github.com/shuttle-hq/shuttle-examples/tree/main/axum/hello-world)
+
 Simple 'Hello world' app using Axum.
 
-Create a new directory (`mkdir`) and move into it (`cd`) -- afterwards, execute
-the following command to initialize shuttle inside with the Axum boilerplate.
+Create a new directory (`mkdir`) and move into it (`cd`) -- afterwards, execute the following command to initialize shuttle inside with the Axum boilerplate.
 
 ```bash
 cargo shuttle init --axum
 ```
 
-Make sure that your `cargo.toml` file looks as the one below -- having the right
-dependencies is key!
+Make sure that your `Cargo.toml` file looks like the one below -- having the right dependencies is key!
 
-```rust cargo.toml
+```toml
 [package]
 name = "hello-world"
 version = "0.1.0"
@@ -29,13 +29,12 @@ edition = "2021"
 
 [dependencies]
 axum = "0.5"
-shuttle-service = { version = "0.5.2", features = ["web-axum"] }
+shuttle-service = { version = "0.6.0", features = ["web-axum"] }
 sync_wrapper = "0.1"
 ```
-
 Your `lib.rs` should look like this:
 
-```rust lib.rs
+```Rust
 use axum::{routing::get, Router};
 use sync_wrapper::SyncWrapper;
 
@@ -51,9 +50,12 @@ async fn axum() -> shuttle_service::ShuttleAxum {
     Ok(sync_wrapper)
 }
 ```
+Create a project, this will start an isolated deployer container for you under the hood:
+```bash
+cargo shuttle project new
+```
 
 Finally, to deploy your app, all you need to do is:
-
 ```bash
 cargo shuttle deploy
 ```
@@ -62,25 +64,21 @@ And your app is live! 🎉🎉🎉
 
 ## Websocket
 
+[![Open in Gitpod](https://gitpod.io/button/open-in-gitpod.svg)](https://gitpod.io/#https://github.com/shuttle-hq/shuttle-examples/tree/main/axum/websocket)
+
 A websocket example using Axum.
 
-> A WebSocket is a bidirectional, full-duplex protocol that is used in the same
-> scenario of client-server communication, unlike HTTP it starts from ws:// or
-> wss://. It is a stateful protocol, which means the connection between client
-> and server will keep alive until it is terminated by either party (client or
-> server).
+> A WebSocket is a bidirectional, full-duplex protocol that is used in the same scenario of client-server communication, unlike HTTP it starts from ws:// or wss://. It is a stateful protocol, which means the connection between client and server will keep alive until it is terminated by either party (client or server).
 
-Create a new directory (`mkdir`) and move into it (`cd`) -- afterwards, execute
-the following command to initialize shuttle inside with the Axum boilerplate.
+Create a new directory (`mkdir`) and move into it (`cd`) -- afterwards, execute the following command to initialize shuttle inside with the Axum boilerplate.
 
 ```bash
 cargo shuttle init --axum
 ```
 
-Make sure that your `cargo.toml` file looks as the one below -- having the right
-dependencies is key!
+Make sure that your `Cargo.toml` file looks like the one below -- having the right dependencies is key!
 
-```rust cargo.toml
+```toml
 [package]
 name = "hello-world"
 version = "0.1.0"
@@ -90,13 +88,13 @@ edition = "2021"
 
 [dependencies]
 axum = "0.5"
-shuttle-service = { version = "0.5.2", features = ["web-axum"] }
+shuttle-service = { version = "0.6.0", features = ["web-axum"] }
 sync_wrapper = "0.1"
 ```
-
 Your `lib.rs` should look like this:
 
-```rust lib.rs
+```Rust
+// lib.rs
 use std::{sync::Arc, time::Duration};
 
 use axum::{
@@ -233,114 +231,90 @@ async fn index() -> Html<&'static str> {
 
 And your `index.html` should look like this:
 
-```html index.html
+```html
+<!-- index.html -->
 <!DOCTYPE html>
 <html lang="en" class="bg-gray-600">
-  <head>
-    <meta charset="utf-8" />
-    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Websocket status page</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-  </head>
-  <body
-    class="flex justify-around items-center h-screen w-screen m-0 text-center"
-  >
-    <div
-      class="flex max-w-sm flex-col overflow-hidden rounded-lg transition blur-md"
-    >
-      <div class="flex-shrink-0 bg-gray-800 text-slate-50 p-5">
-        Current API status
-      </div>
-      <div
-        id="is_ok"
-        class="flex flex-1 flex-col justify-between p-6 bg-gray-500 text-xl font-bold uppercase"
-      ></div>
-    </div>
-    <div
-      class="flex max-w-sm flex-col overflow-hidden rounded-lg transition blur-md"
-    >
-      <div class="flex-shrink-0 bg-gray-800 text-slate-50 p-5">
-        Last check time
-      </div>
-      <div
-        id="datetime"
-        class="flex flex-1 flex-col justify-between p-6 bg-gray-500 text-xl font-bold"
-      ></div>
-    </div>
-    <div
-      class="flex max-w-sm flex-col overflow-hidden rounded-lg transition blur-md"
-    >
-      <div class="flex-shrink-0 bg-gray-800 text-slate-50 p-5">
-        Clients watching
-      </div>
-      <div
-        id="clients_count"
-        class="flex flex-1 flex-col justify-between p-6 bg-gray-500 text-xl font-bold"
-      ></div>
-    </div>
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <title>Websocket status page</title>
+        <script src="https://cdn.tailwindcss.com"></script>
+    </head>
+    <body class="flex justify-around items-center h-screen w-screen m-0 text-center">
+        <div class="flex max-w-sm flex-col overflow-hidden rounded-lg transition blur-md">
+            <div class="flex-shrink-0 bg-gray-800 text-slate-50 p-5">
+                Current API status
+            </div>
+            <div id="is_ok" class="flex flex-1 flex-col justify-between p-6 bg-gray-500 text-xl font-bold uppercase"></div>
+        </div>
+        <div class="flex max-w-sm flex-col overflow-hidden rounded-lg transition blur-md">
+            <div class="flex-shrink-0 bg-gray-800 text-slate-50 p-5">
+                Last check time
+            </div>
+            <div id="datetime" class="flex flex-1 flex-col justify-between p-6 bg-gray-500 text-xl font-bold"> </div>
+        </div>
+        <div class="flex max-w-sm flex-col overflow-hidden rounded-lg transition blur-md">
+            <div class="flex-shrink-0 bg-gray-800 text-slate-50 p-5">
+                Clients watching
+            </div>
+            <div id="clients_count" class="flex flex-1 flex-col justify-between p-6 bg-gray-500 text-xl font-bold"></div>
+        </div>
 
-    <button
-      id="open"
-      class="absolute text-2xl bg-gray-800 text-slate-50 p-2 rounded shadow-lg shadow-slate-800 hover:shadow-md scale-105 hover:scale-100 transition"
-    >
-      Open connection
-    </button>
+        <button id="open" class="absolute text-2xl bg-gray-800 text-slate-50 p-2 rounded shadow-lg shadow-slate-800 hover:shadow-md scale-105 hover:scale-100 transition">Open connection</button>
 
-    <script type="text/javascript">
-      const is_ok = document.querySelector("#is_ok");
-      const datetime = document.querySelector("#datetime");
-      const clients_count = document.querySelector("#clients_count");
-      const button = document.querySelector("button");
+        <script type="text/javascript">
+         const is_ok = document.querySelector("#is_ok");
+         const datetime = document.querySelector("#datetime");
+         const clients_count = document.querySelector("#clients_count");
+         const button = document.querySelector("button");
 
-      function track() {
-        const websocket = new WebSocket(
-          `wss://${window.location.host}/websocket`
-        );
+         function track() {
+             const websocket = new WebSocket(`wss://${window.location.host}/websocket`);
 
-        websocket.onopen = () => {
-          console.log("connection opened");
-          document
-            .querySelectorAll("body > div")
-            .forEach((e) => e.classList.remove("blur-md"));
-          document.querySelector("body > button").classList.add("hidden");
-        };
+             websocket.onopen = () => {
+                 console.log("connection opened");
+                 document.querySelectorAll("body > div").forEach(e => e.classList.remove("blur-md"));
+                 document.querySelector("body > button").classList.add("hidden");
+             }
 
-        websocket.onclose = () => {
-          console.log("connection closed");
-          document
-            .querySelectorAll("body > div")
-            .forEach((e) => e.classList.add("blur-md"));
-          document.querySelector("body > button").classList.remove("hidden");
-        };
+             websocket.onclose = () => {
+                 console.log("connection closed");
+                 document.querySelectorAll("body > div").forEach(e => e.classList.add("blur-md"));
+                 document.querySelector("body > button").classList.remove("hidden");
+             }
 
-        websocket.onmessage = (e) => {
-          const response = JSON.parse(e.data);
+             websocket.onmessage = (e) => {
+                 const response = JSON.parse(e.data);
 
-          if (response.is_up) {
-            is_ok.textContent = "up";
-            is_ok.classList.add("text-green-600");
-            is_ok.classList.remove("text-rose-700");
-          } else {
-            is_ok.textContent = "down";
-            is_ok.classList.add("text-rose-700");
-            is_ok.classList.remove("text-green-600");
-          }
+                 if (response.is_up) {
+                     is_ok.textContent = "up";
+                     is_ok.classList.add("text-green-600");
+                     is_ok.classList.remove("text-rose-700");
+                 } else {
+                     is_ok.textContent = "down";
+                     is_ok.classList.add("text-rose-700");
+                     is_ok.classList.remove("text-green-600");
+                 }
 
-          datetime.textContent = new Date(response.datetime).toLocaleString();
-          clients_count.textContent = response.clients_count;
-        };
-      }
+                 datetime.textContent = new Date(response.datetime).toLocaleString();
+                 clients_count.textContent = response.clients_count;
+             }
+         }
 
-      track();
-      button.addEventListener("click", track);
-    </script>
-  </body>
+         track();
+         button.addEventListener("click", track);
+        </script>
+    </body>
 </html>
+```
+Create a project, this will start an isolated deployer container for you under the hood:
+```bash
+cargo shuttle project new
 ```
 
 Finally, to deploy your app, all you need to do is:
-
 ```bash
 cargo shuttle deploy
 ```

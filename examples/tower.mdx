@@ -7,19 +7,19 @@ description:
 
 ## Hello world!
 
+[![Open in Gitpod](https://gitpod.io/button/open-in-gitpod.svg)](https://gitpod.io/#https://github.com/shuttle-hq/shuttle-examples/tree/main/tower/hello-world)
+
 Simple 'Hello world' app using Tower.
 
-Create a new directory (`mkdir`) and move into it (`cd`) -- afterwards, execute
-the following command to initialize shuttle inside with the Tower boilerplate.
+Create a new directory (`mkdir`) and move into it (`cd`) -- afterwards, execute the following command to initialize shuttle inside with the Tower boilerplate.
 
 ```bash
 cargo shuttle init --tower
 ```
 
-Make sure that your `cargo.toml` file looks as the one below -- having the right
-dependencies is key!
+Make sure that your `Cargo.toml` file looks like the one below -- having the right dependencies is key!
 
-```toml cargo.toml
+```toml
 [package]
 name = "hello-world"
 version = "0.1.0"
@@ -29,13 +29,12 @@ edition = "2021"
 
 [dependencies]
 hyper = { version = "0.14", features = ["full"] }
-shuttle-service = { version = "0.5.2", features = ["web-tower"] }
+shuttle-service = { version = "0.6.0", features = ["web-tower"] }
 tower = { version = "0.4", features = ["full"] }
 ```
-
 Your `lib.rs` should look like this:
 
-```rust lib.rs
+```Rust
 use std::convert::Infallible;
 use std::future::Future;
 use std::pin::Pin;
@@ -72,8 +71,11 @@ async fn tower() -> Result<HelloWorld, shuttle_service::Error> {
 }
 ```
 
+Create a project, this will start an isolated deployer container for you under the hood:
+```bash
+cargo shuttle project new
+```
 Finally, to deploy your app, all you need to do is:
-
 ```bash
 cargo shuttle deploy
 ```

@@ -7,19 +7,19 @@ description:
 
 ## Hello world!
 
+[![Open in Gitpod](https://gitpod.io/button/open-in-gitpod.svg)](https://gitpod.io/#https://github.com/shuttle-hq/shuttle-examples/tree/main/poem/hello-world)
+
 Simple 'Hello world' app using Poem.
 
-Create a new directory (`mkdir`) and move into it (`cd`) -- afterwards, execute
-the following command to initialize shuttle inside with the Poem boilerplate.
+Create a new directory (`mkdir`) and move into it (`cd`) -- afterwards, execute the following command to initialize shuttle inside with the Poem boilerplate.
 
 ```bash
 cargo shuttle init --poem
 ```
 
-Make sure that your `cargo.toml` file looks as the one below -- having the right
-dependencies is key!
+Make sure that your `Cargo.toml` file looks like the one below -- having the right dependencies is key!
 
-```rust cargo.toml
+```toml
 [package]
 name = "hello-world"
 version = "0.1.0"
@@ -29,12 +29,11 @@ edition = "2021"
 
 [dependencies]
 poem = "1.3.35"
-shuttle-service = { version = "0.5.2", features = ["web-poem"] }
+shuttle-service = { version = "0.6.0", features = ["web-poem"] }
 ```
-
 Your `lib.rs` should look like this:
 
-```rust lib.rs
+```Rust
 use poem::{get, handler, Route};
 
 #[handler]
@@ -49,30 +48,32 @@ async fn main() -> shuttle_service::ShuttlePoem<impl poem::Endpoint> {
     Ok(app)
 }
 ```
+Create a project, this will start an isolated deployer container for you under the hood:
+```bash
+cargo shuttle project new
+```
 
 Finally, to deploy your app, all you need to do is:
-
 ```bash
 cargo shuttle deploy
 ```
-
 And your app is live! 🎉🎉🎉
 
 ## Todo App (MongoDB)
 
+[![Open in Gitpod](https://gitpod.io/button/open-in-gitpod.svg)](https://gitpod.io/#https://github.com/shuttle-hq/shuttle-examples/tree/main/poem/mongodb)
+
 Simple 'todo app' example using MongoDB.
 
-Create a new directory (`mkdir`) and move into it (`cd`) -- afterwards, execute
-the following command to initialize shuttle inside with the Poem boilerplate.
+Create a new directory (`mkdir`) and move into it (`cd`) -- afterwards, execute the following command to initialize shuttle inside with the Poem boilerplate.
 
 ```bash
 cargo shuttle init --poem
 ```
 
-Make sure that your `cargo.toml` file looks as the one below -- having the right
-dependencies is key!
+Make sure that your `Cargo.toml` file looks like the one below -- having the right dependencies is key!
 
-```rust cargo.toml
+```toml
 [package]
 name = "mongodb-poem-app"
 version = "0.1.0"
@@ -83,12 +84,13 @@ mongodb = "2.3.0"
 poem = "1.3.35"
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
-shuttle-service = { version = "0.5.2", features = ["web-poem", "mongodb-integration"] }
+shuttle-service = { version = "0.6.0", features = ["web-poem"] }
+shuttle-shared-db = { version = "0.6.0", features = ["mongodb"] }
 ```
 
 Your `lib.rs` should look like this:
 
-```rust lib.rs
+```Rust
 use mongodb::bson::doc;
 use mongodb::bson::oid::ObjectId;
 use mongodb::{Collection, Database};
@@ -146,7 +148,7 @@ async fn add(Json(todo): Json<Todo>, collection: Data<&Collection<Todo>>) -> Res
 
 #[shuttle_service::main]
 async fn main(
-    #[shared::MongoDb] db: Database,
+    #[shuttle_shared_db::MongoDb] db: Database,
 ) -> shuttle_service::ShuttlePoem<impl poem::Endpoint> {
     let collection = db.collection::<Todo>("todos");
 
@@ -163,30 +165,32 @@ struct Todo {
     pub note: String,
 }
 ```
+Create a project, this will start an isolated deployer container for you under the hood:
+```bash
+cargo shuttle project new
+```
 
 Finally, to deploy your app, all you need to do is:
-
 ```bash
 cargo shuttle deploy
 ```
-
 And your app is live! 🎉🎉🎉
 
 ## Todo App (Postgres)
 
+[![Open in Gitpod](https://gitpod.io/button/open-in-gitpod.svg)](https://gitpod.io/#https://github.com/shuttle-hq/shuttle-examples/tree/main/poem/postgres)
+
 Simple 'todo app' example using Postgres.
 
-Create a new directory (`mkdir`) and move into it (`cd`) -- afterwards, execute
-the following command to initialize shuttle inside with the Poem boilerplate.
+Create a new directory (`mkdir`) and move into it (`cd`) -- afterwards, execute the following command to initialize shuttle inside with the Poem boilerplate.
 
 ```bash
 cargo shuttle init --poem
 ```
 
-Make sure that your `cargo.toml` file looks as the one below -- having the right
-dependencies is key!
+Make sure that your `Cargo.toml` file looks like the one below -- having the right dependencies is key!
 
-```rust cargo.toml
+```toml
 [package]
 name = "postgres"
 version = "0.1.0"
@@ -197,13 +201,14 @@ edition = "2021"
 [dependencies]
 poem = "1.3.35"
 serde = "1.0"
-shuttle-service = { version = "0.5.2", features = ["sqlx-postgres", "secrets", "web-poem"] }
+shuttle-service = { version = "0.6.0", features = ["sqlx-postgres"] }
+shuttle-shared-db = { version = "0.6.0", features = ["postgres"] }
 sqlx = { version = "0.6", features = ["runtime-tokio-native-tls", "postgres"] }
 ```
 
 Your `lib.rs` should look like this:
 
-```rust lib.rs
+```Rust
 use poem::{
     error::BadRequest,
     get, handler,
@@ -214,7 +219,6 @@ use poem::{
 };
 use serde::{Deserialize, Serialize};
 use shuttle_service::error::CustomError;
-use shuttle_service::SecretStore;
 use sqlx::{Executor, FromRow, PgPool};
 
 #[handler]
@@ -239,22 +243,15 @@ async fn add(Json(data): Json<TodoNew>, state: Data<&PgPool>) -> Result<Json<Tod
     Ok(Json(todo))
 }
 
-#[handler]
-async fn secret(state: Data<&PgPool>) -> Result<String> {
-    // get secret defined in `Secrets.toml` file.
-    state.0.get_secret("MY_API_KEY").await.map_err(BadRequest)
-}
-
 #[shuttle_service::main]
 async fn main(
-    #[shared::Postgres] pool: PgPool,
+    #[shuttle_shared_db::Postgres] pool: PgPool,
 ) -> shuttle_service::ShuttlePoem<impl poem::Endpoint> {
     pool.execute(include_str!("../schema.sql"))
         .await
         .map_err(CustomError::new)?;
 
     let app = Route::new()
-        .at("/secret", get(secret))
         .at("/todo", post(add))
         .at("/todo/:id", get(retrieve))
         .with(AddData::new(pool));
@@ -276,7 +273,7 @@ struct Todo {
 
 And your `schema.sql` like this:
 
-```sql schema.sql
+```sql
 DROP TABLE IF EXISTS todos;
 
 CREATE TABLE todos (
@@ -284,16 +281,12 @@ CREATE TABLE todos (
   note TEXT NOT NULL
 );
 ```
-
-And your `Secrets.toml` file should look like this (and have your API key
-inside):
-
-```rust Secrets.toml
-MY_API_KEY = 'the contents of my API key'
+Create a project, this will start an isolated deployer container for you under the hood:
+```bash
+cargo shuttle project new
 ```
 
 Finally, to deploy your app, all you need to do is:
-
 ```bash
 cargo shuttle deploy
 ```

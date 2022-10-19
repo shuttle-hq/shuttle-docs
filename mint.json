@@ -27,6 +27,16 @@
       "name": "API Docs",
       "icon": "rectangle-terminal",
       "url": "https://docs.rs/shuttle-service/latest/shuttle_service/"
+    },
+    {
+      "name": "Blog",
+      "icon": "pen-nib",
+      "url": "https://shuttle.rs/blog"
+    },
+    {
+      "name": "Community",
+      "icon": "discord",
+      "url": "https://discord.gg/shuttle"
     }
   ],
   "navigation": [
@@ -47,8 +57,10 @@
         "examples/rocket",
         "examples/salvo",
         "examples/serenity",
+        "examples/thruster",
         "examples/tide",
-        "examples/tower"
+        "examples/tower",
+        "examples/warp"
       ]
     },
     {
@@ -61,8 +73,13 @@
       ]
     },
     {
-      "group": "Development",
-      "pages": ["development/managed-dependencies"]
+      "group": "Resources",
+      "pages": [
+        "resources/shuttle-aws-rds",
+        "resources/shuttle-persist",
+        "resources/shuttle-shared-db",
+        "resources/shuttle-secrets"
+      ]
     },
     {
       "group": "Community",
@@ -75,7 +92,8 @@
   ],
   "footerSocials": {
     "twitter": "https://twitter.com/shuttle_dev",
-    "discord": "https://discord.com/invite/shuttle"
+    "discord": "https://discord.com/invite/shuttle",
+    "github": "https://github.com/shuttle-hq/shuttle"
   },
   "classes": {
     "anchors": "group-hover:bg-gradient-to-tr from-[#F53F2E] to-[#E9D739]",

@@ -8,19 +8,19 @@ description:
 
 ## Hello world!
 
+[![Open in Gitpod](https://gitpod.io/button/open-in-gitpod.svg)](https://gitpod.io/#https://github.com/shuttle-hq/shuttle-examples/tree/main/tide/hello-world)
+
 Simple 'Hello world' app using Tide.
 
-Create a new directory (`mkdir`) and move into it (`cd`) -- afterwards, execute
-the following command to initialize shuttle inside with the Tide boilerplate.
+Create a new directory (`mkdir`) and move into it (`cd`) -- afterwards, execute the following command to initialize shuttle inside with the Tide boilerplate.
 
 ```bash
 cargo shuttle init --tide
 ```
 
-Make sure that your `cargo.toml` file looks as the one below -- having the right
-dependencies is key!
+Make sure that your `Cargo.toml` file looks like the one below -- having the right dependencies is key!
 
-```toml cargo.toml
+```toml
 [package]
 name = "hello-world"
 version = "0.1.0"
@@ -29,13 +29,12 @@ edition = "2021"
 [lib]
 
 [dependencies]
-shuttle-service = { version = "0.5.2", features = ["web-tide"] }
+shuttle-service = { version = "0.6.0", features = ["web-tide"] }
 tide = "0.16.0"
 ```
-
 Your `lib.rs` should look like this:
 
-```rust lib.rs
+```Rust
 #[shuttle_service::main]
 async fn tide() -> shuttle_service::ShuttleTide<()> {
     let mut app = tide::new();
@@ -46,28 +45,30 @@ async fn tide() -> shuttle_service::ShuttleTide<()> {
     Ok(app)
 }
 ```
-
-Finally, to deploy your app, all you need to do is:
-
+Create a project, this will start an isolated deployer container for you under the hood:
+```bash
+cargo shuttle project new
 ```
+Finally, to deploy your app, all you need to do is:
+```bash
 cargo shuttle deploy
 ```
 
 And your app is live! 🎉🎉🎉
 
-## Postgres
+## AWS RDS Postgres
 
-Create a new directory (`mkdir`) and move into it (`cd`) -- afterwards, execute
-the following command to initialize shuttle inside with the Tide boilerplate.
+[![Open in Gitpod](https://gitpod.io/button/open-in-gitpod.svg)](https://gitpod.io/#https://github.com/shuttle-hq/shuttle-examples/tree/main/tide/postgres)
+
+Create a new directory (`mkdir`) and move into it (`cd`) -- afterwards, execute the following command to initialize shuttle inside with the Tide boilerplate.
 
 ```bash
 cargo shuttle init --tide
 ```
 
-Make sure that your `cargo.toml` file looks as the one below -- having the right
-dependencies is key!
+Make sure that your `Cargo.toml` file looks like the one below -- having the right dependencies is key!
 
-```toml cargo.toml
+```toml
 [package]
 name = "postgres"
 version = "0.1.0"
@@ -77,14 +78,15 @@ edition = "2021"
 
 [dependencies]
 serde = { version = "1.0", features = ["derive"] }
-shuttle-service = { version = "0.5.2", features = ["sqlx-aws-postgres", "web-tide"] }
+shuttle-aws-rds = { version = "0.6.0", features = ["postgres"] }
+shuttle-service = { version = "0.6.0", features = ["web-tide"] }
 sqlx = { version = "0.6", features = ["runtime-tokio-native-tls", "postgres"] }
 tide = "0.16.0"
 ```
 
 Your `lib.rs` should look like this:
 
-```rust lib.rs
+```rust
 use serde::{Deserialize, Serialize};
 use shuttle_service::{error::CustomError, ShuttleTide};
 use sqlx::{Executor, FromRow, PgPool};
@@ -116,7 +118,7 @@ struct MyState {
 }
 
 #[shuttle_service::main]
-async fn tide(#[aws::rds::Postgres] pool: PgPool) -> ShuttleTide<MyState> {
+async fn tide(#[shuttle_aws_rds::Postgres] pool: PgPool) -> ShuttleTide<MyState> {
     pool.execute(include_str!("../schema.sql"))
         .await
         .map_err(CustomError::new)?;
@@ -131,6 +133,7 @@ async fn tide(#[aws::rds::Postgres] pool: PgPool) -> ShuttleTide<MyState> {
     Ok(app)
 }
 
+
 #[derive(Deserialize)]
 struct TodoNew {
     pub note: String,
@@ -142,10 +145,9 @@ struct Todo {
     pub note: String,
 }
 ```
-
 And your `schema.sql` should look like this:
 
-```sql schema.sql
+```sql
 DROP TABLE IF EXISTS todos;
 
 CREATE TABLE todos (
@@ -153,9 +155,11 @@ CREATE TABLE todos (
   note TEXT NOT NULL
 );
 ```
-
+Create a project, this will start an isolated deployer container for you under the hood:
+```bash
+cargo shuttle project new
+```
 Finally, to deploy your app, all you need to do is:
-
 ```bash
 cargo shuttle deploy
 ```
