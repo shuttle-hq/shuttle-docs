@@ -21,7 +21,7 @@ cargo shuttle init --rocket
 
 Make sure that your `Cargo.toml` file looks like the one below -- having the right dependencies is key!
 
-```toml
+```toml Cargo.toml
 [package]
 name = "hello-world"
 version = "0.1.0"
@@ -31,11 +31,11 @@ edition = "2021"
 
 [dependencies]
 rocket = "0.5.0-rc.2"
-shuttle-service = { version = "0.6.0", features = ["web-rocket"] }
+shuttle-service = { version = "0.7.2", features = ["web-rocket"] }
 ```
 Your `lib.rs` should look like this:
 
-```Rust
+```Rust lib.rs
 #[macro_use]
 extern crate rocket;
 
@@ -87,7 +87,7 @@ The bulk of this example is in this file. Most of the code can be transferred to
 This file contains a `Claims` object which can be expanded with more claims. A `Claims` can be created from a `Bearer <token>` string using `Claims::from_authorization()`.
 And a `Claims` object can also be converted to a token using `to_token()`.
 
-```toml
+```toml Cargo.toml
 [package]
 name = "authentication"
 version = "0.1.0"
@@ -101,10 +101,11 @@ jsonwebtoken = { version = "8", default-features = false }
 lazy_static = "1.4"
 rocket = { version = "0.5.0-rc.2", features = ["json"] }
 serde = { version = "1.0", features = ["derive"] }
-shuttle-service = { version = "0.6.0", features = ["web-rocket"] }
+shuttle-service = { version = "0.7.2", features = ["web-rocket"] }
 ```
+Your `lib.rs` should look like this:
 
-```Rust
+```Rust lib.rs
 // lib.rs
 use rocket::http::Status;
 use rocket::response::status::Custom;
@@ -184,8 +185,9 @@ async fn rocket() -> shuttle_service::ShuttleRocket {
     Ok(rocket)
 }
 ```
+Your `claims.rs` should look like this:
 
-```Rust
+```Rust claims.rs
 // claims.rs
 use chrono::{Duration, Utc};
 use jsonwebtoken::{
@@ -387,7 +389,7 @@ The project consists of the following files
 - `migrations` folder is for DB migration files created by [sqlx-cli](https://github.com/launchbadge/sqlx/tree/master/sqlx-cli)
 - `src/lib.rs` is where all the magic happens - it creates a shuttle service with two endpoints: one for creating new short URLs and one for handling shortened URLs.
 
-```toml
+```toml Cargo.toml
 [package]
 name = "url-shortener"
 version = "0.1.0"
@@ -399,13 +401,14 @@ edition = "2021"
 nanoid = "0.4"
 rocket = { version = "0.5.0-rc.2", features = ["json"] }
 serde = "1.0"
-shuttle-service = { version = "0.6.0", features = ["web-rocket"] }
-shuttle-shared-db = { version = "0.6.0", features = ["postgres"] }
+shuttle-service = { version = "0.7.2", features = ["web-rocket"] }
+shuttle-shared-db = { version = "0.7.2", features = ["postgres"] }
 sqlx = { version = "0.6", features = ["runtime-tokio-native-tls", "postgres"] }
 url = "2.2"
 ```
+Your `lib.rs` should look like this:
 
-```Rust
+```Rust lib.rs
 // lib.rs
 #[macro_use]
 extern crate rocket;
@@ -491,8 +494,6 @@ async fn rocket(#[shuttle_shared_db::Postgres] pool: PgPool) -> ShuttleRocket {
     Ok(rocket)
 }
 ```
-
-
 
 ### How to deploy
 

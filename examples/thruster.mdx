@@ -22,7 +22,7 @@ cargo shuttle init --thruster
 Make sure that your `cargo.toml` file looks as the one below -- having the right
 dependencies is key!
 
-```toml cargo.toml
+```toml Cargo.toml
 [package]
 name = "hello-world"
 version = "0.1.0"
@@ -31,8 +31,8 @@ edition = "2021"
 [lib]
 
 [dependencies]
-shuttle-service = { version = "0.6.0", features = ["web-thruster"] }
-thruster = { version = "1.2.6", features = ["hyper_server"] }
+shuttle-service = { version = "0.7.2", features = ["web-thruster"] }
+thruster = { version = "1.3.0", features = ["hyper_server"] }
 ```
 
 Your `lib.rs` should look like this:
@@ -86,7 +86,7 @@ cargo shuttle init --thruster
 Make sure that your `cargo.toml` file looks as the one below -- having the right
 dependencies is key!
 
-```toml cargo.toml
+```toml Cargo.toml
 [package]
 name = "postgres"
 version = "0.1.0"
@@ -100,10 +100,10 @@ crate-type = ["cdylib"]
 hyper = "0.14.20"
 serde = { version = "1.0", features = ["derive"] }
 serde_json = { version = "1.0" }
-shuttle-aws-rds = { version = "0.6.0", features = ["postgres"] }
-shuttle-service = { version = "0.6.0", features = ["web-thruster"] }
+shuttle-aws-rds = { version = "0.7.2", features = ["postgres"] }
+shuttle-service = { version = "0.7.2", features = ["web-thruster"] }
 sqlx = { version = "0.6", features = ["runtime-tokio-native-tls", "postgres"] }
-thruster = { version = "1.2.6", features = ["hyper_server"] }
+thruster = { version = "1.3.0", features = ["hyper_server"] }
 ```
 
 Your `lib.rs` should look like this:
