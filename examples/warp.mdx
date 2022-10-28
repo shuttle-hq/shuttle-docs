@@ -20,7 +20,7 @@ cargo shuttle init --warp
 
 Make sure that your `Cargo.toml` file looks like the one below -- having the right dependencies is key!
 
-```toml
+```toml Cargo.toml
 [package]
 name = "hello-world"
 version = "0.1.0"
@@ -29,12 +29,12 @@ edition = "2021"
 [lib]
 
 [dependencies]
-shuttle-service = { version = "0.6.0", features = ["web-warp"] }
+shuttle-service = { version = "0.7.2", features = ["web-warp"] }
 warp = "0.3.2"
 ```
 Your `lib.rs` should look like this:
 
-```Rust
+```Rust lib.rs
 use warp::Filter;
 use warp::Reply;
 

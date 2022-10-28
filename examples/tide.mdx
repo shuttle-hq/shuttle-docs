@@ -22,7 +22,7 @@ cargo shuttle init --tide
 
 Make sure that your `Cargo.toml` file looks like the one below -- having the right dependencies is key!
 
-```toml
+```toml Cargo.toml
 [package]
 name = "hello-world"
 version = "0.1.0"
@@ -31,12 +31,12 @@ edition = "2021"
 [lib]
 
 [dependencies]
-shuttle-service = { version = "0.6.0", features = ["web-tide"] }
+shuttle-service = { version = "0.7.2", features = ["web-tide"] }
 tide = "0.16.0"
 ```
 Your `lib.rs` should look like this:
 
-```Rust
+```Rust lib.rs
 #[shuttle_service::main]
 async fn tide() -> shuttle_service::ShuttleTide<()> {
     let mut app = tide::new();
@@ -72,25 +72,27 @@ cargo shuttle init --tide
 
 Make sure that your `Cargo.toml` file looks like the one below -- having the right dependencies is key!
 
-```toml
+```toml Cargo.toml
 [package]
 name = "postgres"
 version = "0.1.0"
 edition = "2021"
 
 [lib]
+crate-type = ["cdylib"]
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
 serde = { version = "1.0", features = ["derive"] }
-shuttle-aws-rds = { version = "0.6.0", features = ["postgres"] }
-shuttle-service = { version = "0.6.0", features = ["web-tide"] }
+shuttle-aws-rds = { version = "0.7.2", features = ["postgres"] }
+shuttle-service = { version = "0.7.2", features = ["web-tide"] }
 sqlx = { version = "0.6", features = ["runtime-tokio-native-tls", "postgres"] }
 tide = "0.16.0"
 ```
 
 Your `lib.rs` should look like this:
 
-```rust
+```rust lib.rs
 use serde::{Deserialize, Serialize};
 use shuttle_service::{error::CustomError, ShuttleTide};
 use sqlx::{Executor, FromRow, PgPool};
@@ -151,7 +153,7 @@ struct Todo {
 ```
 And your `schema.sql` should look like this:
 
-```sql
+```sql schema.sql
 DROP TABLE IF EXISTS todos;
 
 CREATE TABLE todos (
