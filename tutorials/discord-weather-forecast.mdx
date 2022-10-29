@@ -79,40 +79,52 @@ cargo shuttle init --serenity
 After running it you, should see the following generated in `src/lib.rs`:
 
 ```rust src/lib.rs
-use log::{error, info}; use serenity::async_trait; use
-serenity::model::channel::Message; use serenity::model::gateway::Ready; use
-serenity::prelude::\*; use shuttle_service::error::CustomError; use
-shuttle_service::SecretStore; use sqlx::PgPool;
+use anyhow::Context as _;
+use serenity::model::application::interaction::{Interaction, InteractionResponseType};
+use serenity::model::gateway::Ready;
+use serenity::model::prelude::command::CommandOptionType;
+use serenity::prelude::*;
+use serenity::{async_trait, model::prelude::GuildId};
+use shuttle_secrets::SecretStore;
+use tracing::{error, info};
+use weather::get_forecast;
 
 struct Bot;
 
-#[async_trait] impl EventHandler for Bot { async fn message(&self, ctx: Context,
-msg: Message) { if msg.content == "!hello" { if let Err(e) =
-msg.channel_id.say(&ctx.http, "world!").await { error!("Error sending message:
-{:?}", e); } } }
-
-    async fn ready(&self, _: Context, ready: Ready) {
-        info!("{} is connected!", ready.user.name);
+#[async_trait]
+impl EventHandler for Bot {
+    async fn message(&self, ctx: Context,msg: Message) {
+        if msg.content == "!hello" {
+            if let Err(e) = msg.channel_id.say(&ctx.http, "world!").await {
+                error!("Error sending message:{:?}", e);
+            }
+        }
     }
 
 }
 
-#[shuttle_service::main] async fn serenity(#[shared::Postgres] pool: PgPool) ->
-shuttle_service::ShuttleSerenity { // Get the discord token set in
-`Secrets.toml` from the shared Postgres database let token = pool
-.get_secret("DISCORD_TOKEN") .await .map_err(CustomError::new)?;
+#[shuttle_service::main]
+async fn serenity(
+    #[shuttle_secrets::Secrets] secret_store: SecretStore,
+) -> shuttle_service::ShuttleSerenity {
+    // Get the discord token set in `Secrets.toml`
+    let discord_token = secret_store
+        .get("DISCORD_TOKEN")
+        .context("'DISCORD_TOKEN' was not found")?;
 
-    // Set gateway intents, which decides what events the bot will be notified about
-    let intents = GatewayIntents::GUILD_MESSAGES | GatewayIntents::MESSAGE_CONTENT;
+    let discord_guild_id = secret_store
+        .get("DISCORD_GUILD_ID")
+        .context("'DISCORD_GUILD_ID' was not found")?;
 
-    let client = Client::builder(&token, intents)
-        .event_handler(Bot)
-        .await
-        .expect("Err creating client");
+    let client = get_client(
+            &discord_token,
+            &weather_api_key,
+            discord_guild_id.parse().unwrap(),
+        )
+        .await;
 
-    Ok(client)
-
-}
+        Ok(client)
+    }
 ```
 
 ### Building an interaction for our bot
@@ -142,19 +154,22 @@ this example. In the `ready` hook we will call `set_application_commands` with a
 with a description and no parameters (Discord refers to these as options).
 
 ```rust
-#[async_trait] impl EventHandler for Bot { async fn ready(&self, ctx: Context,
-ready: Ready) { info!("{} is connected!", ready.user.name);
+#[async_trait]
+impl EventHandler for Bot {
+    async fn ready(&self, ctx: Context, ready: Ready) {
+        info!("{} is connected!", ready.user.name);
 
-        let guild_id = GuildId(*your guild id*);
+        let commands =
+            GuildId::set_application_commands(&self.discord_guild_id, &ctx.http, |commands| {
+                commands
+                    .create_application_command(|command| {
+                        command.name("hello").description("Say hello")
+                    })
+            .await
+            .unwrap();
 
-        let commands = GuildId::set_application_commands(&guild_id, &ctx.http, |commands| {
-            commands.create_application_command(|command| { command.name("hello").description("Say hello") })
-        }).await.unwrap();
-
-        info!("{:#?}", commands);
+        info!("Registered commands: {:#?}", commands);
     }
-
-}
 ```
 
 > Serenity has a bit of a different way of registering commands using a
@@ -165,8 +180,9 @@ With our command registered, we will now add a hook for when these commands are
 called using `interaction_create`.
 
 ```rust
-#[async_trait] impl EventHandler for Bot { async fn ready(&self, ctx: Context,
-ready: Ready) { // ... }
+#[async_trait]
+impl EventHandler for Bot {
+async fn ready(&self, ctx: Context,ready: Ready) { // ... }
 
     async fn interaction_create(&self, ctx: Context, interaction: Interaction) {
         if let Interaction::ApplicationCommand(command) = interaction {
@@ -276,6 +292,7 @@ pub struct Location {
     country: Country,
 }
 
+
 impl Display for Location {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(f, "{}, {}", self.localized_name, self.country.id)
@@ -313,11 +330,16 @@ We will create an intermediate type that represents this case and implements
 ```rust
 // Again in weather.rs use std::fmt::Display;
 
-#[derive(Debug)] pub struct CouldNotFindLocation { place: String, }
+#[derive(Debug)]
+pub struct CouldNotFindLocation {
+    place: String,
+}
 
-impl Display for CouldNotFindLocation { fn fmt(&self, f: &mut
-std::fmt::Formatter<'\_>) -> std::fmt::Result { write!(f, "Could not find
-location '{}'", self.place) } }
+impl Display for CouldNotFindLocation {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "Could not find location '{}'", self.place)
+    }
+}
 
 impl std::error::Error for CouldNotFindLocation {}
 ```
@@ -326,12 +348,16 @@ Now with all the types written, we create a new `async` function that, given a
 place and a client, will return the forecast along with the location:
 
 ```rust
-// Again in weather.rs pub async fn get_forecast( place: &str, api_key: &str,
-client: &Client, ) -> Result<(Location, Forecast), Box<dyn std::error::Error>> {
-// Endpoints we will use const LOCATION_REQUEST: &str =
-"http://dataservice.accuweather.com/locations/v1/cities/search"; const
-DAY_REQUEST: &str =
-"http://dataservice.accuweather.com/forecasts/v1/daily/1day/";
+// Again in weather.rs
+pub async fn get_forecast(
+    place: &str,
+    api_key: &str,
+    client: &Client,
+) -> Result<(Location, Forecast), Box<dyn std::error::Error>> {
+// Endpoints we will use
+    const LOCATION_REQUEST:&str = "http://dataservice.accuweather.com/locations/v1/cities/search";
+    const DAY_REQUEST: &str =
+        "http://dataservice.accuweather.com/forecasts/v1/daily/1day/";
 
     	// The URL to call combined with our API_KEY and the place (via the q search parameter)
     let url = format!("{}?apikey={}&q={}", LOCATION_REQUEST, api_key, place);
@@ -381,38 +407,52 @@ add some fields to our bot for holding this data and initialize this in the
 weather API key:
 
 ```rust
-// In lib.rs struct Bot { weather_api_key: String, client: reqwest::Client,
-discord_guild_id: GuildId, }
+// In lib.rs
+struct Bot {
+    weather_api_key: String,
+    client: reqwest::Client,
+    discord_guild_id: GuildId,
+}
 
-#[shuttle_service::main] async fn serenity(#[shared::Postgres] pool: PgPool) ->
-shuttle_service::ShuttleSerenity { // Get the discord token set in
-`Secrets.toml` from the shared Postgres database let token = pool
-.get_secret("DISCORD_TOKEN") .await .map_err(CustomError::new)?;
+#[shuttle_service::main]
+async fn serenity(
+    #[shuttle_secrets::Secrets] secret_store: SecretStore,
+) -> shuttle_service::ShuttleSerenity {
+    // Get the discord token set in `Secrets.toml`
+    let discord_token = secret_store
+        .get("DISCORD_TOKEN")
+        .context("'DISCORD_TOKEN' was not found")?;
 
-    let weather_api_key = pool
-        .get_secret("WEATHER_API_KEY")
-        .await
-        .map_err(CustomError::new)?;
+    let weather_api_key = secret_store
+        .get("WEATHER_API_KEY")
+        .context("'WEATHER_API_KEY' was not found")?;
 
-    	let discord_guild_id = pool
-        .get_secret("DISCORD_GUILD_ID")
-        .await
-        .map_err(CustomError::new)?;
+    let discord_guild_id = secret_store
+        .get("DISCORD_GUILD_ID")
+        .context("'DISCORD_GUILD_ID' was not found")?;
+
+    let client = get_client(
+        &discord_token,
+        &weather_api_key,
+        discord_guild_id.parse().unwrap(),
+    )
+    .await;
+ Ok(client)
+}
+
+
 
     // Set gateway intents, which decides what events the bot will be notified about
-    let intents = GatewayIntents::GUILD_MESSAGES | GatewayIntents::MESSAGE_CONTENT;
+    let intents = GatewayIntents::empty();
 
-    let client = Client::builder(&token, intents)
+    Client::builder(discord_token, intents)
         .event_handler(Bot {
-            weather_api_key,
+            weather_api_key: weather_api_key.to_owned(),
             client: reqwest::Client::new(),
-    					discord_guild_id: GuildId(discord_guild_id.parse().unwrap())
+            discord_guild_id: GuildId(discord_guild_id),
         })
         .await
-        .expect("Err creating client");
-
-    Ok(client)
-
+        .expect("Err creating client")
 }
 ```
 
@@ -422,22 +462,27 @@ We will add our new command with a place option/parameter. Back in the `ready`
 hook, we can add an additional command alongside the existing `hello` command:
 
 ```rust
-let commands = GuildId::set_application_commands(&guild_id, &ctx.http, |commands| {
-    commands
-        .create_application_command(|command| { command.name("hello").description("Say hello") })
-        .create_application_command(|command| {
-            command
-                .name("weather")
-                .description("Display the weather")
-                .create_option(|option| {
-                    option
-                        .name("place")
-                        .description("City to lookup forecast")
-                        .kind(CommandOptionType::String)
-                        .required(true)
-                })
-        })
-}).await.unwrap();
+let commands =
+            GuildId::set_application_commands(&self.discord_guild_id, &ctx.http, |commands| {
+                commands
+                    .create_application_command(|command| {
+                        command.name("hello").description("Say hello")
+                    })
+                    .create_application_command(|command| {
+                        command
+                            .name("weather")
+                            .description("Display the weather")
+                            .create_option(|option| {
+                                option
+                                    .name(OPTION_NAME)
+                                    .description("City to lookup forecast")
+                                    .kind(CommandOptionType::String)
+                                    .required(true)
+                            })
+                    })
+            })
+            .await
+            .unwrap();
 ```
 
 Discord allows us to set the expected type and whether it is required. Here, the
@@ -451,24 +496,26 @@ After we have the arguments of the command we call the get_forecast function and
 format the results into a string to return.
 
 ```rust
-"weather" => { let argument = command .data .options .iter() .find(|opt|
-opt.name == "place") .cloned();
+"weather" => {
+                    let argument = command
+                        .data
+                        .options
+                        .iter()
+                        .find(|opt| opt.name == OPTION_NAME)
+                        .cloned();
 
-    let value = argument.unwrap().value.unwrap();
-    let place = value.as_str().unwrap();
-    let result = weather::get_forecast(place).await;
+                    let value = argument.unwrap().value.unwrap();
+                    let place = value.as_str().unwrap();
 
-    match result {
-        Ok((location, forecast)) => format!(
-            "Forecast: {} in {}",
-            forecast.headline.overview, location
-        ),
-        Err(err) => {
-            format!("Err: {}", err)
-        }
-    }
-
-}
+                    match get_forecast(place, &self.weather_api_key, &self.client).await {
+                        Ok((location, forecast)) => {
+                            format!("Forecast: {} in {}", forecast.headline.overview, location)
+                        }
+                        Err(err) => {
+                            format!("Err: {}", err)
+                        }
+                    }
+                }
 ```
 
 ### Running
