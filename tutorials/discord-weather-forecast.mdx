@@ -100,7 +100,8 @@ impl EventHandler for Bot {
             }
         }
     }
-
+    async fn ready(&self, _: Context, ready: Ready) {
+        info!("{} is connected!", ready.user.name);
 }
 
 #[shuttle_service::main]
