@@ -183,7 +183,9 @@ called using `interaction_create`.
 ```rust
 #[async_trait]
 impl EventHandler for Bot {
-async fn ready(&self, ctx: Context,ready: Ready) { // ... }
+async fn ready(&self, ctx: Context,ready: Ready) { 
+    // ... 
+}
 
     async fn interaction_create(&self, ctx: Context, interaction: Interaction) {
         if let Interaction::ApplicationCommand(command) = interaction {
