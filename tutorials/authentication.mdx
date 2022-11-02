@@ -229,6 +229,10 @@ async fn axum(
     #[shuttle_shared_db::Postgres] pool: Database
 ) -> ShuttleAxum {
     // Build tera as before
+    // Run the schema.sql migration with sqlx to create our users table
+    pool.execute(include_str!("../schema.sql"))
+        .await
+        .map_err(shuttle_service::error::CustomError::new)?;
 
     let router = Router::new()
         .route("/", get(index))
@@ -453,7 +457,7 @@ now have the following main function:
 async fn axum(
     #[shuttle_shared_db::Postgres] pool: Database
 ) -> ShuttleAxum {
-    // Build tera as before
+    // Build tera and migrate database as before
 
     let random = ChaCha8Rng::seed_from_u64(OsRng.next_u64())
 
@@ -648,7 +652,7 @@ We can add the middleware to our chain using:
 async fn axum(
     #[shuttle_shared_db::Postgres] pool: Database
 ) -> ShuttleAxum {
-    // tera and random creation as before
+    // tera,random creation and db migration as before
 
     let middleware_database = database.clone();
 
@@ -771,7 +775,7 @@ with three handlers completing the demo:
 async fn axum(
     #[shuttle_shared_db::Postgres] pool: Database
 ) -> ShuttleAxum {
-    // tera, middleware and random creation as before
+    // tera, middleware, random creation and db migration as before
 
     let router = Router::new()
         // ...

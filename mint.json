@@ -46,7 +46,8 @@
         "introduction/welcome",
         "introduction/what-is-shuttle",
         "introduction/installation",
-        "introduction/quick-start"
+        "introduction/quick-start",
+        "introduction/shuttle-commands"
       ]
     },
     {
