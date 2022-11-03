@@ -10,7 +10,7 @@ Install [their cli](https://www.npmjs.com/package/mintlify):
 npm i mintlify -g
 ```
 
-And run them from root of the repository:
+And from the root of the repository, run:
 
 ```bash
 mintlify dev
