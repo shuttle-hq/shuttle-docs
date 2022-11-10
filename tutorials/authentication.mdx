@@ -415,6 +415,8 @@ handlers to the router by adding it to the chain:
 Once signed up, we want to save the logged-in state. We don't want the user to
 have to send their username and password for every request they make.
 
+
+
 ### Cookies and session tokens
 
 Cookies help store the state between browser requests. When a response is sent
@@ -558,7 +560,13 @@ async fn post_signup(
 }
 let session_token = new_session(database, random, user_id);
 ```
-
+We also have to create the Sessions table using SQL, the code is as follows:
+```bash
+Create Table Sessions(
+        id VarCHAR(6) PRIMARY KEY,
+        session_token VArChar(6)
+);
+```
 ### Using the session token
 
 Great so now we have a token/identifier for a _session_. Now we can use this as
