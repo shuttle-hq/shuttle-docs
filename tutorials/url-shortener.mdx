@@ -87,7 +87,7 @@ open a terminal.
 I'm using [shuttle](https://www.shuttle.rs/) for this project. It's a serverless
 platform built for Rust and I don't have to deal with provisioning databases, or
 subdomains or any of that gunk. I already have the CLI
-[installed](https://docs.rs/shuttle-service/0.2.5/shuttle_service/#deploying)
+[installed](https://docs.rs/shuttle-service/0.7.1/shuttle_service/#deploying)
 and an [account](https://www.shuttle.rs/) so I simply:
 
 ```bash
@@ -99,25 +99,13 @@ framework do I want to use? I think I'm going to go with Rocket (opens new
 window). It's pretty much production ready with a sweet API and I'm reasonably
 proficient with it.
 
+Luckily shuttle have created this boilerplate main function that will install and initialize the hello world rocket app
+directly. Simpy type in the following
+
 I open up `src/lib.rs` and overwrite it with the shuttle entrypoint code:
 
-```rust
-#[macro_use]
-extern crate rocket;
-
-use rocket::{Build, Rocket};
-
-#[get("/hello")]
-fn hello() -> &'static str {
-    "Hello, world!"
-}
-
-#[shuttle_service::main]
-async fn init() -> Result<Rocket<Build>, shuttle_service::Error> {
-    let rocket = rocket::build().mount("/", routes![hello]);
-
-    Ok(rocket)
-}
+```
+cargo shuttle init --rocket<helloworld>
 ```
 
 My IDE violently lights up with red syntax highlighting as I realise I haven't
@@ -132,7 +120,7 @@ pretty simple. I open up `Cargo.toml` add a couple of lines:
 ```toml
 [package]
 name = "url-shortener"
-version = "0.1.0"
+version = "0.7.2"
 edition = "2021"
 
 [lib]
@@ -140,7 +128,7 @@ crate-type = ["cdylib"]
 
 [dependencies]
 rocket = { version = "0.5.0-rc.1", features = ["json"] }
-shuttle-service = { version = "0.2", features = ["sqlx-postgres", "web-rocket"] }
+shuttle-service = { version = "0.7.2", features = ["sqlx-postgres", "web-rocket"] }
 ```
 
 My IDE quietens down as dependencies are resolved and a wave of relief washes
@@ -148,7 +136,7 @@ over me. Let's deploy this thing.
 
 ```sh
 $ cargo shuttle deploy
-   Packaging url-shortener v0.1.0 (/private/shuttle/examples/url-shortener)
+   Packaging url-shortener v0.7.2 (/private/shuttle/examples/url-shortener)
    Archiving Cargo.toml
    Archiving Cargo.toml.orig
    Archiving src/lib.rs
@@ -159,8 +147,8 @@ $ cargo shuttle deploy
    Compiling rocket_http v0.5.0-rc.1
    Compiling rocket_codegen v0.5.0-rc.1
    Compiling rocket v0.5.0-rc.1
-   Compiling shuttle-service v0.2.5
-   Compiling url-shortener v0.1.0 (/opt/shuttle/crates/url-shortener)
+   Compiling shuttle-service v0.7.2
+   Compiling url-shortener v0.7.2 (/opt/shuttle/crates/url-shortener)
     Finished dev [unoptimized + debuginfo] target(s) in 1m 01s
 
         Project:            url-shortener
@@ -182,7 +170,7 @@ Hm, not bad. I pour myself another shot...
 ### Adding Postgres - 07:03 minutes remaining
 
 This is the part of my journey where I usually get a little flustered. I've set
-up databases before but it's always a pain. You need to provision a VM, make
+up databases before,but it's always a pain. You need to provision a VM, make
 sure storage isn't ephemeral, install and spin up the database, create an
 account with the correct privileges and secure password, store the password in
 some sort of secrets manager in CI, add your IP address and your VM's IP address
@@ -190,7 +178,7 @@ to the list of acceptable hosts etc etc etc. Oof that sounds like a lot of work.
 
 `shuttle does` a lot of this stuff for you - I just didn't remember how. I
 quickly head over to the
-[shuttle / sqlx](https://docs.rs/shuttle-service/0.2.5/shuttle_service/#using-sqlx)
+[shuttle / sqlx](https://docs.rs/shuttle-service/0.7.1/shuttle_service/#using-sqlx)
 section in the docs. I added the `sqlx` dependency to `Cargo.toml` and change
 one line in `lib.rs`:
 
