@@ -15,3 +15,5 @@ And from the root of the repository, run:
 ```bash
 mintlify dev
 ```
+
+*PS: This requires Node 18+*
