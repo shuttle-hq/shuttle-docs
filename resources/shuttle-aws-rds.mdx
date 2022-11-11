@@ -16,4 +16,23 @@ Add `shuttle-aws-rds` to the dependencies for your service. Every engine is behi
 | MySql    | mysql        | shuttle_aws_rds::MySql    |
 | MariaDB  | mariadb      | shuttle_aws_rds::MariaDB  |
 
+## Example
+The code of the main struct would look as follows:
+```
+#[shuttle_service::main]
+async fn tide(#[shuttle_aws_rds::Postgres] pool: PgPool) -> ShuttleTide<MyState> {
+    pool.execute(include_str!("../schema.sql"))
+        .await
+        .map_err(CustomError::new)?;
+
+    let state = MyState { pool };
+    let mut app = tide::with_state(state);
+
+    app.with(tide::log::LogMiddleware::new());
+    app.at("/todo").post(add);
+    app.at("/todo/:id").get(retrieve);
+
+    Ok(app)
+}
+```
 An example using the Tide framework can be found on [GitHub](https://github.com/shuttle-hq/shuttle/tree/main/examples/tide/postgres)

@@ -12,4 +12,25 @@ Add `shuttle-shared-db` to the dependencies for your service. Every type of shar
 | Postgres | postgres     | shuttle_shared_db::Postgres |
 | MongoDB  | mongodb      | shuttle_shared_db::MongoDb  |
 
+
+## Example
+The post function using the rocket framework is as follows:
+```
+#[post("/", data = "<data>")]
+async fn add(
+    data: Json<TodoNew>,
+    state: &State<MyState>,
+) -> Result<Json<Todo>, BadRequest<String>> {
+    let todo = sqlx::query_as("INSERT INTO todos(note) VALUES ($1) RETURNING id, note")
+        .bind(&data.note)
+        .fetch_one(&state.pool)
+        .await
+        .map_err(|e| BadRequest(Some(e.to_string())))?;
+
+    Ok(Json(todo))
+}
+```
+
+
+
 An example using the Rocket framework can be found on [GitHub](https://github.com/shuttle-hq/shuttle/tree/main/examples/rocket/postgres)
