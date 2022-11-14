@@ -18,8 +18,8 @@ in your project is add it to your `Cargo.toml`.
 
 ## Setting Log Level
 
-The global subscriber has an `env_filter` which defaults to the `DEBUG` log level. You can change the log level for local runs
-with `RUST_LOG="<crate-name>=trace" cargo shuttle run`, but we do not currently allow changing the log level for production deployments.
+The global subscriber has an `env_filter` which defaults to the `INFO` log level if no `RUST_LOG` variable is set. You can change the log level for local runs
+with `RUST_LOG="<crate-name>=trace" cargo shuttle run`. We do not currently allow changing the log level for production deployments, and it will be set to `DEBUG` by default.
 
 ## Viewing Logs
 
