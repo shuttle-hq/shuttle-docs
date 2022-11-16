@@ -14,23 +14,22 @@ Add `shuttle-shared-db` to the dependencies for your service. Every type of shar
 
 
 ## Example
-The post function using the rocket framework is as follows:
-```
-#[post("/", data = "<data>")]
-async fn add(
-    data: Json<TodoNew>,
-    state: &State<MyState>,
-) -> Result<Json<Todo>, BadRequest<String>> {
-    let todo = sqlx::query_as("INSERT INTO todos(note) VALUES ($1) RETURNING id, note")
-        .bind(&data.note)
-        .fetch_one(&state.pool)
-        .await
-        .map_err(|e| BadRequest(Some(e.to_string())))?;
+The example below uses `[shuttle_service::main]` and `[shuttle_shared_db::Postgres]` attributes to access and provision a database.
 
-    Ok(Json(todo))
+```rust lib.rs
+#[shuttle_service::main]
+async fn axum(#[shuttle_shared_db::Postgres] pool: sqlx::PgPool) -> shuttle_service::ShuttleAxum {
+    pool.execute(include_str!("../schema.sql"))
+        .await
+        .map_err(shuttle_service::error::CustomError::new)?;
+
+    let app = Router::new().route("/hello", get(hello_world)).layer(Extension(pool));
+
+    let sync_wrapper = SyncWrapper::new(app);
+    Ok(sync_wrapper)
 }
 ```
 
 
 
-An example using the Rocket framework can be found on [GitHub](https://github.com/shuttle-hq/shuttle/tree/main/examples/rocket/postgres)
+An example using the Rocket framework can be found on [GitHub](https://github.com/shuttle-hq/examples/tree/main/rocket/postgres)

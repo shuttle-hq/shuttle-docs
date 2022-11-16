@@ -99,10 +99,6 @@ framework do I want to use? I think I'm going to go with Rocket (opens new
 window). It's pretty much production ready with a sweet API and I'm reasonably
 proficient with it.
 
-Before deploying the app we have to create a new shuttle project which is done as follows
-```
-cargo shuttle project new
-```
 
 Luckily shuttle have created this boilerplate main function that will install and initialize the hello world rocket app
 directly. Simpy type in the following
@@ -112,6 +108,9 @@ I open up `src/lib.rs` and overwrite it with the shuttle entrypoint code:
 ```
 cargo shuttle init --rocket<helloworld>
 ```
+A sample of the `cargo.toml` file it produces is as seen in the snippet below.
+
+![](/images/url-shortner-cargo-toml.png)
 
 My IDE violently lights up with red syntax highlighting as I realise I haven't
 imported anything. The realities of software engineering hit me as I eye the
@@ -125,7 +124,7 @@ pretty simple. I open up `Cargo.toml` add a couple of lines:
 ```toml
 [package]
 name = "url-shortener"
-version = "0.7.2"
+version = "0.1.0"
 edition = "2021"
 
 [lib]
@@ -138,6 +137,11 @@ shuttle-service = { version = "0.7.2", features = ["sqlx-postgres", "web-rocket"
 
 My IDE quietens down as dependencies are resolved and a wave of relief washes
 over me. Let's deploy this thing.
+
+Before deploying the app we have to create a new shuttle project which is done as follows
+```sh
+$ cargo shuttle project new
+```
 
 ```sh
 $ cargo shuttle deploy

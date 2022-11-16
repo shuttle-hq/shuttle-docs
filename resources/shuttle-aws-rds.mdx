@@ -17,8 +17,9 @@ Add `shuttle-aws-rds` to the dependencies for your service. Every engine is behi
 | MariaDB  | mariadb      | shuttle_aws_rds::MariaDB  |
 
 ## Example
-The code of the main struct would look as follows:
-```
+This snippet shows the main function of a tide app that uses the `shuttle_aws_rds::Postgres` attribute to provision an RDS Postgres database.
+It gives you an authenticated  [sqlx Pool](https://docs.rs/sqlx/latest/sqlx/pool/index.html), which you can use to interact with the database.
+```rust lib.rs
 #[shuttle_service::main]
 async fn tide(#[shuttle_aws_rds::Postgres] pool: PgPool) -> ShuttleTide<MyState> {
     pool.execute(include_str!("../schema.sql"))
@@ -35,4 +36,4 @@ async fn tide(#[shuttle_aws_rds::Postgres] pool: PgPool) -> ShuttleTide<MyState>
     Ok(app)
 }
 ```
-An example using the Tide framework can be found on [GitHub](https://github.com/shuttle-hq/shuttle/tree/main/examples/tide/postgres)
+The full example can be found on [GitHub](https://github.com/shuttle-hq/examples/tree/main/tide/postgres)

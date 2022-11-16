@@ -477,6 +477,16 @@ async fn axum(
 
 ### Adding sessions to signup
 
+We also have to create the Sessions table using SQL, the code is as follows:
+```bash
+CREATE TABLE IF NOT EXISTS sessions (
+    session_token BYTEA PRIMARY KEY,
+    user_id integer REFERENCES users (id) ON DELETE CASCADE
+);
+```
+
+
+
 As well as creating a user on signup, we will create the session token for the
 newly signed-up user. We post it to the table with our `user_id`
 
@@ -560,13 +570,7 @@ async fn post_signup(
 }
 let session_token = new_session(database, random, user_id);
 ```
-We also have to create the Sessions table using SQL, the code is as follows:
-```bash
-Create Table Sessions(
-        id VarCHAR(6) PRIMARY KEY,
-        session_token VArChar(6)
-);
-```
+
 ### Using the session token
 
 Great so now we have a token/identifier for a _session_. Now we can use this as
