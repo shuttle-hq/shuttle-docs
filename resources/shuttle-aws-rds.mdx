@@ -19,6 +19,7 @@ Add `shuttle-aws-rds` to the dependencies for your service. Every engine is behi
 ## Example
 This snippet shows the main function of a tide app that uses the `shuttle_aws_rds::Postgres` attribute to provision an RDS Postgres database.
 It gives you an authenticated  [sqlx Pool](https://docs.rs/sqlx/latest/sqlx/pool/index.html), which you can use to interact with the database.
+
 ```rust lib.rs
 #[shuttle_service::main]
 async fn tide(#[shuttle_aws_rds::Postgres] pool: PgPool) -> ShuttleTide<MyState> {
@@ -36,4 +37,5 @@ async fn tide(#[shuttle_aws_rds::Postgres] pool: PgPool) -> ShuttleTide<MyState>
     Ok(app)
 }
 ```
+
 The full example can be found on [GitHub](https://github.com/shuttle-hq/examples/tree/main/tide/postgres)
