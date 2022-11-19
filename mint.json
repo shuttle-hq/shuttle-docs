@@ -46,13 +46,14 @@
   ],
   "navigation": [
     {
-      "group": "Welcome",
+      "group": "Introduction",
       "pages": [
         "introduction/welcome",
         "introduction/what-is-shuttle",
         "introduction/installation",
         "introduction/quick-start",
-        "introduction/shuttle-commands"
+        "introduction/shuttle-commands",
+        "introduction/telemetry"
       ]
     },
     {
