@@ -67,7 +67,8 @@
         "examples/thruster",
         "examples/tide",
         "examples/tower",
-        "examples/warp"
+        "examples/warp",
+        "examples/custom-service"
       ]
     },
     {

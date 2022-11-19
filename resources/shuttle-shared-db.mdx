@@ -2,7 +2,8 @@
 title: "Shuttle Shared Databases"
 ---
 
-This plugin manages databases that are shared with other services on [shuttle](https://www.shuttle.rs).
+This plugin manages databases that are shared with other services on [shuttle](https://www.shuttle.rs). Your database
+will share a postgres server with other users, but it will not be accessible by other users.
 
 ## Usage
 Add `shuttle-shared-db` to the dependencies for your service. Every type of shareable database is behind the following feature flag and attribute path
@@ -12,4 +13,27 @@ Add `shuttle-shared-db` to the dependencies for your service. Every type of shar
 | Postgres | postgres     | shuttle_shared_db::Postgres |
 | MongoDB  | mongodb      | shuttle_shared_db::MongoDb  |
 
-An example using the Rocket framework can be found on [GitHub](https://github.com/shuttle-hq/examples/tree/main/rocket/postgres)
+
+## Example
+The shuttle poem main function below uses the `[shuttle_shared_db::Postgres]` attribute macro to provision a shared postgres database,
+which can be accessed using a pre-configured, authenticated [sqlx Pool](https://docs.rs/sqlx/latest/sqlx/pool/index.html).
+
+```rust lib.rs
+#[shuttle_service::main]
+async fn poem(
+    #[shuttle_shared_db::Postgres] pool: PgPool,
+) -> shuttle_service::ShuttlePoem<impl poem::Endpoint> {
+    pool.execute(include_str!("../schema.sql"))
+        .await
+        .map_err(CustomError::new)?;
+
+    let app = Route::new()
+        .at("/todo", post(add))
+        .at("/todo/:id", get(retrieve))
+        .with(AddData::new(pool));
+
+    Ok(app)
+}
+```
+
+The full example can be found on [GitHub](https://github.com/shuttle-hq/examples/tree/main/poem/postgres)

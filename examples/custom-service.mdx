@@ -1,0 +1,67 @@
+---
+title: "Custom Service"
+---
+
+This section will explain how to create a custom shuttle service. To do this we need 
+to return a struct from our `shuttle_service::main` function that implements `shuttle_service::Service`.
+
+In this simple example we will implement `Service` for a `PgPool`, that will simply return 'Hello world'
+from the database on startup. In Rust we can't implement foreign traits for foreign types, so we have 
+to create a wrapper around our `PgPool`.
+
+```rust
+struct PoolService {
+    pool: sqlx::PgPool,
+}
+```
+
+Then we need to implement `shuttle_service::Service` for our wrapper. If you need to bind to an address,
+for example if you're implementing service for an HTTP server, you can use the `addr` argument from `bind`.
+You can only have one HTTP service bound to the `addr`, but you can start other services that don't rely on 
+binding to a socket. A common usecase is starting an HTTP server like `axum`, alongside a `serenity` bot 
+that doesn't need to bind to a socket. Then you would include both in the same wrapper struct, and start 
+them as normal in the `bind` function.
+
+```rust lib.rs
+#[shuttle_service::async_trait]
+impl shuttle_service::Service for PoolService {
+    async fn bind(
+        mut self: Box<Self>,
+        _addr: std::net::SocketAddr,
+    ) -> Result<(), shuttle_service::error::Error> {
+        self.start().await?;
+
+        Ok(())
+    }
+}
+```
+
+To finish up, we return the wrapper struct from our `shuttle_service::main` function:
+
+```rust lib.rs
+#[shuttle_service::main]
+async fn init(
+    #[shuttle_shared_db::Postgres] pool: sqlx::PgPool,
+) -> Result<PoolService, shuttle_service::Error> {
+    Ok(PoolService { pool })
+}
+
+impl PoolService {
+    async fn start(&self) -> Result<(), shuttle_service::error::CustomError> {
+        let (rec,): (String,) = sqlx::query_as("SELECT 'Hello world'")
+            .fetch_one(&self.pool)
+            .await
+            .map_err(CustomError::new)?;
+
+        assert_eq!(rec, "Hello world");
+
+        Ok(())
+    }
+}
+```
+
+Try it out with the `run` command:
+
+```bash
+cargo shuttle run
+```

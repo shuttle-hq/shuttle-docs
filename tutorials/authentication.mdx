@@ -476,7 +476,17 @@ async fn axum(
 ### Adding sessions to signup
 
 As well as creating a user on signup, we will create the session token for the
-newly signed-up user. We post it to the table with our `user_id`
+newly signed-up user. First we have to create the sessions table, we can add the
+following to our `schema.sql`:
+
+```sql
+CREATE TABLE IF NOT EXISTS sessions (
+    session_token BYTEA PRIMARY KEY,
+    user_id integer REFERENCES users (id) ON DELETE CASCADE
+);
+```
+
+Then we create a function to create and insert the session:
 
 ```rust
 type Random = Arc<Mutex<ChaCha8Rng>>;
