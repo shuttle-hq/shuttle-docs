@@ -4,6 +4,11 @@
     "light": "/images/logo/light.png",
     "dark": "/images/logo/dark.png"
   },
+  "analytics": {
+    "ga4": {
+      "measurementId": "G-KR6NKW20JH"
+    }
+  },
   "favicon": "/favicon.png",
   "colors": {
     "primary": "#F25100",
@@ -41,13 +46,14 @@
   ],
   "navigation": [
     {
-      "group": "Welcome",
+      "group": "Introduction",
       "pages": [
         "introduction/welcome",
         "introduction/what-is-shuttle",
         "introduction/installation",
         "introduction/quick-start",
-        "introduction/shuttle-commands"
+        "introduction/shuttle-commands",
+        "introduction/telemetry"
       ]
     },
     {
