@@ -123,7 +123,7 @@ of this as well, leaving us with the following `Cargo.toml`:
 
 ```toml Cargo.toml
 [package]
-name = "hello-world"
+name = "url-shortener"
 version = "0.1.0"
 edition = "2021"
 
@@ -185,7 +185,7 @@ account with the correct privileges and secure password, store the password in
 some sort of secrets manager in CI, add your IP address and your VM's IP address
 to the list of acceptable hosts etc etc etc. Oof that sounds like a lot of work.
 
-shuttle does a lot of this stuff for you - I just didn't remember how. I
+Shuttle does a lot of this stuff for you - I just didn't remember how. I
 quickly head over to the
 [shuttle shared database](https://docs.shuttle.rs/resources/shuttle-shared-db)
 section in the docs. I added the `sqlx` dependency to `Cargo.toml` and change
