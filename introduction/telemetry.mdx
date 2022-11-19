@@ -10,6 +10,21 @@ When you build an app with the `#[shuttle_service::main]` macro, a global subscr
 This means if you can skip this step when implementing [tracing](https://docs.rs/tracing/latest/tracing/) in your application, 
 all you have to do is add `tracing` as a dependency in your `Cargo.toml`, and you're good to go!
 
+```rust
+// [...]
+use tracing::info;
+
+#[shuttle_service::main]
+async fn axum(#[shuttle_shared_db::Postgres] pool: PgPool) -> ShuttleAxum { 
+    info!("Running database migration");
+    pool.execute(include_str!("../schema.sql"))
+        .await
+        .map_err(CustomError::new)?;
+
+    // [...]
+}
+```
+
 ## Log
 
 If you'd rather use [log](https://docs.rs/log/latest/log/), everything from the above section on tracing applies.
