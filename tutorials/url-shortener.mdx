@@ -87,61 +87,61 @@ open a terminal.
 I'm using [shuttle](https://www.shuttle.rs/) for this project. It's a serverless
 platform built for Rust and I don't have to deal with provisioning databases, or
 subdomains or any of that gunk. I already have the CLI
-[installed](https://docs.rs/shuttle-service/0.7.1/shuttle_service/#deploying)
-and an [account](https://www.shuttle.rs/) so I simply:
+[installed](https://docs.shuttle.rs/introduction/installation). 
+
+I stop and think for a little bit - which web framework do I want to use? I think 
+I'm going to go with Rocket. It's pretty much production ready with a sweet API and 
+I'm reasonably proficient with it.
+
+To initialize a rocket project with boilerplate, I can use the shuttle CLI `init` command:
 
 ```bash
-mkdir -p ~/projects/url-shortener && cd ~/projects/url-shortener && cargo init --lib
+cargo shuttle init --rocket url-shortener
 ```
 
-Ok we have our cargo project. I stop and think for a little bit - which web
-framework do I want to use? I think I'm going to go with Rocket (opens new
-window). It's pretty much production ready with a sweet API and I'm reasonably
-proficient with it.
+This leaves me with the following `lib.rs` file:
 
+```rust lib.rs
+#[macro_use]
+extern crate rocket;
 
-Luckily shuttle have created this boilerplate main function that will install and initialize the hello world rocket app
-directly. Simpy type in the following
+#[get("/")]
+fn index() -> &'static str {
+    "Hello, world!"
+}
 
-I open up `src/lib.rs` and overwrite it with the shuttle entrypoint code:
+#[shuttle_service::main]
+async fn rocket() -> shuttle_service::ShuttleRocket {
+    let rocket = rocket::build().mount("/hello", routes![index]);
 
+    Ok(rocket)
+}
 ```
-cargo shuttle init --rocket<helloworld>
-```
-A sample of the `cargo.toml` file it produces is as seen in the snippet below.
 
-![](/images/url-shortner-cargo-toml.png)
+As you can see, this imports a few dependencies. Luckily, the `init` command takes care
+of this as well, leaving us with the following `Cargo.toml`:
 
-My IDE violently lights up with red syntax highlighting as I realise I haven't
-imported anything. The realities of software engineering hit me as I eye the
-bottle of whiskey next to me. 18 year old scotch. It turns out I'm grossly
-overpaid for the value I offer society. I grab a coffee mug and pour myself a
-small shot - liquid courage.
-
-Next I import all of the dependencies to get shuttle to work with Rocket -
-pretty simple. I open up `Cargo.toml` add a couple of lines:
-
-```toml
+```toml Cargo.toml
 [package]
-name = "url-shortener"
+name = "hello-world"
 version = "0.1.0"
 edition = "2021"
 
 [lib]
-crate-type = ["cdylib"]
 
 [dependencies]
-rocket = { version = "0.5.0-rc.1", features = ["json"] }
-shuttle-service = { version = "0.7.2", features = ["sqlx-postgres", "web-rocket"] }
+rocket = "0.5.0-rc.2"
+shuttle-service = { version = "0.7.2", features = ["web-rocket"] }
 ```
 
-My IDE quietens down as dependencies are resolved and a wave of relief washes
-over me. Let's deploy this thing.
+Before deploying the app we have to create a new shuttle project, this starts an isolated
+container for us in shuttle's infrastructure:
 
-Before deploying the app we have to create a new shuttle project which is done as follows
 ```sh
-$ cargo shuttle project new
+cargo shuttle project new
 ```
+
+And to deploy:
 
 ```sh
 $ cargo shuttle deploy
@@ -157,7 +157,7 @@ $ cargo shuttle deploy
    Compiling rocket_codegen v0.5.0-rc.1
    Compiling rocket v0.5.0-rc.1
    Compiling shuttle-service v0.7.2
-   Compiling url-shortener v0.7.2 (/opt/shuttle/crates/url-shortener)
+   Compiling url-shortener v0.1.0 (/opt/shuttle/crates/url-shortener)
     Finished dev [unoptimized + debuginfo] target(s) in 1m 01s
 
         Project:            url-shortener
@@ -179,21 +179,23 @@ Hm, not bad. I pour myself another shot...
 ### Adding Postgres - 07:03 minutes remaining
 
 This is the part of my journey where I usually get a little flustered. I've set
-up databases before,but it's always a pain. You need to provision a VM, make
+up databases before, but it's always a pain. You need to provision a VM, make
 sure storage isn't ephemeral, install and spin up the database, create an
 account with the correct privileges and secure password, store the password in
 some sort of secrets manager in CI, add your IP address and your VM's IP address
 to the list of acceptable hosts etc etc etc. Oof that sounds like a lot of work.
 
-`shuttle does` a lot of this stuff for you - I just didn't remember how. I
+shuttle does a lot of this stuff for you - I just didn't remember how. I
 quickly head over to the
-[shuttle / sqlx](https://docs.rs/shuttle-service/0.7.1/shuttle_service/#using-sqlx)
+[shuttle shared database](https://docs.shuttle.rs/resources/shuttle-shared-db)
 section in the docs. I added the `sqlx` dependency to `Cargo.toml` and change
 one line in `lib.rs`:
 
 ```rust
 #[shuttle_service::main]
-async fn rocket(pool: PgPool) -> Result<Rocket<Build>, shuttle_service::Error> {
+async fn rocket(#[shuttle_shared_db::Postgres] pool: PgPool) -> ShuttleRocket {
+    // [...]
+}
 ```
 
 By adding a parameter to the main `rocket` function, `shuttle` will
@@ -201,10 +203,10 @@ automatically provision a Postgres database for you, create an account and hand
 you back an authenticated connection pool which is usable from your application
 code.
 
-Let's deploy it and see what happens:
+Lets deploy it and see what happens:
 
-```rust
-$ cargo shuttle deploy
+```bash
+cargo shuttle deploy
 ...
     Finished dev [unoptimized + debuginfo] target(s) in 19.50s
 
@@ -262,7 +264,7 @@ async fn shorten(url: String, pool: &State<PgPool>) -> Result<String, Status> {
 ```
 
 I decided to start with the shorten method. The simplest implementation I could think of is to generate a
-unique id on the fly using the [nanoid](https://crates.io/crates/nanoid)crate
+unique id on the fly using the [nanoid](https://crates.io/crates/nanoid) crate
 and then running an `INSERT` statement. Hm - what about duplicates? I decided
 not to overthink it 🤷.
 

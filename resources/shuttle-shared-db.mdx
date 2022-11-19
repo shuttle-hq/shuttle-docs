@@ -16,11 +16,11 @@ Add `shuttle-shared-db` to the dependencies for your service. Every type of shar
 
 ## Example
 The shuttle poem main function below uses the `[shuttle_shared_db::Postgres]` attribute macro to provision a shared postgres database,
-which can be accessed using a pre-configured, authenticated `sqlx::PgPool`.
+which can be accessed using a pre-configured, authenticated [sqlx Pool](https://docs.rs/sqlx/latest/sqlx/pool/index.html).
 
 ```rust lib.rs
 #[shuttle_service::main]
-async fn main(
+async fn poem(
     #[shuttle_shared_db::Postgres] pool: PgPool,
 ) -> shuttle_service::ShuttlePoem<impl poem::Endpoint> {
     pool.execute(include_str!("../schema.sql"))
