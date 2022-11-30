@@ -73,10 +73,6 @@ async fn tower() -> Result<HelloWorld, shuttle_service::Error> {
 }
 ```
 
-Create a project, this will start an isolated deployer container for you under the hood:
-```bash
-cargo shuttle project new
-```
 Finally, to deploy your app, all you need to do is:
 ```bash
 cargo shuttle deploy

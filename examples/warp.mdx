@@ -43,12 +43,8 @@ async fn warp() -> shuttle_service::ShuttleWarp<(impl Reply,)> {
     let route = warp::any().map(|| "Hello, World");
     Ok(route.boxed())
 }
+```
 
-```
-Create a project, this will start an isolated deployer container for you under the hood:
-```bash
-cargo shuttle project new
-```
 Finally, to deploy your app, all you need to do is:
 ```bash
 cargo shuttle deploy

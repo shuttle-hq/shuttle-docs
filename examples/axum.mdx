@@ -52,10 +52,6 @@ async fn axum() -> shuttle_service::ShuttleAxum {
     Ok(sync_wrapper)
 }
 ```
-Create a project, this will start an isolated deployer container for you under the hood:
-```bash
-cargo shuttle project new
-```
 
 Finally, to deploy your app, all you need to do is:
 ```bash
@@ -319,10 +315,6 @@ And your `index.html` should look like this:
         </script>
     </body>
 </html>
-```
-Create a project, this will start an isolated deployer container for you under the hood:
-```bash
-cargo shuttle project new
 ```
 
 Finally, to deploy your app, all you need to do is:

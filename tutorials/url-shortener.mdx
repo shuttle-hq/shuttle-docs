@@ -87,10 +87,10 @@ open a terminal.
 I'm using [shuttle](https://www.shuttle.rs/) for this project. It's a serverless
 platform built for Rust and I don't have to deal with provisioning databases, or
 subdomains or any of that gunk. I already have the CLI
-[installed](https://docs.shuttle.rs/introduction/installation). 
+[installed](https://docs.shuttle.rs/introduction/installation).
 
-I stop and think for a little bit - which web framework do I want to use? I think 
-I'm going to go with Rocket. It's pretty much production ready with a sweet API and 
+I stop and think for a little bit - which web framework do I want to use? I think
+I'm going to go with Rocket. It's pretty much production ready with a sweet API and
 I'm reasonably proficient with it.
 
 To initialize a rocket project with boilerplate, I can use the shuttle CLI `init` command:
@@ -134,14 +134,10 @@ rocket = "0.5.0-rc.2"
 shuttle-service = { version = "0.7.2", features = ["web-rocket"] }
 ```
 
-Before deploying the app we have to create a new shuttle project, this starts an isolated
-container for us in shuttle's infrastructure:
+The `init` command also created a new shuttle project for us. This starts an
+isolated container in Shuttle's infrastructure.
 
-```sh
-cargo shuttle project new
-```
-
-And to deploy:
+Now, to deploy:
 
 ```sh
 $ cargo shuttle deploy
