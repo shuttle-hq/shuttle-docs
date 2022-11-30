@@ -1,9 +1,9 @@
 ---
-title: "What is shuttle?"
-description: "Shuttle is a Rust-native cloud development platform that let's you deploy your app while also taking care of all of your infrastructure."
+title: "What is Shuttle?"
+description: "Shuttle is a Rust-native cloud development platform that lets you deploy your app while also taking care of all of your infrastructure."
 ---
 
-A simple cargo command packages up your application, ships it to the shuttle
+A simple cargo command packages up your application, ships it to the Shuttle
 build cluster where it's incrementally compiled and automatically served on a
 unique subdomain.
 
@@ -36,7 +36,7 @@ provisioned through static analysis in real-time.
 ```rust
 #[shuttle_service::main]
 async fn rocket(
-    #[shuttle_sshared_db::Postgres] pool: PgPool, // automatic db provisioning + hands you back an authenticated connection pool
+    #[shuttle_shared_db::Postgres] pool: PgPool, // automatic db provisioning + hands you back an authenticated connection pool
 ) -> ShuttleRocket<...> {
     // application code
 }
