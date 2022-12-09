@@ -86,7 +86,8 @@
         "resources/shuttle-aws-rds",
         "resources/shuttle-persist",
         "resources/shuttle-shared-db",
-        "resources/shuttle-secrets"
+        "resources/shuttle-secrets",
+        "resources/shuttle-static-folder"
       ]
     },
     {
