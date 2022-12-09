@@ -57,11 +57,6 @@ async fn thruster() -> shuttle_service::ShuttleThruster<HyperServer<Ctx, ()>> {
 }
 ```
 
-Create a project, this will start an isolated deployer container for you under the hood:
-```bash
-cargo shuttle project new
-```
-
 Finally, to deploy your app, all you need to do is:
 
 ```
@@ -231,11 +226,6 @@ CREATE TABLE todos (
   id serial PRIMARY KEY,
   note TEXT NOT NULL
 );
-```
-
-Create a project, this will start an isolated deployer container for you under the hood:
-```bash
-cargo shuttle project new
 ```
 
 Finally, to deploy your app, all you need to do is:

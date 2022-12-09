@@ -47,10 +47,7 @@ async fn tide() -> shuttle_service::ShuttleTide<()> {
     Ok(app)
 }
 ```
-Create a project, this will start an isolated deployer container for you under the hood:
-```bash
-cargo shuttle project new
-```
+
 Finally, to deploy your app, all you need to do is:
 ```bash
 cargo shuttle deploy
@@ -161,10 +158,7 @@ CREATE TABLE todos (
   note TEXT NOT NULL
 );
 ```
-Create a project, this will start an isolated deployer container for you under the hood:
-```bash
-cargo shuttle project new
-```
+
 Finally, to deploy your app, all you need to do is:
 ```bash
 cargo shuttle deploy
