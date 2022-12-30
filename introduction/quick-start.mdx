@@ -5,20 +5,28 @@ title: "Quick Start"
 We will assume that you have already installed shuttle. If you haven't, you can
 take a look on how to in our [installation](installation) section.
 
-In order to get started quickly, we will be using `axum` for this example.
-
 To initialize your project, simply write:
 
 ```sh
-cargo shuttle init --axum hello-world
+cargo shuttle init
 ```
 
-And to deploy it, write:
+If you didn't create the project environment in the init command, run:
+
+```sh
+cargo shuttle project new
+```
+
+And to deploy it:
 
 ```sh
 cargo shuttle deploy
 ```
 
+Or try it out locally (local runs with databases require [Docker](https://docs.docker.com/get-docker/)):
+```sh
+cargo shuttle run
+```
 And that's... it.
 
 Feel free to build on-top of the generated `hello-world` example or take a stab
