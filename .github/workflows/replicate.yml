@@ -31,6 +31,7 @@ jobs:
         run: |
           sed -i -e '1i ---' \
           -e '1s/#/title:/' \
+          -e '2i description:\ "This document describes the best way to get started with contributing to shuttle"' \
           -e '2i ---' shuttle/CONTRIBUTING.md;
 
       - name: Copy CONTRIBUTING.md to community/contribute.mdx
