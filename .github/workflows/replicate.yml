@@ -30,8 +30,8 @@ jobs:
       - name: Convert CONTRIBUTING.md title to frontmatter 
         run: |
           sed -i -e '1i ---' \
-          -e '1s/#/title:/'\
-          -e '2i ---' $f;
+          -e '1s/#/title:/' \
+          -e '2i ---' shuttle/CONTRIBUTING.md;
 
       - name: Copy CONTRIBUTING.md to community/contribute.mdx
         run: cp -a shuttle/CONTRIBUTING.md community/contribute.mdx
