@@ -1,7 +1,5 @@
 ---
-title: "Contribute"
-description:
-    "This document describes the best way to get started with contributing to shuttle"
+title: Contributing
 ---
 
 ## Raise an Issue
@@ -16,6 +14,11 @@ are always appreciated!
 ## Running Locally
 You can use Docker and docker-compose to test shuttle locally during development. See the [Docker install](https://docs.docker.com/get-docker/)
 and [docker-compose install](https://docs.docker.com/compose/install/) instructions if you do not have them installed already.
+
+```bash
+git clone git@github.com:shuttle-hq/shuttle.git
+cd shuttle
+```
 
 You should now be ready to setup a local environment to test code changes to core `shuttle` packages as follows:
 
@@ -48,6 +51,7 @@ shuttle-aws-rds = { path = "[base]/shuttle/resources/aws-rds" }
 shuttle-persist = { path = "[base]/shuttle/resources/persist" }
 shuttle-shared-db = { path = "[base]/shuttle/resources/shared-db" }
 shuttle-secrets = { path = "[base]/shuttle/resources/secrets" }
+shuttle-static-folder = { path = "[base]/shuttle/resources/static-folder" }
 ```
 
 Prime gateway database with an admin user:
@@ -65,6 +69,8 @@ cargo run --bin cargo-shuttle -- login --api-key "test-key"
 cd into one of the examples:
 
 ```bash
+git submodule init
+git submodule update
 cd examples/rocket/hello-world/
 ```
 
@@ -105,17 +111,17 @@ cargo run --manifest-path ../../../Cargo.toml --bin cargo-shuttle -- logs
 The steps outlined above starts all the services used by shuttle locally (ie. both `gateway` and `deployer`). However, sometimes you will want to quickly test changes to `deployer` only. To do this replace `make up` with the following:
 
 ```bash
-docker-compose -f docker-compose.rendered.yml up provisioner
+docker compose -f docker-compose.rendered.yml up provisioner
 ```
 
 This prevents `gateway` from starting up. Now you can start deployer only using:
 
 ```bash
 provisioner_address=$(docker inspect --format '{{(index .NetworkSettings.Networks "shuttle_default").IPAddress}}' shuttle_prod_hello-world-rocket-app_run)
-cargo run -p shuttle-deployer -- --provisioner-address $provisioner_address --provisioner-port 8000 --proxy-fqdn local.rs --admin-secret test-key
+cargo run -p shuttle-deployer -- --provisioner-address $provisioner_address --provisioner-port 8000 --proxy-fqdn local.rs --admin-secret test-key --project <project_name>
 ```
 
-The `--admin-secret` can safely be changed to your api-key to make testing easier.
+The `--admin-secret` can safely be changed to your api-key to make testing easier. While `<project_name>` needs to match the name of the project that will be deployed to this deployer. This is the `Cargo.toml` or `Shuttle.toml` name for the project.
 
 ### Using Podman instead of Docker
 If you are using Podman over Docker, then expose a rootless socket of Podman using the following command:
@@ -225,9 +231,11 @@ Lastly, the `user service` is not a folder in this repository, but is the user s
 Currently, if you try to use 'make images' on Windows, you may find that the shell files cannot be read by Bash/WSL. This is due to the fact that Windows may have pulled the files in CRLF format rather than LF[^1], which causes problems with Bash as to run the commands, Linux needs the file in LF format. 
 
 Thankfully, we can fix this problem by simply using the `git config core.autocrlf` command to change how Git handles line endings. It takes a single argument:
-````
+
+```
 git config --global core.autocrlf input
-````
+```
+
 This should allow you to run `make images` and other Make commands with no issues.
 
 If you need to change it back for whatever reason, you can just change the last argument from 'input' to 'true' like so:
