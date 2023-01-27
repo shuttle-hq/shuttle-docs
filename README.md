@@ -7,7 +7,7 @@ Our docs are powered by [mintlify](https://mintlify.com/). To run them for local
 Install [their cli](https://www.npmjs.com/package/mintlify):
 
 ```bash
-yarn intall
+yarn install
 ```
 
 And from the root of the repository, run:
