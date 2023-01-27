@@ -52,6 +52,7 @@
         "introduction/what-is-shuttle",
         "introduction/installation",
         "introduction/quick-start",
+        "introduction/local-run",
         "introduction/shuttle-commands",
         "introduction/telemetry"
       ]
