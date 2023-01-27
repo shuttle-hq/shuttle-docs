@@ -18,12 +18,13 @@ cargo shuttle run
 
 If your project relies on a database resource, it will default to starting a [docker](https://docs.docker.com/get-docker/) 
 container for that database. If you'd like to opt out of this behavior and rather supply your own database
-URI, simply pass it in as an argument to your resource:
+URI, simply pass it in as an argument to your resource. This argument also supports insertion of secrets from `Secrets.toml`
+with string interpolation:
 
 ```rust
 #[shuttle_service::main]
 async fn tide(#[shuttle_aws_rds::Postgres(
-        local_uri = "postgres://postgres:password@localhost:16695/postgres"
+        local_uri = "postgres://postgres:{secrets.PASSWORD}@localhost:16695/postgres"
     )] pool: PgPool) -> ShuttleTide<MyState> { ... }
 ```
 
