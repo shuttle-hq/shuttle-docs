@@ -1,6 +1,29 @@
 ---
 title: "Custom Service"
+description: "This example will explain how to create a custom shuttle service."
 ---
+
+```bash
+cargo shuttle init --no-framework
+```
+
+This will simply initialize a new cargo crate with a dependency on `shuttle-service`.
+We also need to add `sqlx` and `shuttle-shared-db` for this example, make sure your
+`Cargo.toml` looks like the one below. 
+
+```toml Cargo.toml
+[package]
+name = "custom-service"
+version = "0.1.0"
+edition = "2021"
+
+[lib]
+
+[dependencies]
+shuttle-service = { version = "0.9.0" }
+shuttle-shared-db = { version = "0.9.0", features = ["postgres"] }
+sqlx = { version = "0.6", features = ["runtime-tokio-native-tls", "postgres"] }
+```
 
 This section will explain how to create a custom shuttle service. To do this we need 
 to return a struct from our `shuttle_service::main` function that implements `shuttle_service::Service`.
@@ -39,6 +62,8 @@ impl shuttle_service::Service for PoolService {
 To finish up, we return the wrapper struct from our `shuttle_service::main` function:
 
 ```rust lib.rs
+use shuttle_service::error::CustomError;
+
 #[shuttle_service::main]
 async fn init(
     #[shuttle_shared_db::Postgres] pool: sqlx::PgPool,
@@ -47,7 +72,7 @@ async fn init(
 }
 
 impl PoolService {
-    async fn start(&self) -> Result<(), shuttle_service::error::CustomError> {
+    async fn start(&self) -> Result<(), CustomError> {
         let (rec,): (String,) = sqlx::query_as("SELECT 'Hello world'")
             .fetch_one(&self.pool)
             .await
