@@ -16,6 +16,11 @@ Add `shuttle-aws-rds` to the dependencies for your service. Every engine is behi
 | MySql    | mysql        | shuttle_aws_rds::MySql    |
 | MariaDB  | mariadb      | shuttle_aws_rds::MariaDB  |
 
+### Parameters
+| Parameter | Type | Default  | Description                                                                                             |
+|-----------|------|----------|---------------------------------------------------------------------------------------------------------|
+| local_uri | str  | `None`   | Rather connect `cargo shuttle run` to this database and don't spin up a Docker instance of the database |
+
 ## Example
 This snippet shows the main function of a tide app that uses the `shuttle_aws_rds::Postgres` attribute to provision an RDS Postgres database.
 It gives you an authenticated  [sqlx Pool](https://docs.rs/sqlx/latest/sqlx/pool/index.html), which you can use to interact with the database.

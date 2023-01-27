@@ -13,6 +13,10 @@ Add `shuttle-shared-db` to the dependencies for your service. Every type of shar
 | Postgres | postgres     | shuttle_shared_db::Postgres |
 | MongoDB  | mongodb      | shuttle_shared_db::MongoDb  |
 
+### Parameters
+| Parameter | Type | Default  | Description                                                                                             |
+|-----------|------|----------|---------------------------------------------------------------------------------------------------------|
+| local_uri | str  | `None`   | Rather connect `cargo shuttle run` to this database and don't spin up a Docker instance of the database |
 
 ## Example
 The shuttle poem main function below uses the `[shuttle_shared_db::Postgres]` attribute macro to provision a shared postgres database,
