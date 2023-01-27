@@ -209,9 +209,9 @@ field for identification rather than using something like the `username` field
 because you may add the ability to change usernames, which can leave things
 pointing to the wrong places.
 
-### Registering our database Before our app can use the database we have to add
+### Registering our database
 
-sqlx with some features: `cargo add sqlx -F postgres runtime-tokio-native-tls`.
+Before our app can use the database we have to add sqlx with some features: `cargo add sqlx -F postgres runtime-tokio-native-tls`.
 We will also enable the Postgres feature for shuttle with
 `cargo add shuttle-service -F sqlx-postgres`.
 
