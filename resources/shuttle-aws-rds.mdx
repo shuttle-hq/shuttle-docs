@@ -21,6 +21,15 @@ Add `shuttle-aws-rds` to the dependencies for your service. Every engine is behi
 |-----------|------|----------|---------------------------------------------------------------------------------------------------------|
 | local_uri | str  | `None`   | Rather connect `cargo shuttle run` to this database and don't spin up a Docker instance of the database |
 
+When setting the `local_uri` you can also insert secrets from `Secrets.toml` using string interpolation. To insert the
+`PASSWORD` secret, pass it in like this:
+
+```rust
+async fn tide(#[shuttle_aws_rds::Postgres(
+        local_uri = "postgres://postgres:{secrets.PASSWORD}@localhost:16695/postgres"
+    )] pool: PgPool) -> ShuttleTide<MyState> { ... }
+```
+
 ## Example
 This snippet shows the main function of a tide app that uses the `shuttle_aws_rds::Postgres` attribute to provision an RDS Postgres database.
 It gives you an authenticated  [sqlx Pool](https://docs.rs/sqlx/latest/sqlx/pool/index.html), which you can use to interact with the database.
