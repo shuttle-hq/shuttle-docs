@@ -1,0 +1,54 @@
+name: contrib
+on:
+  schedule:
+    # run 15:35UTC daily
+    - cron: '35 15 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: write # to update contribute.mdx
+  pull-requests: write # to send the update contribute.mdx PRs
+
+jobs:
+  update-contribute:
+    name: Update contribute
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout docs repo
+        uses: actions/checkout@v3
+        with:
+          persist-credentials: false
+
+      - name: Checkout shuttle repo
+        uses: actions/checkout@v3
+        with:
+          persist-credentials: false
+          repository: shuttle-hq/shuttle
+          path: shuttle
+
+      - name: Convert CONTRIBUTING.md title to frontmatter 
+        run: |
+          sed -i -e '1i ---' \
+          -e '1s/#/title:/' \
+          -e '2i description:\ "This document describes the best way to get started with contributing to shuttle"' \
+          -e '2i ---' shuttle/CONTRIBUTING.md;
+
+      - name: Copy CONTRIBUTING.md to community/contribute.mdx
+        run: cp -a shuttle/CONTRIBUTING.md community/contribute.mdx
+
+      - uses: gr2m/create-or-update-pull-request-action@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          author: github-actions <github-actions@github.com>
+          branch: actions/update-contribute
+          title: 'docs: update contribute doc'
+          body: >
+            The contribute.mdx doc is likely out of date. This is an automatically 
+            generated PR by the `replicate.yml` GitHub workflow, which clones the doc
+            from the main repo, implements the changes here then submits a new PR or 
+            updates an existing PR.
+          commit-message: 'docs: update contribute doc'
+          path: community/contribute.mdx
+
