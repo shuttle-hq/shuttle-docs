@@ -7,13 +7,13 @@ Our docs are powered by [mintlify](https://mintlify.com/). To run them for local
 Install [their cli](https://www.npmjs.com/package/mintlify):
 
 ```bash
-npm i mintlify -g
+yarn install
 ```
 
 And from the root of the repository, run:
 
 ```bash
-mintlify dev
+yarn mintlify dev
 ```
 
 *PS: This requires Node 18+*
