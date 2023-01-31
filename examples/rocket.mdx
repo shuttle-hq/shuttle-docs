@@ -7,10 +7,6 @@ description:
 
 ## Hello world!
 
-<a href="https://gitpod.io/#https://github.com/shuttle-hq/shuttle-examples/tree/main/rocket/hello-world">
-  ![Open in Gitpod](https://gitpod.io/button/open-in-gitpod.svg)
-</a>
-
 Simple 'Hello world' app using Rocket.
 
 Create a new directory (`mkdir`) and move into it (`cd`) -- afterwards, execute the following command to initialize shuttle inside with the Rocket boilerplate.
@@ -60,10 +56,6 @@ cargo shuttle deploy
 And your app is live! 🎉🎉🎉
 
 ## JWT Authentication
-
-<a href="https://gitpod.io/#https://github.com/shuttle-hq/shuttle-examples/tree/main/rocket/authentication">
-  ![Open in Gitpod](https://gitpod.io/button/open-in-gitpod.svg)
-</a>
 
 This example shows how to use [Rocket request guards](https://rocket.rs/v0.5-rc/guide/requests/#request-guards) for authentication with [JSON Web Tokens](https://jwt.io/) (JWT for short).
 The idea is that all requests authenticate first at https://authentication-rocket-app.shuttleapp.rs/login to get a JWT.
@@ -370,10 +362,6 @@ The token is set to expire in 5 minutus, so wait a while and try to access the p
 Since tokens usually have a longer than 5 minutes expiration time, we can create a `/refresh` endpoint that takes an active token and returns a new token with a refreshed expiration time.
 
 ## URL Shortener
-
-<a href="https://gitpod.io/#https://github.com/shuttle-hq/shuttle-examples/tree/main/rocket/url-shortener">
-  ![Open in Gitpod](https://gitpod.io/button/open-in-gitpod.svg)
-</a>
 
 A URL shortener that you can use from your terminal - built with shuttle, rocket and postgres/sqlx.
 
