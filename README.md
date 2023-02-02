@@ -17,3 +17,8 @@ yarn mintlify dev
 ```
 
 *PS: This requires Node 18+*
+
+## Contribution docs
+
+Changes to `community/contribute.mdx` should be made in the [main repo](https://github.com/shuttle-hq/shuttle/blob/main/CONTRIBUTING.md),
+since they will be automatically implemented here by the `.github/workflows/replicate.yml` workflow.
