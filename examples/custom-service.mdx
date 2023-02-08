@@ -44,7 +44,8 @@ hyper = "0.14.24"
 poise = "0.5.2"
 serde = "1.0"
 shuttle-secrets = "0.9.0"
-shuttle-service = { version = "0.9.0", features = ["bot-serenity"] }
+shuttle-service = { version = "0.9.0"}
+sync_wrapper = "0.1.2"
 tokio = "1.22.0"
 ```
 
@@ -52,9 +53,12 @@ tokio = "1.22.0"
 To get started, we need to return a wrapper struct from our `shuttle_service::main` function that 
 implements `shuttle_service::Service`, which we can declare like so:
 
-```rust
-struct CustomService {
-    discord_token: String,
+```rust lib.rs
+pub struct CustomService {
+    discord_bot:
+        FrameworkBuilder<Data, Box<(dyn std::error::Error +
+         std::marker::Send + Sync + 'static)>>,
+    router: SyncWrapper<Router>,
 }
 ```
 
@@ -71,23 +75,9 @@ and spawning another thread to run the service like so:
 impl shuttle_service::Service for CustomService {
     async fn bind(
         mut self: Box<Self>,
-        _addr: std::net::SocketAddr,
+        addr: std::net::SocketAddr,
     ) -> Result<(), shuttle_service::error::Error> {
-        let service = Arc::new(self);
-
-        let router = Arc::clone(&service);
-
-        tokio::spawn(async move {
-            Arc::clone(&service)
-                .set_up_bot()
-                .await
-                .expect("Something went wrong with the bot! :(");
-        });
-
-        router
-            .set_up_router(addr)
-            .await
-            .expect("Something went wrong with the router! :(");
+        self.start(addr).await.expect("Soemthing went wrong!");
 
         Ok(())
     }
@@ -98,8 +88,10 @@ Before we can actually run the program, we will need to set up the commands and 
  before we can add them to the struct implementation. Let's do that now:
 
 ```rust commands.rs
-use crate::Data;
 use poise::serenity_prelude as serenity;
+
+// this is a blank struct initialised in lib.rs and then imported here
+use crate::Data;
 
 type Error = Box<dyn std::error::Error + Send + Sync>;
 type Context<'a> = poise::Context<'a, Data, Error>;
@@ -147,43 +139,57 @@ use router::router;
 
 pub struct Data {}
 pub struct CustomService {
-    discord_api_key: String,
+    discord_bot:
+        FrameworkBuilder<Data, Box<(dyn std::error::Error +
+         std::marker::Send + Sync + 'static)>>,
+    router: SyncWrapper<Router>,
 }
 
 #[shuttle_service::main]
 async fn init(
-    #[shuttle_shared_db::Postgres] pool: sqlx::PgPool,
-) -> Result<PoolService, shuttle_service::Error> {
-    Ok(PoolService { pool })
+    #[shuttle_secrets::Secrets] secrets: SecretStore,
+) -> Result<CustomService, shuttle_service::Error> {
+   let discord_api_key = secrets.get("DISCORD_API_KEY").unwrap();
+
+    let discord_bot = poise::Framework::builder()
+        .options(poise::FrameworkOptions {
+            commands: vec![age()],
+            ..Default::default()
+        })
+        .token(discord_api_key)
+        .intents(serenity::GatewayIntents::non_privileged())
+        .setup(|ctx, _ready, framework| {
+            Box::pin(async move {
+                poise::builtins::register_globally(
+                    ctx, &framework.options().commands
+                    ).await?;
+                Ok(Data {})
+            })
+        });
+
+    let router = router();
+    let router = SyncWrapper::new(router);
+
+    Ok(CustomService {
+        discord_bot,
+        router
+    })
 }
 
 impl CustomService {
-    async fn set_up_bot(&self) -> Result<(), Box<dyn std::error::Error>> {
-        let framework = poise::Framework::builder()
-            .options(poise::FrameworkOptions {
-                commands: vec![age()],
-                ..Default::default()
-            })
-            .token(&self.discord_api_key)
-            .intents(serenity::GatewayIntents::non_privileged())
-            .setup(|ctx, _ready, framework| {
-                Box::pin(async move {
-                    poise::builtins::register_globally(ctx, &framework.options().commands).await?;
-                    Ok(Data {})
-                })
-            });
+    async fn start(self, addr: std::net::SocketAddr) ->
+         Result<(), Box<dyn std::error::Error>> {
+        let router = self.router.into_inner();
 
-        framework.run().await.unwrap();
+        let serve_router = axum::Server::bind(&addr)
+                        .serve(router.into_make_service());
+
+        tokio::select!(
+            _ = self.discord_bot.run() => {},
+            _ = serve_router => {}
+        );
 
         Ok(())
-    }
-
-    async fn set_up_router(&self, addr: std::net::SocketAddr) -> Result<(), hyper::Error> {
-        let router = router();
-
-        let router = axum::Server::bind(&addr).serve(router.into_make_service());
-
-        router.await
     }
 }
 ```
