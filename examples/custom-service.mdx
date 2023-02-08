@@ -67,8 +67,9 @@ for example if you're implementing service for an HTTP server, you can use the `
 You can only have one HTTP service bound to the `addr`, but you can start other services that don't rely on 
 binding to a socket.
 
-We can do do this by simply creating an Arc value from `self` and then cloning it every time we want to use it,
-and spawning another thread to run the service like so:
+We can do do this by simply adding an implementation for our wrapper struct containing a function called `start`,
+which will contain all of our tasks that we want to run and simply run them all together in one `tokio::select!` macro
+(currently, this code doesn't work due to no base implementation - we will implement this later on):
 
 ```rust lib.rs
 #[shuttle_service::async_trait]
@@ -77,7 +78,7 @@ impl shuttle_service::Service for CustomService {
         mut self: Box<Self>,
         addr: std::net::SocketAddr,
     ) -> Result<(), shuttle_service::error::Error> {
-        self.start(addr).await.expect("Soemthing went wrong!");
+        self.start(addr).await.expect("Something went wrong!");
 
         Ok(())
     }
