@@ -2,7 +2,18 @@
 title: "Installation"
 ---
 
-Run the following command to install shuttle:
+Shuttle provides pre-built binaries of the `cargo-shuttle` CLI with every release
+for most platforms, they can be found on [our github](https://github.com/shuttle-hq/shuttle/releases/latest).
+
+Our binaries can also be installed using [`cargo-binstall`](https://github.com/cargo-bins/cargo-binstall), 
+which will automatically install the correct target for your system. to install with
+`cargo-binstall`, run:
+
+```
+cargo binstall cargo-shuttle
+```
+
+While it will be a bit slower, you can also install directly with cargo:
 
 ```sh
 cargo install cargo-shuttle
