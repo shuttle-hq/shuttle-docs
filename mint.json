@@ -79,7 +79,8 @@
         "tutorials/discord-weather-forecast",
         "tutorials/url-shortener",
         "tutorials/authentication",
-        "tutorials/serverless-calendar-app"
+        "tutorials/serverless-calendar-app",
+        "tutorials/websocket-chat-app-js"
       ]
     },
     {

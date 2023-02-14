@@ -18,11 +18,11 @@ This section is aimed at collecting common issues users have to provide quick de
   <Accordion title="I’m struggling to install shuttle on my M1/M2 Mac, what should I do?">
     There’s a known bug with arm64 because of the openssl crates being built for x86, rather than arm64. In order to get around that issue, you can either run:
 
-    `**cargo install --features vendored-openssl cargo-shuttle**`
+    `cargo install --features vendored-openssl cargo-shuttle`
 
     or install it via binary:
 
-    `**cargo binstall cargo-shuttle**`
+    `cargo binstall cargo-shuttle`
   </Accordion>
   <Accordion title="How can I return custom errors with shuttle?">
     CustomError is an alias for **`anyhow::Error`**, the simplest way to output a relevant message here is by using **`anyhow::Context`** like this:
