@@ -2,6 +2,8 @@
 title: "Frequently Asked Questions"
 ---
 
+This section is aimed at collecting common questions users have to provide documented answers.
+
 <AccordionGroup>
   <Accordion title="How secure is Shuttle?">
     We build and deploy every project in its own container.
@@ -26,6 +28,9 @@ title: "Frequently Asked Questions"
   </Accordion>
   <Accordion title="Can I use SeaORM with shuttle?">
     Yes, since you are able to can create a SeaORM connection from the sqlx pool Shuttle passes to you when you provision a SQL database. You can take a look at the example here: https://github.com/shuttle-hq/shuttle/issues/179#issuecomment-1203536025
+  </Accordion>
+  <Accordion title="Can I rename my shuttle project?">
+    Certainly. Just create a `Shuttle.toml` file in the some folder where your `Cargo.toml` is and add `name = "your-project-name`.
   </Accordion>
 </AccordionGroup>
 
