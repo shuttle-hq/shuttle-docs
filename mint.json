@@ -83,6 +83,13 @@
       ]
     },
     {
+      "group": "Support",
+      "pages": [
+        "support/faq",
+        "support/troubleshooting"
+      ]
+    },
+    {
       "group": "Resources",
       "pages": [
         "resources/shuttle-aws-rds",
