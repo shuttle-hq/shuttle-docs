@@ -16,7 +16,7 @@ To be able to create this example, we'll need to grab an API token from the [Dis
 To add the bot to a server, we need to create an invite link:
 
 1. On your bot's application page, open the OAuth2 page via the lefthand panel.
-2. Go to the URL Generator via the lefthand panel, and select the `bot` scope as well as the `Send Messages` permission in the Bot Permissions section.
+2. Go to the URL Generator via the lefthand panel, and select the `bot` scope.
 3. Copy the URL, open it in your browser and select a Discord server you wish to invite the bot to.
 
 
@@ -43,8 +43,8 @@ axum = "0.6.4"
 hyper = "0.14.24"
 poise = "0.5.2"
 serde = "1.0"
-shuttle-secrets = "0.9.0"
-shuttle-service = { version = "0.9.0"}
+shuttle-secrets = "0.10.0"
+shuttle-service = { version = "0.10.0"}
 sync_wrapper = "0.1.2"
 tokio = "1.22.0"
 ```
@@ -78,7 +78,15 @@ impl shuttle_service::Service for CustomService {
         mut self: Box<Self>,
         addr: std::net::SocketAddr,
     ) -> Result<(), shuttle_service::error::Error> {
-        self.start(addr).await.expect("Something went wrong!");
+        
+        let router = self.router.into_inner();
+
+        let serve_router = axum::Server::bind(&addr).serve(router.into_make_service());
+
+        tokio::select!(
+            _ = self.discord_bot.run() => {},
+            _ = serve_router => {}
+        );
 
         Ok(())
     }
@@ -114,7 +122,7 @@ use axum::http::StatusCode;
 use axum::response::IntoResponse;
 use axum::{routing::get, Router};
 
-pub fn router() -> Router {
+pub fn build_router() -> Router {
     Router::new().route("/", get(hello_world))
 }
 
@@ -168,30 +176,13 @@ async fn init(
             })
         });
 
-    let router = router();
+    let router = build_router();
     let router = SyncWrapper::new(router);
 
     Ok(CustomService {
         discord_bot,
         router
     })
-}
-
-impl CustomService {
-    async fn start(self, addr: std::net::SocketAddr) ->
-         Result<(), Box<dyn std::error::Error>> {
-        let router = self.router.into_inner();
-
-        let serve_router = axum::Server::bind(&addr)
-                        .serve(router.into_make_service());
-
-        tokio::select!(
-            _ = self.discord_bot.run() => {},
-            _ = serve_router => {}
-        );
-
-        Ok(())
-    }
 }
 ```
 ### Finishing Up
