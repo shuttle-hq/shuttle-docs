@@ -54,7 +54,8 @@
         "introduction/quick-start",
         "introduction/local-run",
         "introduction/shuttle-commands",
-        "introduction/telemetry"
+        "introduction/telemetry",
+        "introduction/node-cli"
       ]
     },
     {
