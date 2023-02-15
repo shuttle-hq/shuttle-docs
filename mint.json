@@ -54,13 +54,15 @@
         "introduction/quick-start",
         "introduction/local-run",
         "introduction/shuttle-commands",
-        "introduction/telemetry"
+        "introduction/telemetry",
+        "introduction/node-cli"
       ]
     },
     {
       "group": "Examples",
       "pages": [
         "examples/axum",
+        "examples/actix",
         "examples/poem",
         "examples/rocket",
         "examples/salvo",
@@ -78,7 +80,15 @@
         "tutorials/discord-weather-forecast",
         "tutorials/url-shortener",
         "tutorials/authentication",
-        "tutorials/serverless-calendar-app"
+        "tutorials/serverless-calendar-app",
+        "tutorials/websocket-chat-app-js"
+      ]
+    },
+    {
+      "group": "Support",
+      "pages": [
+        "support/faq",
+        "support/troubleshooting"
       ]
     },
     {
