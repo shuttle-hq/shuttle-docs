@@ -62,6 +62,7 @@
       "group": "Examples",
       "pages": [
         "examples/axum",
+        "examples/actix",
         "examples/poem",
         "examples/rocket",
         "examples/salvo",
