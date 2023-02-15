@@ -42,6 +42,6 @@ async fn rocket(
 }
 ```
 
-In this future, infrastructure can be defined directly from code. Not in the “Infrastructure as Code” kind of way though, but in the way that the code that developers write implicitly defines infrastructure. What your code actually needs in terms of infrastructure is inferred as you build your application, instead of you having to think upfront about what infrastructure piece is needed and how to wire it up.
+In this future, infrastructure can be defined directly from code. Not in the “Infrastructure as Code” kind of way though, but in a way that the code that you write implicitly defines infrastructure. What your code actually needs in terms of infrastructure is inferred as you build your application, instead of you having to think upfront about what infrastructure piece is needed and how to wire it up. This liberates you from having to spin up resources, such as a Postgres database, and manage environment variables such as database connection strings.
 
-This setup is also breaking the boundaries that keep containers isolated from each other (and thus make it difficult to orchestrate them), without necessarily getting rid of the paradigm of containers. It should not force you into any specific way of writing applications, but just be an extension of your workflow.
+This setup is also breaking the boundaries that keep containers isolated from each other (and thus make it difficult to orchestrate them), without necessarily getting rid of the paradigm of containers. It does not force you into any specific way of writing applications, but instead becomes an extension of your workflow.
