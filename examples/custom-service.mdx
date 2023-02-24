@@ -11,7 +11,12 @@ To be able to create this example, we'll need to grab an API token from the [Dis
 
 1. Click the New Application button, name your application and click Create.
 2. Navigate to the Bot tab in the lefthand menu, and add a new bot.
-3. On the bot page click the Reset Token button to reveal your token. Put this token in your `Secrets.toml`. It's very important that you don't reveal your token to anyone, as it can be abused. Create a `.gitignore` file to omit your `Secrets.toml` from version control.
+3. On the bot page click the Reset Token button to reveal your token. Put this token in your `Secrets.toml` (explained below). It's very important that you don't reveal your token to anyone, as it can be abused. Create a `.gitignore` file to omit your `Secrets.toml` from version control.
+
+Your `Secrets.toml` file needs to be in the root of your directory once the project's been initialised - the file will use a format similar to a `.env` file, like so:
+```toml Secrets.toml
+DISCORD_TOKEN = 'the contents of my discord token'
+```
 
 To add the bot to a server, we need to create an invite link:
 
@@ -27,6 +32,7 @@ cargo shuttle init --no-framework
 ```
 
 This will simply initialize a new cargo crate with a dependency on `shuttle-service`.
+
 We also want to add several dependencies for this - make sure your Cargo.toml looks like below:
 
 ```toml Cargo.toml

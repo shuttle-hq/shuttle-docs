@@ -100,6 +100,7 @@ And your `Secrets.toml` file should look like this (and have your token inside):
 ```toml Secrets.toml
 DISCORD_TOKEN = 'the contents of my discord token'
 ```
+Note that your `Secrets.toml` file should be in the root of your directory!
 
 Create a project, this will start an isolated deployer container for you under the hood:
 ```bash
@@ -120,6 +121,7 @@ To run this bot we need a valid Discord Token. To get started log in to the [Dis
 1. Click the New Application button, name your application and click Create.
 2. Navigate to the Bot tab in the lefthand menu, and add a new bot.
 3. On the bot page click the Reset Token button to reveal your token. Put this token in your `Secrets.toml`. It's very important that you don't reveal your token to anyone, as it can be abused. Create a `.gitignore` file to omit your `Secrets.toml` from version control.
+
 
 To add the bot to a server we need to create an invite link.
 
