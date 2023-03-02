@@ -10,13 +10,13 @@ This section is aimed at collecting common issues users have to provide quick de
     **`cargo shuttle project rm`** followed by
     **`cargo shuttle project new`** and everything should be back in working order.
   </Accordion>
-  <Accordion title="I can’t deploy nor run locally, what should I do? (Windows)">
-    Some projects currently fail to deploy on Windows. The bug is related to [this Cargo meta-issue](https://github.com/rust-lang/cargo/issues/9770). Cargo is still trying to determine how to fix them properly in general.
+  <Accordion title="I can't deploy nor run locally, what should I do? (Windows)">
+    Some projects currently fail to deploy on Windows. The bug is related to&nbsp;[this Cargo meta-issue](https://github.com/rust-lang/cargo/issues/9770). Cargo is still trying to determine how to fix them properly in general.
 
     As a temporary fix, you can try running **`cargo build`** before **`cargo shuttle deploy`** or **`cargo shuttle run`**.
   </Accordion>
-  <Accordion title="I’m struggling to install shuttle on my M1/M2 Mac, what should I do?">
-    There’s a known bug with arm64 because of the openssl crates being built for x86, rather than arm64. In order to get around that issue, you can either run:
+  <Accordion title="I'm struggling to install shuttle on my M1/M2 Mac, what should I do?">
+    There's a known bug with arm64 because of the openssl crates being built for x86, rather than arm64. In order to get around that issue, you can either run:
 
     `cargo install --features vendored-openssl cargo-shuttle`
 

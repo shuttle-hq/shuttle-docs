@@ -55,7 +55,7 @@ We now have a bot on our server:
 
 ![](/images/discord-weather-forecast-4.png)
 
-Oh, they’re offline 😢
+Oh, they're offline 😢
 
 ### Getting a bot online
 
@@ -68,7 +68,7 @@ Serenity is a library for writing Discord bots (and communicating with the
 Discord API). We can create a new Serenity project which is readily deployable
 on shuttle with: `cargo shuttle init --serenity`
 
-If you don’t have shuttle yet, you can install it with
+If you don't have shuttle yet, you can install it with
 `cargo install cargo-shuttle`. Afterwards, run the following in an empty
 directory:
 
@@ -149,7 +149,7 @@ You can copy the guild ID by right-clicking here on the server name and click
 Now that we have the information for setup, we can start writing our bot and its
 commands.
 
-We will first get rid of the `async fn message` hook as we won’t be using it in
+We will first get rid of the `async fn message` hook as we won't be using it in
 this example. In the `ready` hook we will call `set_application_commands` with a
 `GuildId` to register a command with Discord. Here we register a `hello` command
 with a description and no parameters (Discord refers to these as options).
@@ -248,7 +248,7 @@ Our bot should respond with "hello" to our command:
 
 ![](/images/discord-weather-forecast-8.png)
 
-Wow! Let’s make our bot do something a little more useful.
+Wow! Let's make our bot do something a little more useful.
 
 ### Making the bot do something
 
@@ -549,7 +549,7 @@ Entering “Paris” as the place we get a result with a forecast:
 
 ![](/images/discord-weather-forecast-10.png)
 
-And entering a location that isn’t registered returns an error, thanks to the
+And entering a location that isn't registered returns an error, thanks to the
 error handling we added to the `get_forecast` function:
 
 ![](/images/discord-weather-forecast-11.png)
