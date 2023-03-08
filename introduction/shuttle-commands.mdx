@@ -1,16 +1,30 @@
 ---
-title: "Shuttle CLI Commands"
+title: "Command Line Interface"
 ---
 
-All interaction with the shuttle services goes through our CLI.
-To get an overview of available commands, run:
+## Overview
+
+All interaction with the shuttle services is through the command line interface (CLI).  A combination of commands, and sub-commands, each with options, allow a variety of management tasks to be performed.
+
+Any given command is issued in the format: ```cargo shuttle [OPTIONS] <COMMAND>```
+
+To get an overview of available commands and any available options, run:
 
 ```
 cargo shuttle help
 ```
 
+## Options
+
+*Tip: Options are entered in the format: `--name`, as an example.*
+
+Options can be passed in with commands to customize a command's, or a sub-command's, behaviour.
+
 ## Commands
+
 *Tip: Run a command with the `--help` flag to see available subcommands*
+
+The core shuttle commands are:
 
 | Command    |                      Explanation                          |
 |----------  |--------------                                             |
@@ -28,3 +42,19 @@ cargo shuttle help
 | run        |  run a shuttle service locally                            |
 | secrets    |  manage secrets for this shuttle service                  |
 | status     |  view the status of a shuttle service                     |
+
+## Sub-commands
+
+Several commands have sub-commands which allow more fine grained management tasks.  For example, the project command has the following sub-commands:
+
+| Sub-command | Explanation |
+| ----------- | ----------- |
+| new         | create a new project container  |
+| list        | list all projects available to the calling account |
+| rm          | remove the project environment from shuttle |
+| status      | show the status of the current environment's project on shuttle |
+| help        | print a list of available sub-commands or the help of the given sub-command |
+
+Sub-commands may also have options which can be set if desired.
+
+
