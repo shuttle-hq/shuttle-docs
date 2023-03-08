@@ -74,7 +74,7 @@ binding to a socket, like so:
 #[shuttle_service::async_trait]
 impl shuttle_service::Service for CustomService {
     async fn bind(
-        mut self: Box<Self>,
+        mut self,
         addr: std::net::SocketAddr,
     ) -> Result<(), shuttle_service::error::Error> {
         
