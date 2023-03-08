@@ -315,9 +315,8 @@ Let's quickly make up our main function so that we have a working route that we 
 #[shuttle_service::main]
 async fn main() -> ShuttleAxum {
 
-    // set up router with Secrets & use syncwrapper to make the web service work
+    // set up router with Secrets
     let router = router(secret, static_folder);
-    let sync_wrapper = SyncWrapper::new(router);
 
     Ok(sync_wrapper)
 }
@@ -330,6 +329,7 @@ fn router(secret: String, static_folder: PathBuf) -> Router {
      Router::new()
         .route("/ws", get(ws_handler))
         .layer(Extension(users))
+}
 ```
 
 Now at the moment we have our main application loop and a router, but as you may have noticed, `ws_handler` doesn't actually exist in our code at the moment. This is what we will be writing next, and it can be simply written as so:
@@ -437,11 +437,10 @@ async fn main(
     // We use Secrets.toml to set the BEARER key, just like in a .env file and call it here
     let secret = secrets.get("BEARER").unwrap_or("Bear".to_string());
 
-    // set up router with Secrets & use syncwrapper to make the web service work
+    // set up router with Secrets
     let router = router(secret);
-    let sync_wrapper = SyncWrapper::new(router);
 
-    Ok(sync_wrapper)
+    Ok(router)
 }
 ```
 
@@ -558,11 +557,10 @@ async fn main(
     // We use Secrets.toml to set the BEARER key, just like in a .env file and call it here
     let secret = secrets.get("BEARER").unwrap_or("Bear".to_string());
 
-    // set up router with Secrets & use syncwrapper to make the web service work
+    // set up router with Secrets
     let router = router(secret, static_folder);
-    let sync_wrapper = SyncWrapper::new(router);
 
-    Ok(sync_wrapper)
+    Ok(router)
 }
 
 fn router(secret: String, static_folder: PathBuf) -> Router {

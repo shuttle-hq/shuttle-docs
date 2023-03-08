@@ -49,7 +49,6 @@ poise = "0.5.2"
 serde = "1.0"
 shuttle-secrets = "0.11.0"
 shuttle-service = { version = "0.11.0"}
-sync_wrapper = "0.1.2"
 tokio = "1.22.0"
 ```
 
@@ -62,7 +61,7 @@ pub struct CustomService {
     discord_bot:
         FrameworkBuilder<Data, Box<(dyn std::error::Error +
          std::marker::Send + Sync + 'static)>>,
-    router: SyncWrapper<Router>,
+    router: Router,
 }
 ```
 
@@ -151,7 +150,7 @@ pub struct CustomService {
     discord_bot:
         FrameworkBuilder<Data, Box<(dyn std::error::Error +
          std::marker::Send + Sync + 'static)>>,
-    router: SyncWrapper<Router>,
+    router: Router,
 }
 
 #[shuttle_service::main]
@@ -177,7 +176,6 @@ async fn init(
         });
 
     let router = build_router();
-    let router = SyncWrapper::new(router);
 
     Ok(CustomService {
         discord_bot,

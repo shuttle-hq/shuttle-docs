@@ -33,16 +33,14 @@ First, we will install shuttle for creating the project (and later for deploymen
 You should see the following in `src/main.rs`:
 
 ```rust
-use axum::{routing::get, Router}; use sync_wrapper::SyncWrapper;
+use axum::{routing::get, Router};
 
 async fn hello_world() -> &'static str { "Hello, world!" }
 
-#[shuttle_service::main] async fn axum() -> shuttle_service::ShuttleAxum { let
-router = Router::new().route("/hello", get(hello_world)); let sync_wrapper =
-SyncWrapper::new(router);
+#[shuttle_service::main] async fn axum() -> shuttle_service::ShuttleAxum { 
+    let router = Router::new().route("/hello", get(hello_world)); 
 
-    Ok(sync_wrapper)
-
+    Ok(router)
 }
 ```
 
@@ -123,8 +121,7 @@ async fn axum() -> shuttle_service::ShuttleAxum {
         .route("/hello", get(hello_world))
         .layer(Extension(Arc::new(tera)));
 
-    let sync_wrapper = SyncWrapper::new(router);
-    Ok(sync_wrapper)
+    Ok(router)
 }
 ```
 

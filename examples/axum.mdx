@@ -26,13 +26,11 @@ edition = "2021"
 [dependencies]
 axum = "0.5"
 shuttle-service = { version = "0.11.0", features = ["web-axum"] }
-sync_wrapper = "0.1"
 ```
 Your `main.rs` should look like this:
 
 ```Rust main.rs
 use axum::{routing::get, Router};
-use sync_wrapper::SyncWrapper;
 
 async fn hello_world() -> &'static str {
     "Hello, world!"
@@ -41,9 +39,8 @@ async fn hello_world() -> &'static str {
 #[shuttle_service::main]
 async fn axum() -> shuttle_service::ShuttleAxum {
     let router = Router::new().route("/hello", get(hello_world));
-    let sync_wrapper = SyncWrapper::new(router);
 
-    Ok(sync_wrapper)
+    Ok(router)
 }
 ```
 
@@ -84,7 +81,6 @@ hyper-tls = "0.5"
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
 shuttle-service = { version = "0.11.0", features = ["web-axum"] }
-sync_wrapper = "0.1"
 tokio = { version = "1", features = ["full"] }
 ```
 Your `main.rs` should look like this:
@@ -108,7 +104,6 @@ use hyper::{Client, Uri};
 use hyper_tls::HttpsConnector;
 use serde::Serialize;
 use shuttle_service::ShuttleAxum;
-use sync_wrapper::SyncWrapper;
 use tokio::{
     sync::{watch, Mutex},
     time::sleep,
@@ -170,9 +165,7 @@ async fn main() -> ShuttleAxum {
         .route("/websocket", get(websocket_handler))
         .layer(Extension(state));
 
-    let sync_wrapper = SyncWrapper::new(router);
-
-    Ok(sync_wrapper)
+    Ok(router)
 }
 
 async fn websocket_handler(
