@@ -23,16 +23,14 @@ name = "hello-world"
 version = "0.1.0"
 edition = "2021"
 
-[lib]
-
 [dependencies]
 axum = "0.5"
 shuttle-service = { version = "0.11.0", features = ["web-axum"] }
 sync_wrapper = "0.1"
 ```
-Your `lib.rs` should look like this:
+Your `main.rs` should look like this:
 
-```Rust lib.rs
+```Rust main.rs
 use axum::{routing::get, Router};
 use sync_wrapper::SyncWrapper;
 
@@ -76,7 +74,6 @@ name = "websocket"
 version = "0.1.0"
 edition = "2021"
 
-[lib]
 
 [dependencies]
 axum = { version = "0.5", features = ["ws"] }
@@ -90,10 +87,10 @@ shuttle-service = { version = "0.11.0", features = ["web-axum"] }
 sync_wrapper = "0.1"
 tokio = { version = "1", features = ["full"] }
 ```
-Your `lib.rs` should look like this:
+Your `main.rs` should look like this:
 
-```rust lib.rs
-// lib.rs
+```rust main.rs
+// main.rs
 use std::{sync::Arc, time::Duration};
 
 use axum::{

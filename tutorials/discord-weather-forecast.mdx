@@ -76,9 +76,9 @@ directory:
 cargo shuttle init --serenity
 ```
 
-After running it you, should see the following generated in `src/lib.rs`:
+After running it you, should see the following generated in `src/main.rs`:
 
-```rust src/lib.rs
+```rust src/main.rs
 use anyhow::Context as _;
 use serenity::model::application::interaction::{Interaction, InteractionResponseType};
 use serenity::model::gateway::Ready;
@@ -410,7 +410,7 @@ add some fields to our bot for holding this data and initialize this in the
 weather API key:
 
 ```rust
-// In lib.rs
+// In main.rs
 struct Bot {
     weather_api_key: String,
     client: reqwest::Client,

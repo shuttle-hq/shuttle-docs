@@ -23,15 +23,13 @@ name = "hello-world"
 version = "0.1.0"
 edition = "2021"
 
-[lib]
-
 [dependencies]
 rocket = "0.5.0-rc.2"
 shuttle-service = { version = "0.11.0", features = ["web-rocket"] }
 ```
-Your `lib.rs` should look like this:
+Your `main.rs` should look like this:
 
-```Rust lib.rs
+```Rust main.rs
 #[macro_use]
 extern crate rocket;
 
@@ -81,7 +79,6 @@ name = "authentication"
 version = "0.1.0"
 edition = "2021"
 
-[lib]
 
 [dependencies]
 chrono = "0.4"
@@ -91,10 +88,10 @@ rocket = { version = "0.5.0-rc.2", features = ["json"] }
 serde = { version = "1.0", features = ["derive"] }
 shuttle-service = { version = "0.11.0", features = ["web-rocket"] }
 ```
-Your `lib.rs` should look like this:
+Your `main.rs` should look like this:
 
-```Rust lib.rs
-// lib.rs
+```Rust main.rs
+// main.rs
 use rocket::http::Status;
 use rocket::response::status::Custom;
 use rocket::serde::json::Json;
@@ -371,7 +368,7 @@ The project consists of the following files
 
 - `Shuttle.toml` contains the name of the app (if name is `myapp` domain will be `myapp.shuttleapp.rs`)
 - `migrations` folder is for DB migration files created by [sqlx-cli](https://github.com/launchbadge/sqlx/tree/master/sqlx-cli)
-- `src/lib.rs` is where all the magic happens - it creates a shuttle service with two endpoints: one for creating new short URLs and one for handling shortened URLs.
+- `src/main.rs` is where all the magic happens - it creates a shuttle service with two endpoints: one for creating new short URLs and one for handling shortened URLs.
 
 ```toml Cargo.toml
 [package]
@@ -379,7 +376,6 @@ name = "url-shortener"
 version = "0.1.0"
 edition = "2021"
 
-[lib]
 
 [dependencies]
 nanoid = "0.4"
@@ -390,10 +386,10 @@ shuttle-shared-db = { version = "0.11.0", features = ["postgres"] }
 sqlx = { version = "0.6", features = ["runtime-tokio-native-tls", "postgres"] }
 url = "2.2"
 ```
-Your `lib.rs` should look like this:
+Your `main.rs` should look like this:
 
-```Rust lib.rs
-// lib.rs
+```Rust main.rs
+// main.rs
 #[macro_use]
 extern crate rocket;
 

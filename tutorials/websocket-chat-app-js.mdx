@@ -248,12 +248,10 @@ Once the project has been created, you'll want to go into your `Cargo.toml` and 
 
 ```toml
 [package]
-name = "websocket-chat-react-rust" // The name here should be whatever you've decided to name your project
+name = "websocket-chat-react-rust" # The name here should be whatever you've decided to name your project
 version = "0.1.0"
 edition = "2021"
 publish = false
-
-[lib]
 
 [dependencies]
 axum = { version = "^0.6.2", features = ["ws"] }

@@ -29,9 +29,9 @@ edition = "2021"
 actix-web = "4.2.1"
 shuttle-service = { version = '0.11.0', features = ["web-actix-web"] }
 ```
-Your `lib.rs` should look like this:
+Your `main.rs` should look like this:
 
-```Rust lib.rs
+```Rust main.rs
 use actix_web::{get, web::ServiceConfig};
 use shuttle_service::ShuttleActixWeb;
 
@@ -78,9 +78,9 @@ edition = "2021"
 actix-web = "4.2.1"
 shuttle-service = { version = '0.11.0', features = ["web-actix-web"] }
 ```
-Your `lib.rs` should look like this:
+Your `main.rs` should look like this:
 
-```Rust lib.rs
+```Rust main.rs
 use actix_web::middleware::Logger;
 use actix_web::{
     error, get, post,
@@ -189,8 +189,6 @@ name = "hello-world"
 version = "0.1.0"
 edition = "2021"
 
-[lib]
-
 [dependencies]
 shuttle-service = { version = "0.11.0", features = ["web-actix-web"] }
 shuttle-static-folder = "0.11.3"
@@ -209,14 +207,14 @@ tracing = "0.1"
 The structure for this example is:
 ```
 -> src
-    -> lib.rs
+    -> main.rs
 -> static
     ->  index.html
 ```
 
-Your `lib.rs` should look like this:
+Your `main.rs` should look like this:
 
-```Rust lib.rs
+```Rust main.rs
 use actix_files::NamedFile;
 use actix_web::{
     web::{self, ServiceConfig},

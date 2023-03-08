@@ -24,16 +24,14 @@ name = "hello-world"
 version = "0.1.0"
 edition = "2021"
 
-[lib]
-
 [dependencies]
 shuttle-service = { version = "0.11.0", features = ["web-thruster"] }
 thruster = { version = "1.3.0", features = ["hyper_server"] }
 ```
 
-Your `lib.rs` should look like this:
+Your `main.rs` should look like this:
 
-```rust lib.rs
+```rust main.rs
 use thruster::{
     context::basic_hyper_context::{generate_context, BasicHyperContext as Ctx, HyperRequest},
     m, middleware_fn, App, HyperServer, MiddlewareNext, MiddlewareResult, ThrusterServer,
@@ -79,7 +77,6 @@ name = "postgres"
 version = "0.1.0"
 edition = "2021"
 
-[lib]
 crate-type = ["cdylib"]
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
@@ -93,9 +90,9 @@ sqlx = { version = "0.6", features = ["runtime-tokio-native-tls", "postgres"] }
 thruster = { version = "1.3.0", features = ["hyper_server"] }
 ```
 
-Your `lib.rs` should look like this:
+Your `main.rs` should look like this:
 
-```rust lib.rs
+```rust main.rs
 use serde::{Deserialize, Serialize};
 use shuttle_service::error::CustomError;
 use sqlx::{Executor, FromRow, PgPool};

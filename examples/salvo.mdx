@@ -23,15 +23,13 @@ name = "hello-world"
 version = "0.1.0"
 edition = "2021"
 
-[lib]
-
 [dependencies]
 salvo = "0.34.3"
 shuttle-service = { version = "0.11.0", features = ["web-salvo"] }
 ```
-Your `lib.rs` should look like this:
+Your `main.rs` should look like this:
 
-```Rust lib.rs
+```Rust main.rs
 use salvo::prelude::*;
 
 #[handler]

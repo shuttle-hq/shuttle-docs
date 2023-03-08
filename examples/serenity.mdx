@@ -36,8 +36,6 @@ name = "hello-world"
 version = "0.1.0"
 edition = "2021"
 
-[lib]
-
 [dependencies]
 anyhow = "1.0.62"
 serenity = { version = "0.11.5", default-features = false, features = ["client", "gateway", "rustls_backend", "model"] }
@@ -45,9 +43,9 @@ shuttle-secrets = "0.11.0"
 shuttle-service = { version = "0.11.0", features = ["bot-serenity"] }
 tracing = "0.1.35"
 ```
-Your `lib.rs` should look like this:
+Your `main.rs` should look like this:
 
-```Rust lib.rs
+```Rust main.rs
 use anyhow::anyhow;
 use serenity::async_trait;
 use serenity::model::channel::Message;
@@ -153,7 +151,6 @@ name = "serenity-postgres"
 version = "0.1.0"
 edition = "2021"
 
-[lib]
 
 [dependencies]
 anyhow = "1.0.62"
@@ -165,10 +162,10 @@ shuttle-shared-db = { version = "0.11.0", features = ["postgres"] }
 sqlx = { version = "0.6", features = ["runtime-tokio-native-tls", "postgres"] }
 tracing = "0.1.35"
 ```
-Your `lib.rs` should look like this:
+Your `main.rs` should look like this:
 
-```Rust lib.rs
-// lib.rs
+```Rust main.rs
+// main.rs
 use anyhow::Context as _;
 use serenity::async_trait;
 use serenity::model::application::command::CommandOptionType;

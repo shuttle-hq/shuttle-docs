@@ -35,7 +35,7 @@ async fn tide(#[shuttle_aws_rds::Postgres(
 This snippet shows the main function of a tide app that uses the `shuttle_aws_rds::Postgres` attribute to provision an RDS Postgres database.
 It gives you an authenticated  [sqlx Pool](https://docs.rs/sqlx/latest/sqlx/pool/index.html), which you can use to interact with the database.
 
-```rust lib.rs
+```rust main.rs
 #[shuttle_service::main]
 async fn tide(#[shuttle_aws_rds::Postgres] pool: PgPool) -> ShuttleTide<MyState> {
     pool.execute(include_str!("../schema.sql"))

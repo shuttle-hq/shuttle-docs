@@ -30,7 +30,7 @@ This isn't verified to be secure, use it at your own risk!!
 
 First, we will install shuttle for creating the project (and later for deployment). If you don't already have it you can install it with `cargo install cargo-shuttle`. We will first go to a new directory for our project and create a new Axum app with `cargo shuttle init --axum`.
 
-You should see the following in `src/lib.rs`:
+You should see the following in `src/main.rs`:
 
 ```rust
 use axum::{routing::get, Router}; use sync_wrapper::SyncWrapper;
@@ -823,7 +823,7 @@ opinions while building the site as well as things you could try extending it
 with.
 
 For templating Tera is great. I like how I separate the markup into external
-files rather than bundling it into `src/lib.rs`. Its API is easy to use and is
+files rather than bundling it into `src/main.rs`. Its API is easy to use and is
 well documented. However, it is quite a simple system. I had a few errors where
 I would rename or remove templates and because the template picker for rendering
 uses a map it can panic at runtime if the template does not exist. It would be

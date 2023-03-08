@@ -41,8 +41,6 @@ name = "custom-service"
 version = "0.1.0"
 edition = "2021"
 
-[lib]
-
 [dependencies]
 anyhow = "1.0.62"
 axum = "0.6.4"
@@ -59,7 +57,7 @@ tokio = "1.22.0"
 To get started, we need to return a wrapper struct from our `shuttle_service::main` function that 
 implements `shuttle_service::Service`, which we can declare like so:
 
-```rust lib.rs
+```rust main.rs
 pub struct CustomService {
     discord_bot:
         FrameworkBuilder<Data, Box<(dyn std::error::Error +
@@ -73,7 +71,7 @@ for example if you're implementing service for an HTTP server, you can use the `
 You can only have one HTTP service bound to the `addr`, but you can start other services that don't rely on 
 binding to a socket, like so:
 
-```rust lib.rs
+```rust main.rs
 #[shuttle_service::async_trait]
 impl shuttle_service::Service for CustomService {
     async fn bind(
@@ -101,7 +99,7 @@ Before we can actually run the program, we will need to set up the commands and 
 ```rust commands.rs
 use poise::serenity_prelude as serenity;
 
-// this is a blank struct initialised in lib.rs and then imported here
+// this is a blank struct initialised in main.rs and then imported here
 use crate::Data;
 
 type Error = Box<dyn std::error::Error + Send + Sync>;
@@ -137,7 +135,7 @@ pub async fn hello_world() -> impl IntoResponse {
 To finish up, we return the wrapper struct from our `shuttle_service::main` function and add implementation
 for setting up each of our services for the struct, like so:
 
-```rust lib.rs
+```rust main.rs
 use poise::serenity_prelude as serenity;
 use shuttle_secrets::SecretStore;
 use std::sync::Arc;

@@ -32,7 +32,7 @@ async fn poem(#[shuttle_shared_db::Postgres(
 The shuttle poem main function below uses the `[shuttle_shared_db::Postgres]` attribute macro to provision a shared postgres database,
 which can be accessed using a pre-configured, authenticated [sqlx Pool](https://docs.rs/sqlx/latest/sqlx/pool/index.html).
 
-```rust lib.rs
+```rust main.rs
 #[shuttle_service::main]
 async fn poem(
     #[shuttle_shared_db::Postgres] pool: PgPool,

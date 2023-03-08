@@ -99,9 +99,9 @@ To initialize a rocket project with boilerplate, I can use the shuttle CLI `init
 cargo shuttle init --rocket url-shortener
 ```
 
-This leaves me with the following `lib.rs` file:
+This leaves me with the following `main.rs` file:
 
-```rust lib.rs
+```rust main.rs
 #[macro_use]
 extern crate rocket;
 
@@ -127,8 +127,6 @@ name = "url-shortener"
 version = "0.1.0"
 edition = "2021"
 
-[lib]
-
 [dependencies]
 rocket = "0.5.0-rc.2"
 shuttle-service = { version = "0.11.0", features = ["web-rocket"] }
@@ -144,7 +142,7 @@ $ cargo shuttle deploy
    Packaging url-shortener v0.1.0 (/private/shuttle/examples/url-shortener)
    Archiving Cargo.toml
    Archiving Cargo.toml.orig
-   Archiving src/lib.rs
+   Archiving src/main.rs
    Compiling tracing-attributes v0.1.20
    Compiling tokio-util v0.6.9
    Compiling multer v2.0.2
@@ -185,7 +183,7 @@ Shuttle does a lot of this stuff for you - I just didn't remember how. I
 quickly head over to the
 [shuttle shared database](https://docs.shuttle.rs/resources/shuttle-shared-db)
 section in the docs. I added the `sqlx` dependency to `Cargo.toml` and change
-one line in `lib.rs`:
+one line in `main.rs`:
 
 ```rust
 #[shuttle_service::main]

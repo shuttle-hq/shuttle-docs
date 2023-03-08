@@ -24,15 +24,13 @@ name = "hello-world"
 version = "0.1.0"
 edition = "2021"
 
-[lib]
-
 [dependencies]
 shuttle-service = { version = "0.11.0", features = ["web-tide"] }
 tide = "0.16.0"
 ```
-Your `lib.rs` should look like this:
+Your `main.rs` should look like this:
 
-```Rust lib.rs
+```Rust main.rs
 #[shuttle_service::main]
 async fn tide() -> shuttle_service::ShuttleTide<()> {
     let mut app = tide::new();
@@ -67,7 +65,6 @@ name = "postgres"
 version = "0.1.0"
 edition = "2021"
 
-[lib]
 crate-type = ["cdylib"]
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
@@ -79,9 +76,9 @@ sqlx = { version = "0.6", features = ["runtime-tokio-native-tls", "postgres"] }
 tide = "0.16.0"
 ```
 
-Your `lib.rs` should look like this:
+Your `main.rs` should look like this:
 
-```rust lib.rs
+```rust main.rs
 use serde::{Deserialize, Serialize};
 use shuttle_service::{error::CustomError, ShuttleTide};
 use sqlx::{Executor, FromRow, PgPool};
