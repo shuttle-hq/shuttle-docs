@@ -25,7 +25,9 @@ edition = "2021"
 
 [dependencies]
 rocket = "0.5.0-rc.2"
-shuttle-service = { version = "0.11.0", features = ["web-rocket"] }
+shuttle-rocket = { version = "0.1.0" }
+shuttle-runtime = { version = "0.1.0" }
+tokio = { version = "1.26.0" }
 ```
 Your `main.rs` should look like this:
 
@@ -38,11 +40,11 @@ fn index() -> &'static str {
     "Hello, world!"
 }
 
-#[shuttle_service::main]
-async fn rocket() -> shuttle_service::ShuttleRocket {
+#[shuttle_runtime::main]
+async fn rocket() -> shuttle_rocket::ShuttleRocket {
     let rocket = rocket::build().mount("/hello", routes![index]);
 
-    Ok(rocket)
+    Ok(rocket.into())
 }
 ```
 
@@ -81,12 +83,14 @@ edition = "2021"
 
 
 [dependencies]
-chrono = "0.4"
-jsonwebtoken = { version = "8", default-features = false }
-lazy_static = "1.4"
+chrono = "0.4.23"
+jsonwebtoken = { version = "8.1.1", default-features = false }
+lazy_static = "1.4.0"
 rocket = { version = "0.5.0-rc.2", features = ["json"] }
-serde = { version = "1.0", features = ["derive"] }
-shuttle-service = { version = "0.11.0", features = ["web-rocket"] }
+serde = { version = "1.0.148", features = ["derive"] }
+shuttle-rocket = { version = "0.1.0" }
+shuttle-runtime = { version = "0.1.0" }
+tokio = { version = "1.26.0" }
 ```
 Your `main.rs` should look like this:
 
@@ -163,11 +167,11 @@ fn login(login: Json<LoginRequest>) -> Result<Json<LoginResponse>, Custom<String
     Ok(Json(response))
 }
 
-#[shuttle_service::main]
-async fn rocket() -> shuttle_service::ShuttleRocket {
+#[shuttle_runtime::main]
+async fn rocket() -> shuttle_rocket::ShuttleRocket {
     let rocket = rocket::build().mount("/", routes![public, private, login]);
 
-    Ok(rocket)
+    Ok(rocket.into())
 }
 ```
 Your `claims.rs` should look like this:
@@ -378,13 +382,15 @@ edition = "2021"
 
 
 [dependencies]
-nanoid = "0.4"
+nanoid = "0.4.0"
 rocket = { version = "0.5.0-rc.2", features = ["json"] }
-serde = "1.0"
-shuttle-service = { version = "0.11.0", features = ["web-rocket"] }
-shuttle-shared-db = { version = "0.11.0", features = ["postgres"] }
-sqlx = { version = "0.6", features = ["runtime-tokio-native-tls", "postgres"] }
-url = "2.2"
+shuttle-rocket = { version = "0.1.0" }
+shuttle-runtime = { version = "0.1.0" }
+serde = "1.0.148"
+shuttle-shared-db = { version = "0.8.0", features = ["postgres"] }
+sqlx = { version = "0.6.2", features = ["runtime-tokio-native-tls", "postgres"] }
+tokio = { version = "1.26.0" }
+url = "2.3.1"
 ```
 Your `main.rs` should look like this:
 
@@ -399,7 +405,7 @@ use rocket::{
     routes, State,
 };
 use serde::Serialize;
-use shuttle_service::{error::CustomError, ShuttleRocket};
+use shuttle_runtime::CustomError;
 use sqlx::migrate::Migrator;
 use sqlx::{FromRow, PgPool};
 use url::Url;
@@ -462,8 +468,8 @@ async fn shorten(url: String, state: &State<AppState>) -> Result<String, status:
 
 static MIGRATOR: Migrator = sqlx::migrate!();
 
-#[shuttle_service::main]
-async fn rocket(#[shuttle_shared_db::Postgres] pool: PgPool) -> ShuttleRocket {
+#[shuttle_runtime::main]
+async fn rocket(#[shuttle_shared_db::Postgres] pool: PgPool) -> shuttle_rocket::ShuttleRocket {
     MIGRATOR.run(&pool).await.map_err(CustomError::new)?;
 
     let state = AppState { pool };
@@ -471,7 +477,7 @@ async fn rocket(#[shuttle_shared_db::Postgres] pool: PgPool) -> ShuttleRocket {
         .mount("/", routes![redirect, shorten])
         .manage(state);
 
-    Ok(rocket)
+    Ok(rocket.into())
 }
 ```
 

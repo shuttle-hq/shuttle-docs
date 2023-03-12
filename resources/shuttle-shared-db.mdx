@@ -22,10 +22,10 @@ When setting the `local_uri` you can also insert secrets from `Secrets.toml` usi
 `PASSWORD` secret, pass it in like this:
 
 ```rust
-#[shuttle_service::main]
+#[shuttle_runtime::main]
 async fn poem(#[shuttle_shared_db::Postgres(
         local_uri = "postgres://postgres:{secrets.PASSWORD}@localhost:16695/postgres"
-    )] pool: PgPool) -> shuttle_service::ShuttlePoem<impl poem::Endpoint> { ... }
+    )] pool: PgPool) -> ShuttlePoem<impl poem::Endpoint> { ... }
 ```
 
 ## Example
@@ -33,10 +33,10 @@ The shuttle poem main function below uses the `[shuttle_shared_db::Postgres]` at
 which can be accessed using a pre-configured, authenticated [sqlx Pool](https://docs.rs/sqlx/latest/sqlx/pool/index.html).
 
 ```rust main.rs
-#[shuttle_service::main]
+#[shuttle_runtime::main]
 async fn poem(
     #[shuttle_shared_db::Postgres] pool: PgPool,
-) -> shuttle_service::ShuttlePoem<impl poem::Endpoint> {
+) -> ShuttlePoem<impl poem::Endpoint> {
     pool.execute(include_str!("../schema.sql"))
         .await
         .map_err(CustomError::new)?;
@@ -46,7 +46,7 @@ async fn poem(
         .at("/todo/:id", get(retrieve))
         .with(AddData::new(pool));
 
-    Ok(app)
+    Ok(app.into())
 }
 ```
 

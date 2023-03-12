@@ -312,13 +312,12 @@ AtomicUsize is used for user IDs as we will want the value to be shared safely a
 Let's quickly make up our main function so that we have a working route that we can test with our front end:
 
 ```rust
-#[shuttle_service::main]
-async fn main() -> ShuttleAxum {
-
+#[shuttle_runtime::main]
+async fn axum() -> ShuttleAxum {
     // set up router with Secrets
     let router = router(secret, static_folder);
 
-    Ok(sync_wrapper)
+    Ok(router.into())
 }
 
 fn router(secret: String, static_folder: PathBuf) -> Router {
@@ -428,19 +427,18 @@ Now while the app is now technically a minimum viable product, there's a couple 
 Before we get started however, let's quickly update our main function so that we can quickly pull in our environment variables and use static assets:
 
 ```rust
-#[shuttle_service::main]
-async fn main(
+#[shuttle_runtime::main]
+async fn axum(
     #[shuttle_secrets::Secrets] secrets: SecretStore,
     #[shuttle_static_folder::StaticFolder] static_folder: PathBuf
 ) -> ShuttleAxum {
-
     // We use Secrets.toml to set the BEARER key, just like in a .env file and call it here
     let secret = secrets.get("BEARER").unwrap_or("Bear".to_string());
 
     // set up router with Secrets
     let router = router(secret);
 
-    Ok(router)
+    Ok(router.into())
 }
 ```
 
@@ -548,19 +546,18 @@ Now that we've changed the connection URL, our compiled assets in our Rust folde
 Now we can update our main function and router together so that the router will use a `SpaRouter` function provided by `axum_extra`, as well as use the static file path:
 
 ```rust
-#[shuttle_service::main]
-async fn main(
+#[shuttle_runtime::main]
+async fn axum(
     #[shuttle_secrets::Secrets] secrets: SecretStore,
     #[shuttle_static_folder::StaticFolder] static_folder: PathBuf
 ) -> ShuttleAxum {
-
     // We use Secrets.toml to set the BEARER key, just like in a .env file and call it here
     let secret = secrets.get("BEARER").unwrap_or("Bear".to_string());
 
     // set up router with Secrets
     let router = router(secret, static_folder);
 
-    Ok(router)
+    Ok(router.into())
 }
 
 fn router(secret: String, static_folder: PathBuf) -> Router {

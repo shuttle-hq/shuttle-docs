@@ -23,8 +23,10 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
-shuttle-service = { version = "0.11.0", features = ["web-warp"] }
-warp = "0.3.2"
+shuttle-runtime = { version = "0.1.0" }
+shuttle-warp = { version = "0.1.0" }
+tokio = { version = "1.26.0" }
+warp = "0.3.3"
 ```
 Your `main.rs` should look like this:
 
@@ -32,10 +34,10 @@ Your `main.rs` should look like this:
 use warp::Filter;
 use warp::Reply;
 
-#[shuttle_service::main]
-async fn warp() -> shuttle_service::ShuttleWarp<(impl Reply,)> {
-    let route = warp::any().map(|| "Hello, World");
-    Ok(route.boxed())
+#[shuttle_runtime::main]
+async fn warp() -> shuttle_warp::ShuttleWarp<(impl Reply,)> {
+    let route = warp::any().map(|| "Hello, World!");
+    Ok(route.boxed().into())
 }
 ```
 

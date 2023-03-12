@@ -22,7 +22,7 @@ URI, simply pass it in as an argument to your resource. This argument also suppo
 with string interpolation:
 
 ```rust
-#[shuttle_service::main]
+#[shuttle_runtime::main]
 async fn tide(#[shuttle_aws_rds::Postgres(
         local_uri = "postgres://postgres:{secrets.PASSWORD}@localhost:16695/postgres"
     )] pool: PgPool) -> ShuttleTide<MyState> { ... }

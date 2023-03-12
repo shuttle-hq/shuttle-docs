@@ -25,7 +25,7 @@ When setting the `local_uri` you can also insert secrets from `Secrets.toml` usi
 `PASSWORD` secret, pass it in like this:
 
 ```rust
-#[shuttle_service::main]
+#[shuttle_runtime::main]
 async fn tide(#[shuttle_aws_rds::Postgres(
         local_uri = "postgres://postgres:{secrets.PASSWORD}@localhost:16695/postgres"
     )] pool: PgPool) -> ShuttleTide<MyState> { ... }
@@ -36,7 +36,7 @@ This snippet shows the main function of a tide app that uses the `shuttle_aws_rd
 It gives you an authenticated  [sqlx Pool](https://docs.rs/sqlx/latest/sqlx/pool/index.html), which you can use to interact with the database.
 
 ```rust main.rs
-#[shuttle_service::main]
+#[shuttle_runtime::main]
 async fn tide(#[shuttle_aws_rds::Postgres] pool: PgPool) -> ShuttleTide<MyState> {
     pool.execute(include_str!("../schema.sql"))
         .await
@@ -49,7 +49,7 @@ async fn tide(#[shuttle_aws_rds::Postgres] pool: PgPool) -> ShuttleTide<MyState>
     app.at("/todo").post(add);
     app.at("/todo/:id").get(retrieve);
 
-    Ok(app)
+    Ok(app.into())
 }
 ```
 

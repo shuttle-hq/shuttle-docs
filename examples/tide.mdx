@@ -25,20 +25,22 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
-shuttle-service = { version = "0.11.0", features = ["web-tide"] }
+shuttle-tide = { version = "0.1.0" }
+shuttle-runtime = { version = "0.1.0" }
+tokio = { version = "1.26.0" }
 tide = "0.16.0"
 ```
 Your `main.rs` should look like this:
 
 ```Rust main.rs
-#[shuttle_service::main]
-async fn tide() -> shuttle_service::ShuttleTide<()> {
+#[shuttle_runtime::main]
+async fn tide() -> shuttle_tide::ShuttleTide<()> {
     let mut app = tide::new();
     app.with(tide::log::LogMiddleware::new());
 
     app.at("/hello").get(|_| async { Ok("Hello, world!") });
 
-    Ok(app)
+    Ok(app.into())
 }
 ```
 
@@ -69,10 +71,12 @@ crate-type = ["cdylib"]
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-serde = { version = "1.0", features = ["derive"] }
-shuttle-aws-rds = { version = "0.11.0", features = ["postgres"] }
-shuttle-service = { version = "0.11.0", features = ["web-tide"] }
-sqlx = { version = "0.6", features = ["runtime-tokio-native-tls", "postgres"] }
+serde = { version = "1.0.148", features = ["derive"] }
+shuttle-aws-rds = { version = "0.8.0", features = ["postgres"] }
+shuttle-runtime = { version = "0.1.0" }
+shuttle-tide = { version = "0.1.0" }
+sqlx = { version = "0.6.2", features = ["runtime-tokio-native-tls", "postgres"] }
+tokio = { version = "1.26.0" }
 tide = "0.16.0"
 ```
 
@@ -80,7 +84,8 @@ Your `main.rs` should look like this:
 
 ```rust main.rs
 use serde::{Deserialize, Serialize};
-use shuttle_service::{error::CustomError, ShuttleTide};
+use shuttle_runtime::{CustomError};
+use shuttle_tide::ShuttleTide;
 use sqlx::{Executor, FromRow, PgPool};
 use tide::{Body, Request};
 
@@ -109,7 +114,7 @@ struct MyState {
     pool: PgPool,
 }
 
-#[shuttle_service::main]
+#[shuttle_runtime::main]
 async fn tide(#[shuttle_aws_rds::Postgres] pool: PgPool) -> ShuttleTide<MyState> {
     pool.execute(include_str!("../schema.sql"))
         .await
@@ -122,9 +127,8 @@ async fn tide(#[shuttle_aws_rds::Postgres] pool: PgPool) -> ShuttleTide<MyState>
     app.at("/todo").post(add);
     app.at("/todo/:id").get(retrieve);
 
-    Ok(app)
+    Ok(app.into())
 }
-
 
 #[derive(Deserialize)]
 struct TodoNew {

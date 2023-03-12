@@ -24,9 +24,11 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
-hyper = { version = "0.14", features = ["full"] }
-shuttle-service = { version = "0.11.0", features = ["web-tower"] }
-tower = { version = "0.4", features = ["full"] }
+hyper = { version = "0.14.23", features = ["full"] }
+shuttle-runtime = { version = "0.1.0" }
+shuttle-tower = { version = "0.1.0" }
+tower = { version = "0.4.13", features = ["full"] }
+tokio = { version = "1.26.0" }
 ```
 Your `main.rs` should look like this:
 
@@ -61,9 +63,11 @@ impl tower::Service<hyper::Request<hyper::Body>> for HelloWorld {
     }
 }
 
-#[shuttle_service::main]
-async fn tower() -> Result<HelloWorld, shuttle_service::Error> {
-    Ok(HelloWorld)
+#[shuttle_runtime::main]
+async fn tower() -> shuttle_tower::ShuttleTower<HelloWorld> {
+    let service = HelloWorld;
+
+    Ok(service.into())
 }
 ```
 

@@ -102,12 +102,13 @@ impl EventHandler for Bot {
     }
     async fn ready(&self, _: Context, ready: Ready) {
         info!("{} is connected!", ready.user.name);
+    }
 }
 
-#[shuttle_service::main]
+#[shuttle_runtime::main]
 async fn serenity(
     #[shuttle_secrets::Secrets] secret_store: SecretStore,
-) -> shuttle_service::ShuttleSerenity {
+) -> shuttle_serenity::ShuttleSerenity {
     // Get the discord token set in `Secrets.toml`
     let discord_token = secret_store
         .get("DISCORD_TOKEN")
@@ -124,7 +125,7 @@ async fn serenity(
         )
         .await;
 
-        Ok(client)
+        Ok(client.into())
     }
 ```
 
@@ -171,6 +172,7 @@ impl EventHandler for Bot {
 
         info!("Registered commands: {:#?}", commands);
     }
+}
 ```
 
 > Serenity has a bit of a different way of registering commands using a
@@ -406,7 +408,7 @@ we can wire that into the bots logic.
 
 Our `get_forecast` requires a `reqwest` Client and the weather API key. We will
 add some fields to our bot for holding this data and initialize this in the
-`shuttle_service::main` function. Using the secrets feature we can get our
+`shuttle_runtime::main` function. Using the secrets feature we can get our
 weather API key:
 
 ```rust
@@ -417,10 +419,10 @@ struct Bot {
     discord_guild_id: GuildId,
 }
 
-#[shuttle_service::main]
+#[shuttle_runtime::main]
 async fn serenity(
     #[shuttle_secrets::Secrets] secret_store: SecretStore,
-) -> shuttle_service::ShuttleSerenity {
+) -> shuttle_srenity::ShuttleSerenity {
     // Get the discord token set in `Secrets.toml`
     let discord_token = secret_store
         .get("DISCORD_TOKEN")
@@ -440,7 +442,7 @@ async fn serenity(
         discord_guild_id.parse().unwrap(),
     )
     .await;
- Ok(client)
+    Ok(client.into())
 }
 
 

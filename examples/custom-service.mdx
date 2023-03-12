@@ -48,12 +48,13 @@ hyper = "0.14.24"
 poise = "0.5.2"
 serde = "1.0"
 shuttle-secrets = "0.11.0"
-shuttle-service = { version = "0.11.0"}
-tokio = "1.22.0"
+shuttle-service = { version = "0.11.0" }
+shuttle-runtime = { version = "0.1.0" }
+tokio = "1.26.0"
 ```
 
 ### Getting Started
-To get started, we need to return a wrapper struct from our `shuttle_service::main` function that 
+To get started, we need to return a wrapper struct from our `shuttle_runtime::main` function that 
 implements `shuttle_service::Service`, which we can declare like so:
 
 ```rust main.rs
@@ -131,7 +132,7 @@ pub async fn hello_world() -> impl IntoResponse {
 ```
 
 ### Struct Implementation
-To finish up, we return the wrapper struct from our `shuttle_service::main` function and add implementation
+To finish up, we return the wrapper struct from our `shuttle_runtime::main` function and add implementation
 for setting up each of our services for the struct, like so:
 
 ```rust main.rs
@@ -153,7 +154,7 @@ pub struct CustomService {
     router: Router,
 }
 
-#[shuttle_service::main]
+#[shuttle_runtime::main]
 async fn init(
     #[shuttle_secrets::Secrets] secrets: SecretStore,
 ) -> Result<CustomService, shuttle_service::Error> {
