@@ -55,6 +55,7 @@
         "introduction/local-run",
         "introduction/shuttle-commands",
         "introduction/telemetry",
+        "introduction/idle-projects",
         "introduction/node-cli"
       ]
     },
@@ -86,10 +87,7 @@
     },
     {
       "group": "Support",
-      "pages": [
-        "support/faq",
-        "support/troubleshooting"
-      ]
+      "pages": ["support/faq", "support/troubleshooting"]
     },
     {
       "group": "Resources",
