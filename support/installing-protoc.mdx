@@ -1,0 +1,29 @@
+---
+title: "Installing Protoc"
+---
+
+Since `v0.12.0` `protoc` is a requirement to use and install `cargo-shuttle`. To install `protoc`, here
+are some instructions for Windows, Linux and Mac:
+
+### Windows
+
+On Windows the simplest way to install `protoc` is to first install [chocolatey](https://chocolatey.org/install), 
+and then simply run: `choco install protoc`.
+
+### Linux and Mac
+
+For Linux and Mac you can use this install script:
+```bash
+# replace <arch> with your architecture, for example for linux x86_64 replace <arch> with: linux-x86_64
+curl -OL https://github.com/protocolbuffers/protobuf/releases/download/v21.9/protoc-21.9-<arch>.zip &&\
+    sudo unzip -o protoc-21.9-<arch>.zip -d /usr/local bin/protoc &&\
+    sudo unzip -o protoc-21.9-<arch>.zip -d /usr/local 'include/*' &&\
+    rm -f protoc-21.9-<arch>.zip
+```
+If you'd like to do this yourself without the above script, see instructions here: https://grpc.io/docs/protoc-installation/#install-pre-compiled-binaries-any-os
+
+On Mac you can also install protoc with `brew`: `brew install protobuf`.
+
+**Note:** *installing `protoc` on Linux with `apt-get install protobuf-compiler` will not be enough, 
+since it will install an old version of `protoc` (v3.12) but it needs to be at least v3.19. 
+Installing on mac using brew works.*

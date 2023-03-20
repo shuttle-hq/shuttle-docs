@@ -83,7 +83,11 @@
     },
     {
       "group": "Support",
-      "pages": ["support/faq", "support/troubleshooting"]
+      "pages": [
+        "support/faq",
+        "support/troubleshooting",
+        "support/installing-protoc"
+      ]
     },
     {
       "group": "Resources",
