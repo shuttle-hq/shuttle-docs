@@ -41,30 +41,28 @@ name = "custom-service"
 version = "0.1.0"
 edition = "2021"
 
-[lib]
-
 [dependencies]
 anyhow = "1.0.62"
 axum = "0.6.4"
 hyper = "0.14.24"
 poise = "0.5.2"
 serde = "1.0"
-shuttle-secrets = "0.11.0"
-shuttle-service = { version = "0.11.0"}
-sync_wrapper = "0.1.2"
-tokio = "1.22.0"
+shuttle-secrets = "0.12.0"
+shuttle-service = { version = "0.12.0" }
+shuttle-runtime = { version = "0.12.0" }
+tokio = "1.26.0"
 ```
 
 ### Getting Started
-To get started, we need to return a wrapper struct from our `shuttle_service::main` function that 
+To get started, we need to return a wrapper struct from our `shuttle_runtime::main` function that 
 implements `shuttle_service::Service`, which we can declare like so:
 
-```rust lib.rs
+```rust main.rs
 pub struct CustomService {
     discord_bot:
         FrameworkBuilder<Data, Box<(dyn std::error::Error +
          std::marker::Send + Sync + 'static)>>,
-    router: SyncWrapper<Router>,
+    router: Router,
 }
 ```
 
@@ -73,11 +71,11 @@ for example if you're implementing service for an HTTP server, you can use the `
 You can only have one HTTP service bound to the `addr`, but you can start other services that don't rely on 
 binding to a socket, like so:
 
-```rust lib.rs
+```rust main.rs
 #[shuttle_service::async_trait]
 impl shuttle_service::Service for CustomService {
     async fn bind(
-        mut self: Box<Self>,
+        mut self,
         addr: std::net::SocketAddr,
     ) -> Result<(), shuttle_service::error::Error> {
         
@@ -101,7 +99,7 @@ Before we can actually run the program, we will need to set up the commands and 
 ```rust commands.rs
 use poise::serenity_prelude as serenity;
 
-// this is a blank struct initialised in lib.rs and then imported here
+// this is a blank struct initialised in main.rs and then imported here
 use crate::Data;
 
 type Error = Box<dyn std::error::Error + Send + Sync>;
@@ -134,10 +132,10 @@ pub async fn hello_world() -> impl IntoResponse {
 ```
 
 ### Struct Implementation
-To finish up, we return the wrapper struct from our `shuttle_service::main` function and add implementation
+To finish up, we return the wrapper struct from our `shuttle_runtime::main` function and add implementation
 for setting up each of our services for the struct, like so:
 
-```rust lib.rs
+```rust main.rs
 use poise::serenity_prelude as serenity;
 use shuttle_secrets::SecretStore;
 use std::sync::Arc;
@@ -153,10 +151,10 @@ pub struct CustomService {
     discord_bot:
         FrameworkBuilder<Data, Box<(dyn std::error::Error +
          std::marker::Send + Sync + 'static)>>,
-    router: SyncWrapper<Router>,
+    router: Router,
 }
 
-#[shuttle_service::main]
+#[shuttle_runtime::main]
 async fn init(
     #[shuttle_secrets::Secrets] secrets: SecretStore,
 ) -> Result<CustomService, shuttle_service::Error> {
@@ -179,7 +177,6 @@ async fn init(
         });
 
     let router = build_router();
-    let router = SyncWrapper::new(router);
 
     Ok(CustomService {
         discord_bot,

@@ -4,11 +4,6 @@
     "light": "/images/logo/light.png",
     "dark": "/images/logo/dark.png"
   },
-  "analytics": {
-    "ga4": {
-      "measurementId": "G-KR6NKW20JH"
-    }
-  },
   "favicon": "/favicon.png",
   "colors": {
     "primary": "#F25100",
@@ -67,6 +62,7 @@
         "examples/poem",
         "examples/rocket",
         "examples/salvo",
+        "examples/shuttle-next",
         "examples/serenity",
         "examples/thruster",
         "examples/tide",

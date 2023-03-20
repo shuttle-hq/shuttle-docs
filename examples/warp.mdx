@@ -22,22 +22,22 @@ name = "hello-world"
 version = "0.1.0"
 edition = "2021"
 
-[lib]
-
 [dependencies]
-shuttle-service = { version = "0.11.0", features = ["web-warp"] }
-warp = "0.3.2"
+shuttle-runtime = { version = "0.12.0" }
+shuttle-warp = { version = "0.12.0" }
+tokio = { version = "1.26.0" }
+warp = "0.3.3"
 ```
-Your `lib.rs` should look like this:
+Your `main.rs` should look like this:
 
-```Rust lib.rs
+```Rust main.rs
 use warp::Filter;
 use warp::Reply;
 
-#[shuttle_service::main]
-async fn warp() -> shuttle_service::ShuttleWarp<(impl Reply,)> {
-    let route = warp::any().map(|| "Hello, World");
-    Ok(route.boxed())
+#[shuttle_runtime::main]
+async fn warp() -> shuttle_warp::ShuttleWarp<(impl Reply,)> {
+    let route = warp::any().map(|| "Hello, World!");
+    Ok(route.boxed().into())
 }
 ```
 

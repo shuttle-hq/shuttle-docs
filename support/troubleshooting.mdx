@@ -36,7 +36,7 @@ This section is aimed at collecting common issues users have to provide quick de
   <Accordion title="How can I handle environment variables?">
     Add **`shuttle-secrets`** to the dependencies for your service, and add a **`Secrets.toml`** to the root of your project with the secrets you'd like to store. Make sure to add **`Secrets.toml`** to a **`.gitignore`** to omit your secrets from version control.
 
-    Next, pass **`#[shuttle_secrets::Secrets] secret_store: SecretStore`** as an argument to your **`shuttle_service::main`** function. **`SecretStore::get`** can now be called to retrieve your API keys and other secrets at runtime.
+    Next, pass **`#[shuttle_secrets::Secrets] secret_store: SecretStore`** as an argument to your **`shuttle_runtime::main`** function. **`SecretStore::get`** can now be called to retrieve your API keys and other secrets at runtime.
 
     For more details, and an explanation on how to use local secrets, head on over here: [shuttle secrets](https://docs.shuttle.rs/resources/shuttle-secrets).
   </Accordion>

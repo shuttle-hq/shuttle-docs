@@ -10,7 +10,7 @@ Add `shuttle-static-folder` to the dependencies for your service. This resource 
 An example using the Axum framework can be found on [GitHub](https://github.com/shuttle-hq/examples/tree/main/axum/static-files)
 
 ``` rust
-#[shuttle_service::main]
+#[shuttle_runtime::main]
 async fn main(
     #[shuttle_static_folder::StaticFolder] static_folder: PathBuf,
 ) -> __ { ... }
@@ -25,7 +25,7 @@ async fn main(
 Since this plugin defaults to the `static` folder, the arguments can be used to use the `public` folder instead.
 
 ``` rust
-#[shuttle_service::main]
+#[shuttle_runtime::main]
 async fn main(
     #[shuttle_static_folder::StaticFolder(folder = "public")] public_folder: PathBuf,
 ) -> __ { ... }
