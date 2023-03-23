@@ -55,6 +55,12 @@
       ]
     },
     {
+      "group": "Configuration",
+      "pages": [
+        "configuration/shuttle-service-name"
+      ]
+    },
+    {
       "group": "Examples",
       "pages": [
         "examples/axum",
