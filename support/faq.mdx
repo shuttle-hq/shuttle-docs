@@ -16,7 +16,7 @@ This section is aimed at collecting common questions users have to provide docum
   <Accordion title="Can I use frontend frameworks with Shuttle?">
     Of course! When you deploy a project on Shuttle, your API becomes available at a URL of the form `${project_name}.shuttleapp.rs`. And since Shuttle is compatible with any of the common frontend hosting solutions (Vercel, Netlify, etc), you just have to make your API calls to the URL of your project, and you're up.
 
-    For details on how to use static files with shuttle, check out our docs: [Shuttle static folder](https://docs.shuttle.rs/resources/shuttle-static-folder)
+    For details on how to serve static files with shuttle, check out our docs: [Shuttle static folder](https://docs.shuttle.rs/resources/shuttle-static-folder)
 
     For a tutorial on how to build & deploy a simple full-stack app using Next.js & Rust, check out this tutorial: [Deploying a NextJS frontend with Rust, in one go](https://joshmo.hashnode.dev/deploying-a-nextjs-front-end-with-a-rust-api-in-one-go)
   </Accordion>
@@ -27,10 +27,10 @@ This section is aimed at collecting common questions users have to provide docum
     Absolutely! And it's quite easy. Check out this section of our docs for the steps to do so: [Custom Services](https://docs.shuttle.rs/examples/custom-service)
   </Accordion>
   <Accordion title="Can I use SeaORM with shuttle?">
-    Yes, since you are able to can create a SeaORM connection from the sqlx pool Shuttle passes to you when you provision a SQL database. You can take a look at the example [here](https://github.com/shuttle-hq/shuttle/issues/179#issuecomment-1203536025).
+    Yes, you can create a SeaORM connection from the sqlx pool Shuttle passes to you when you provision a SQL database. You can take a look at the example [here](https://github.com/shuttle-hq/shuttle/issues/179#issuecomment-1203536025).
   </Accordion>
   <Accordion title="Can I rename my shuttle project?">
-    Certainly. Just create a `Shuttle.toml` file in the some folder where your `Cargo.toml` is and add `name = "your-project-name`.
+    Certainly. Just create a `Shuttle.toml` file in the folder where your `Cargo.toml` is and add `name = "your-project-name`.
   </Accordion>
 </AccordionGroup>
 

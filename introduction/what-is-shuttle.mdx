@@ -40,7 +40,8 @@ provisioned through static analysis in real-time.
 ```rust
 #[shuttle_runtime::main]
 async fn rocket(
-    #[shuttle_shared_db::Postgres] pool: PgPool, // automatic db provisioning + hands you back an authenticated connection pool
+    // automatic db provisioning + hands you back an authenticated connection pool
+    #[shuttle_shared_db::Postgres] pool: PgPool,
 ) -> ShuttleRocket<...> {
     // application code
 }
