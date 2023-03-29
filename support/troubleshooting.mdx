@@ -6,13 +6,13 @@ This section is aimed at collecting common issues users have to provide quick de
 
 <AccordionGroup>
   <Accordion title="I get an error about protoc not being installed, or protoc being the wrong version.">
-    Since `v0.12.0` `protoc` is a requirement to use and install `cargo-shuttle`. To install `protoc`, here
-    check out our installation guide: [installing protoc](./installing-protoc)
+    Since shuttle v0.12.0, `protoc` is a requirement to install `cargo-shuttle` and to use `cargo-runtime`.
+    To install `protoc`, check out our [installation guide](./installing-protoc).
   </Accordion>
   <Accordion title="I've updated shuttle and my project isn't working anymore.">
     If you've recently updated shuttle, in order to get your project back up, you need to run:
-    **`cargo shuttle project rm`** followed by
-    **`cargo shuttle project new`** and everything should be back in working order.
+    `cargo shuttle project rm` followed by
+    `cargo shuttle project new` and everything should be back in working order.
   </Accordion>
   <Accordion title="I'm struggling to install shuttle on my M1/M2 Mac, what should I do?">
     There's a known bug with arm64 because of the openssl crates being built for x86, rather than arm64. In order to get around that issue, you can either run:
@@ -24,20 +24,20 @@ This section is aimed at collecting common issues users have to provide quick de
     `cargo binstall cargo-shuttle`
   </Accordion>
   <Accordion title="How can I return custom errors with shuttle?">
-    CustomError is an alias for **`anyhow::Error`**, the simplest way to output a relevant message here is by using **`anyhow::Context`** like this:
+    CustomError is an alias for `anyhow::Error`, the simplest way to output a relevant message here is by using `anyhow::Context` like this:
     
     ```rust
-        pool.execute(include_str!("../schema.sql"))
+    pool.execute(include_str!("../schema.sql"))
         .await
         .context("failed to run migrations")?;
     ```
   </Accordion>
   <Accordion title="How can I handle environment variables?">
-    Add **`shuttle-secrets`** to the dependencies for your service, and add a **`Secrets.toml`** to the root of your project with the secrets you'd like to store. Make sure to add **`Secrets.toml`** to a **`.gitignore`** to omit your secrets from version control.
+    Add `shuttle-secrets` to the dependencies for your service, and add a `Secrets.toml` to the root of your project with the secrets you'd like to store. Make sure to add `Secrets*.toml` to your `.gitignore` to omit your secrets from version control.
 
-    Next, pass **`#[shuttle_secrets::Secrets] secret_store: SecretStore`** as an argument to your **`shuttle_runtime::main`** function. **`SecretStore::get`** can now be called to retrieve your API keys and other secrets at runtime.
+    Next, pass `#[shuttle_secrets::Secrets] secret_store: SecretStore` as an argument to your `shuttle_runtime::main` function. `SecretStore::get` can now be called to retrieve your API keys and other secrets at runtime.
 
-    For more details, and an explanation on how to use local secrets, head on over here: [shuttle secrets](https://docs.shuttle.rs/resources/shuttle-secrets).
+    For more details, and an explanation on how to use local secrets, head on over here: [shuttle secrets](../resources/shuttle-secrets).
   </Accordion>
 </AccordionGroup>
 

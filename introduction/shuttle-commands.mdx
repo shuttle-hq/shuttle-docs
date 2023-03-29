@@ -6,11 +6,11 @@ title: "Command Line Interface"
 
 All interaction with the shuttle services is through the command line interface (CLI).  A combination of commands, and sub-commands, each with options, allow a variety of management tasks to be performed.
 
-Any given command is issued in the format: ```cargo shuttle [OPTIONS] <COMMAND>```
+Any given command is issued in the format: `cargo shuttle [OPTIONS] <COMMAND>`
 
 To get an overview of available commands and any available options, run:
 
-```
+```bash
 cargo shuttle help
 ```
 
@@ -26,22 +26,22 @@ Options can be passed in with commands to customize a command's, or a sub-comman
 
 The core shuttle commands are:
 
-| Command    |                      Explanation                          |
-|----------  |--------------                                             |
-| stop       |  stop the currently running deployment                    |
-| deploy     |  deploy a shuttle service                                 |
-| deployment |  manage deployments of a shuttle service                  |
-| feedback   |  open the create new issue page on the shuttle github     |
-| generate   |  generate shell completions                               |
-| help       |  Print this message or the help of the given Subcommand(s)|
-| init       |  create a new shuttle service                             |
-| login      |  login to the shuttle platform                            |
-| logout     |  logout from the shuttle platform                         |
-| logs       |  view the logs of deployment in this shuttle service      |
-| project    |  manage a project on shuttle                              |
-| run        |  run a shuttle service locally                            |
-| secrets    |  manage secrets for this shuttle service                  |
-| status     |  view the status of a shuttle service                     |
+| Command    |                      Explanation                           |
+| ---------- | ---------------------------------------------------------- |
+| deploy     |  deploy a shuttle service                                  |
+| deployment |  manage deployments of a shuttle service                   |
+| init       |  create a new shuttle service                              |
+| generate   |  generate shell completions                                |
+| status     |  view the status of a shuttle service                      |
+| logs       |  view the logs of deployment in this shuttle service       |
+| stop       |  stop the currently running deployment                     |
+| secrets    |  manage secrets for this shuttle service                   |
+| login      |  login to the shuttle platform                             |
+| logout     |  logout from the shuttle platform                          |
+| run        |  run a shuttle service locally                             |
+| feedback   |  open the create new issue page on the shuttle github      |
+| project    |  manage a project on shuttle                               |
+| help       |  Print this message or the help of the given subcommand(s) |
 
 ## Sub-commands
 
