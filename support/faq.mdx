@@ -10,6 +10,11 @@ This section is aimed at collecting common questions users have to provide docum
     This gives you safe isolation from other users,
     and also across all the projects that are owned by your account.
   </Accordion>
+  <Accordion title="What happens when I create a project?">
+    The `cargo shuttle project new` command creates a Docker containers, which will
+    stay up indefinitely as long as it [is active](../idle-projects). Your project container
+    has a limit of 6 GiB memory (4 GiB during high contention, which is very rare) and 4 vCPUs.
+  </Accordion>
   <Accordion title="What happens when I deploy to shuttle?">
     Your code is analyzed and built on our servers. The first time you introduce additional resources in your code, like the first time you use a database, we will add that resource to your project and wire it automatically to your deployment.
   </Accordion>
