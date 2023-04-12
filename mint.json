@@ -51,14 +51,13 @@
         "introduction/shuttle-commands",
         "introduction/telemetry",
         "introduction/idle-projects",
-        "introduction/node-cli"
+        "introduction/node-cli",
+        "introduction/workspaces"
       ]
     },
     {
       "group": "Configuration",
-      "pages": [
-        "configuration/shuttle-service-name"
-      ]
+      "pages": ["configuration/shuttle-service-name"]
     },
     {
       "group": "Examples",

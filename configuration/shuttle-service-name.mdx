@@ -32,3 +32,8 @@ Where `<your-project-name>` is whatever you wish to name the project.  This meth
 ## via Cargo.toml
 
 In the absence of either of the previous two options, the project will be named based on the content of the `name = ` field of the `[package]` section within the `Cargo.toml` configuration file.
+
+## Workspaces
+
+If your project is a cargo workspace the name will be taken from a `Shuttle.toml` in the root of the workspace, or
+from the directory name of the workspace. See [workspaces](../introduction/workspaces).
