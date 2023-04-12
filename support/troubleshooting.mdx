@@ -11,8 +11,7 @@ This section is aimed at collecting common issues users have to provide quick de
   </Accordion>
   <Accordion title="I've updated shuttle and my project isn't working anymore.">
     If you've recently updated shuttle, in order to get your project back up, you need to run:
-    `cargo shuttle project rm` followed by
-    `cargo shuttle project new` and everything should be back in working order.
+    `cargo shuttle project restart` and everything should be back in working order.
   </Accordion>
   <Accordion title="I'm struggling to install shuttle on my M1/M2 Mac, what should I do?">
     There's a known bug with arm64 because of the openssl crates being built for x86, rather than arm64. In order to get around that issue, you can either run:
@@ -25,7 +24,7 @@ This section is aimed at collecting common issues users have to provide quick de
   </Accordion>
   <Accordion title="How can I return custom errors with shuttle?">
     CustomError is an alias for `anyhow::Error`, the simplest way to output a relevant message here is by using `anyhow::Context` like this:
-    
+
     ```rust
     pool.execute(include_str!("../schema.sql"))
         .await

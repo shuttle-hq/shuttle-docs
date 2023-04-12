@@ -323,7 +323,7 @@ After logging into shuttle, use the following command to deploy this example:
 
 Create a project, this will start an isolated deployer container for you under the hood:
 ```bash
-cargo shuttle project new
+cargo shuttle project start
 ```
 
 ```bash
@@ -485,7 +485,7 @@ async fn rocket(#[shuttle_shared_db::Postgres] pool: PgPool) -> shuttle_rocket::
 
 Create a project, this will start an isolated deployer container for you under the hood:
 ```bash
-cargo shuttle project new
+cargo shuttle project start
 ```
 
 Once you've sorted out all of the items from above; you can deploy the app by simply running:
