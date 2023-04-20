@@ -2,28 +2,42 @@
 title: "Installation"
 ---
 
+## Prerequisites
+
+To run a shuttle project, you need to install `protoc`, check out our [protoc installation guide](../support/installing-protoc).
+
+## Install shuttle
+
+The `cargo-shuttle` CLI can be installed with a pre-built binary or from source with cargo.
+
+### Pre-built binary
+
 Shuttle provides pre-built binaries of the `cargo-shuttle` CLI with every release
-for most platforms, they can be found on [our github](https://github.com/shuttle-hq/shuttle/releases/latest).
+for most platforms, they can be found on [our GitHub](https://github.com/shuttle-hq/shuttle/releases/latest).
 
-Our binaries can also be installed using [`cargo-binstall`](https://github.com/cargo-bins/cargo-binstall), 
-which will automatically install the correct target for your system. to install with
-`cargo-binstall`, run:
+Our binaries can also be installed using [cargo-binstall](https://github.com/cargo-bins/cargo-binstall),
+which will automatically install the correct target for your system.
+To install with `cargo-binstall`, run:
 
-```
+```sh
 cargo binstall cargo-shuttle
 ```
 
-While it will be a bit slower, you can also install directly with cargo:
+### From source
+
+Although a bit slower, you can also install directly with cargo:
 
 ```sh
 cargo install cargo-shuttle
 ```
 
-And then login:
+## Login
+
+After installing, log in with:
 
 ```sh
 cargo shuttle login
 ```
 
-Once you've done this, you are good to go! To get up and running, proceed to our
-[Quick Start](./quick-start) page!
+Once you've done this, you are good to go!
+To get up and running, proceed to our [Quick Start](./quick-start) page!

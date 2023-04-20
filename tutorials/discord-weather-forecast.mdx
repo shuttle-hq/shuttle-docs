@@ -55,7 +55,7 @@ We now have a bot on our server:
 
 ![](/images/discord-weather-forecast-4.png)
 
-Oh, they’re offline 😢
+Oh, they're offline 😢
 
 ### Getting a bot online
 
@@ -68,7 +68,7 @@ Serenity is a library for writing Discord bots (and communicating with the
 Discord API). We can create a new Serenity project which is readily deployable
 on shuttle with: `cargo shuttle init --serenity`
 
-If you don’t have shuttle yet, you can install it with
+If you don't have shuttle yet, you can install it with
 `cargo install cargo-shuttle`. Afterwards, run the following in an empty
 directory:
 
@@ -76,9 +76,9 @@ directory:
 cargo shuttle init --serenity
 ```
 
-After running it you, should see the following generated in `src/lib.rs`:
+After running it you, should see the following generated in `src/main.rs`:
 
-```rust src/lib.rs
+```rust src/main.rs
 use anyhow::Context as _;
 use serenity::model::application::interaction::{Interaction, InteractionResponseType};
 use serenity::model::gateway::Ready;
@@ -102,12 +102,13 @@ impl EventHandler for Bot {
     }
     async fn ready(&self, _: Context, ready: Ready) {
         info!("{} is connected!", ready.user.name);
+    }
 }
 
-#[shuttle_service::main]
+#[shuttle_runtime::main]
 async fn serenity(
     #[shuttle_secrets::Secrets] secret_store: SecretStore,
-) -> shuttle_service::ShuttleSerenity {
+) -> shuttle_serenity::ShuttleSerenity {
     // Get the discord token set in `Secrets.toml`
     let discord_token = secret_store
         .get("DISCORD_TOKEN")
@@ -124,7 +125,7 @@ async fn serenity(
         )
         .await;
 
-        Ok(client)
+        Ok(client.into())
     }
 ```
 
@@ -149,7 +150,7 @@ You can copy the guild ID by right-clicking here on the server name and click
 Now that we have the information for setup, we can start writing our bot and its
 commands.
 
-We will first get rid of the `async fn message` hook as we won’t be using it in
+We will first get rid of the `async fn message` hook as we won't be using it in
 this example. In the `ready` hook we will call `set_application_commands` with a
 `GuildId` to register a command with Discord. Here we register a `hello` command
 with a description and no parameters (Discord refers to these as options).
@@ -171,6 +172,7 @@ impl EventHandler for Bot {
 
         info!("Registered commands: {:#?}", commands);
     }
+}
 ```
 
 > Serenity has a bit of a different way of registering commands using a
@@ -248,7 +250,7 @@ Our bot should respond with "hello" to our command:
 
 ![](/images/discord-weather-forecast-8.png)
 
-Wow! Let’s make our bot do something a little more useful.
+Wow! Let's make our bot do something a little more useful.
 
 ### Making the bot do something
 
@@ -406,21 +408,21 @@ we can wire that into the bots logic.
 
 Our `get_forecast` requires a `reqwest` Client and the weather API key. We will
 add some fields to our bot for holding this data and initialize this in the
-`shuttle_service::main` function. Using the secrets feature we can get our
+`shuttle_runtime::main` function. Using the secrets feature we can get our
 weather API key:
 
 ```rust
-// In lib.rs
+// In main.rs
 struct Bot {
     weather_api_key: String,
     client: reqwest::Client,
     discord_guild_id: GuildId,
 }
 
-#[shuttle_service::main]
+#[shuttle_runtime::main]
 async fn serenity(
     #[shuttle_secrets::Secrets] secret_store: SecretStore,
-) -> shuttle_service::ShuttleSerenity {
+) -> shuttle_srenity::ShuttleSerenity {
     // Get the discord token set in `Secrets.toml`
     let discord_token = secret_store
         .get("DISCORD_TOKEN")
@@ -440,7 +442,7 @@ async fn serenity(
         discord_guild_id.parse().unwrap(),
     )
     .await;
- Ok(client)
+    Ok(client.into())
 }
 
 
@@ -549,7 +551,7 @@ Entering “Paris” as the place we get a result with a forecast:
 
 ![](/images/discord-weather-forecast-10.png)
 
-And entering a location that isn’t registered returns an error, thanks to the
+And entering a location that isn't registered returns an error, thanks to the
 error handling we added to the `get_forecast` function:
 
 ![](/images/discord-weather-forecast-11.png)

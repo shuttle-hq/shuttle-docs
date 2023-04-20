@@ -30,19 +30,17 @@ This isn't verified to be secure, use it at your own risk!!
 
 First, we will install shuttle for creating the project (and later for deployment). If you don't already have it you can install it with `cargo install cargo-shuttle`. We will first go to a new directory for our project and create a new Axum app with `cargo shuttle init --axum`.
 
-You should see the following in `src/lib.rs`:
+You should see the following in `src/main.rs`:
 
 ```rust
-use axum::{routing::get, Router}; use sync_wrapper::SyncWrapper;
+use axum::{routing::get, Router};
 
 async fn hello_world() -> &'static str { "Hello, world!" }
 
-#[shuttle_service::main] async fn axum() -> shuttle_service::ShuttleAxum { let
-router = Router::new().route("/hello", get(hello_world)); let sync_wrapper =
-SyncWrapper::new(router);
+#[shuttle_runtime::main] async fn axum() -> shuttle_axum::ShuttleAxum { 
+    let router = Router::new().route("/hello", get(hello_world)); 
 
-    Ok(sync_wrapper)
-
+    Ok(router.into())
 }
 ```
 
@@ -110,8 +108,8 @@ tera.add_raw_templates(vec![
 We add it via an [Extension](https://docs.rs/axum/latest/axum/struct.Extension.html)(wrapped in `Arc` so that extension cloning does not deep clone all the templates)
 
 ```rust
-#[shuttle_service::main]
-async fn axum() -> shuttle_service::ShuttleAxum {
+#[shuttle_runtime::main]
+async fn axum() -> shuttle_axum::ShuttleAxum {
     let mut tera = Tera::default();
     tera.add_raw_templates(vec![
         ("base.html", include_str!("../templates/base.html")),
@@ -123,8 +121,7 @@ async fn axum() -> shuttle_service::ShuttleAxum {
         .route("/hello", get(hello_world))
         .layer(Extension(Arc::new(tera)));
 
-    let sync_wrapper = SyncWrapper::new(router);
-    Ok(sync_wrapper)
+    Ok(router.into())
 }
 ```
 
@@ -224,7 +221,7 @@ Postgres database using the
 ```rust
 type Database = sqlx::PgPool;
 
-#[shuttle_service::main]
+#[shuttle_runtime::main]
 async fn axum(
     #[shuttle_shared_db::Postgres] pool: Database
 ) -> ShuttleAxum {
@@ -453,7 +450,7 @@ arc and a mutex because generating new identifiers requires mutable access. We
 now have the following main function:
 
 ```rust
-#[shuttle_service::main]
+#[shuttle_runtime::main]
 async fn axum(
     #[shuttle_shared_db::Postgres] pool: Database
 ) -> ShuttleAxum {
@@ -658,7 +655,7 @@ user it results in one database request, not two!
 We can add the middleware to our chain using:
 
 ```rust
-#[shuttle_service::main]
+#[shuttle_runtime::main]
 async fn axum(
     #[shuttle_shared_db::Postgres] pool: Database
 ) -> ShuttleAxum {
@@ -781,7 +778,7 @@ seen before but for a login screen. At the end of that we can add two new routes
 with three handlers completing the demo:
 
 ```rust
-#[shuttle_service::main]
+#[shuttle_runtime::main]
 async fn axum(
     #[shuttle_shared_db::Postgres] pool: Database
 ) -> ShuttleAxum {
@@ -805,7 +802,7 @@ interwebs. Luckily we are using shuttle, so it is as simple as:
 
 `cargo shuttle deploy`
 
-Because of our `#[shuttle_service::main]` annotation and out-the-box Axum
+Because of our `#[shuttle_runtime::main]` annotation and out-the-box Axum
 support our deployment doesn't need any prior config, it is instantly live!
 
 Now you can go ahead with these concepts and add functionality for listing and
@@ -823,7 +820,7 @@ opinions while building the site as well as things you could try extending it
 with.
 
 For templating Tera is great. I like how I separate the markup into external
-files rather than bundling it into `src/lib.rs`. Its API is easy to use and is
+files rather than bundling it into `src/main.rs`. Its API is easy to use and is
 well documented. However, it is quite a simple system. I had a few errors where
 I would rename or remove templates and because the template picker for rendering
 uses a map it can panic at runtime if the template does not exist. It would be

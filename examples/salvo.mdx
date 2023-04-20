@@ -23,15 +23,15 @@ name = "hello-world"
 version = "0.1.0"
 edition = "2021"
 
-[lib]
-
 [dependencies]
-salvo = "0.34.3"
-shuttle-service = { version = "0.10.0", features = ["web-salvo"] }
+salvo = "0.37.5"
+shuttle-salvo = { version = "0.14.0" }
+shuttle-runtime = { version = "0.14.0" }
+tokio = { version = "1.26.0" }
 ```
-Your `lib.rs` should look like this:
+Your `main.rs` should look like this:
 
-```Rust lib.rs
+```Rust main.rs
 use salvo::prelude::*;
 
 #[handler]
@@ -39,11 +39,11 @@ async fn hello_world(res: &mut Response) {
     res.render(Text::Plain("Hello, world!"));
 }
 
-#[shuttle_service::main]
-async fn salvo() -> shuttle_service::ShuttleSalvo {
+#[shuttle_runtime::main]
+async fn salvo() -> shuttle_salvo::ShuttleSalvo {
     let router = Router::with_path("hello").get(hello_world);
 
-    Ok(router)
+    Ok(router.into())
 }
 ```
 

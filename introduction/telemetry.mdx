@@ -5,7 +5,7 @@ description: "Using `tracing` or `log` with shuttle apps."
 
 ## Tracing
 
-When you build an app with the `#[shuttle_service::main]` macro, a global subscriber will be created and installed
+When you build an app with the `#[shuttle_runtime::main]` macro, a global subscriber will be created and installed
 [behind the scenes](https://github.com/shuttle-hq/shuttle/blob/001dbcfcf47066713598f00a98f4972de450ff3b/codegen/src/main/mod.rs#L237-L245).
 This means if you can skip this step when implementing [tracing](https://docs.rs/tracing/latest/tracing/) in your application, 
 all you have to do is add `tracing` as a dependency in your `Cargo.toml`, and you're good to go!
@@ -14,7 +14,7 @@ all you have to do is add `tracing` as a dependency in your `Cargo.toml`, and yo
 // [...]
 use tracing::info;
 
-#[shuttle_service::main]
+#[shuttle_runtime::main]
 async fn axum(#[shuttle_shared_db::Postgres] pool: PgPool) -> ShuttleAxum { 
     info!("Running database migration");
     pool.execute(include_str!("../schema.sql"))
