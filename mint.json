@@ -75,6 +75,12 @@
       ]
     },
     {
+      "group": "Migration",
+      "pages": [
+        "migration/migrating-to-shuttle"
+      ]
+    },
+    {
       "group": "Tutorials",
       "pages": [
         "tutorials/discord-weather-forecast",
