@@ -4,11 +4,6 @@
     "light": "/images/logo/light.png",
     "dark": "/images/logo/dark.png"
   },
-  "analytics": {
-    "ga4": {
-      "measurementId": "G-KR6NKW20JH"
-    }
-  },
   "favicon": "/favicon.png",
   "colors": {
     "primary": "#F25100",
@@ -55,14 +50,24 @@
         "introduction/local-run",
         "introduction/shuttle-commands",
         "introduction/telemetry",
-        "introduction/node-cli"
+        "introduction/idle-projects",
+        "introduction/node-cli",
+        "introduction/workspaces"
       ]
+    },
+    {
+      "group": "Configuration",
+      "pages": ["configuration/shuttle-service-name"]
     },
     {
       "group": "Examples",
       "pages": [
         "examples/axum",
         "examples/actix",
+        "examples/poem",
+        "examples/rocket",
+        "examples/salvo",
+        "examples/shuttle-next",
         "examples/serenity",
         "examples/custom-service",
         "examples/other"
@@ -82,7 +87,8 @@
       "group": "Support",
       "pages": [
         "support/faq",
-        "support/troubleshooting"
+        "support/troubleshooting",
+        "support/installing-protoc"
       ]
     },
     {

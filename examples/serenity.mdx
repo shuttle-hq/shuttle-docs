@@ -26,6 +26,32 @@ To add the bot to a server we need to create an invite link.
 
 ### Hello World Bot
 
+Create a new directory (`mkdir`) and move into it (`cd`) -- afterwards, execute the following command to initialize shuttle inside with the Salvo boilerplate.
+
+```bash
+cargo shuttle init --serenity
+```
+
+Make sure that your `Cargo.toml` file looks like the one below -- having the right dependencies is key!
+
+```toml Cargo.toml
+[package]
+name = "hello-world"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+anyhow = "1.0.66"
+shuttle-serenity = { version = "0.14.0" }
+shuttle-runtime = { version = "0.14.0" }
+serenity = { version = "0.11.5", default-features = false, features = ["client", "gateway", "rustls_backend", "model"] }
+shuttle-secrets = "0.14.0"
+tokio = { version = "1.26.0" }
+tracing = "0.1.37"
+```
+Your `main.rs` should look like this:
+
+```Rust main.rs
 <CodeGroup>
 ```Rust src/main.rs
 use anyhow::anyhow;
@@ -53,10 +79,10 @@ impl EventHandler for Bot {
     }
 }
 
-#[shuttle_service::main]
+#[shuttle_runtime::main]
 async fn serenity(
     #[shuttle_secrets::Secrets] secret_store: SecretStore,
-) -> shuttle_service::ShuttleSerenity {
+) -> shuttle_serenity::ShuttleSerenity {
     // Get the discord token set in `Secrets.toml`
     let token = if let Some(token) = secret_store.get("DISCORD_TOKEN") {
         token
@@ -72,15 +98,83 @@ async fn serenity(
         .await
         .expect("Err creating client");
 
-    Ok(client)
+    Ok(client.into())
 }
 ```
 ```toml Secrets.toml
 DISCORD_TOKEN = 'the contents of your discord token'
 ```
+Note that your `Secrets.toml` file should be in the root of your directory!
 </CodeGroup>
 
+Create a project, this will start an isolated deployer container for you under the hood:
+```bash
+cargo shuttle project start
+```
+Finally, to deploy your app, all you need to do is:
+```bash
+cargo shuttle deploy
+```
+## Todo list bot
 
+### Prerequisites
+
+In this example we will deploy a Serenity bot with Shuttle that can add, list and complete todos using [Application Commands](https://discord.com/developers/docs/interactions/application-commands). To persist the todos we need a database. We will have Shuttle provison a PostgreSQL database for us by enabling the `sqlx-postgres` feature for `shuttle-service` and passing `#[shared::Postgres] pool: PgPool` as an argument to our `main` function.
+
+To run this bot we need a valid Discord Token. To get started log in to the [Discord developer portal](https://discord.com/developers/applications).
+
+1. Click the New Application button, name your application and click Create.
+2. Navigate to the Bot tab in the lefthand menu, and add a new bot.
+3. On the bot page click the Reset Token button to reveal your token. Put this token in your `Secrets.toml`. It's very important that you don't reveal your token to anyone, as it can be abused. Create a `.gitignore` file to omit your `Secrets.toml` from version control.
+
+
+To add the bot to a server we need to create an invite link.
+
+1. On your bot's application page, open the OAuth2 page via the lefthand panel.
+2. Go to the URL Generator via the lefthand panel, and select the `applications.commands` scope.
+3. Copy the URL, open it in your browser and select a Discord server you wish to invite the bot to.
+
+For this example we also need a `GuildId`.
+
+1. Open your Discord client, open the User Settings and navigate to Advanced. Enable Developer Mode.
+2. Right click the Discord server you'd like to use the bot in and click Copy Id. This is your Guild ID.
+3. Store it in `Secrets.toml` and retrieve it like we did for the Discord Token.
+
+For more information please refer to the [Discord docs](https://discord.com/developers/docs/getting-started) as well as the [Serenity repo](https://github.com/serenity-rs/serenity) for more examples.
+
+### Coding time
+
+Create a new directory (`mkdir`) and move into it (`cd`) -- afterwards, execute the following command to initialize shuttle inside with the Salvo boilerplate.
+
+```bash
+cargo shuttle init --serenity
+```
+
+Make sure that your `Cargo.toml` file looks like the one below -- having the right dependencies is key!
+
+```toml Cargo.toml
+[package]
+name = "serenity-postgres"
+version = "0.1.0"
+edition = "2021"
+
+
+[dependencies]
+anyhow = "1.0.66"
+serde = "1.0.148"
+serenity = { version = "0.11.5", default-features = false, features = ["client", "gateway", "rustls_backend", "model"] }
+shuttle-secrets = "0.14.0"
+shuttle-serenity = { version = "0.14.0" }
+shuttle-runtime = { version = "0.14.0" }
+shuttle-shared-db = { version = "0.14.0", features = ["postgres"] }
+sqlx = { version = "0.6.2", features = ["runtime-tokio-native-tls", "postgres"] }
+tokio = { version = "1.26.0" }
+tracing = "0.1.37"
+```
+Your `main.rs` should look like this:
+
+```Rust main.rs
+// main.rs
 ### Todo list bot
 <CodeGroup>
 ```Rust src/main.rs
@@ -209,11 +303,11 @@ impl EventHandler for Bot {
     }
 }
 
-#[shuttle_service::main]
+#[shuttle_runtime::main]
 async fn serenity(
     #[shuttle_shared_db::Postgres] pool: PgPool,
     #[shuttle_secrets::Secrets] secret_store: SecretStore,
-) -> shuttle_service::ShuttleSerenity {
+) -> shuttle_serenity::ShuttleSerenity {
     // Get the discord token set in `Secrets.toml`
     let token = secret_store
         .get("DISCORD_TOKEN")
@@ -237,7 +331,7 @@ async fn serenity(
         .await
         .expect("Err creating client");
 
-    Ok(client)
+    Ok(client.into())
 }
 ```
 

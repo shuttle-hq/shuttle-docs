@@ -1,0 +1,60 @@
+---
+title: "Installing Protoc"
+---
+
+Since shuttle v0.12.0, `protoc` is a requirement to install `cargo-shuttle` and to use `cargo-runtime`.
+Here are some instructions for installing `protoc` on Windows, Linux and Mac:
+
+### Windows
+
+On Windows the simplest way to install `protoc` is to first install [chocolatey](https://chocolatey.org/install), 
+and then simply run: `choco install protoc`.
+
+Then, verify that it's working:
+
+```bash
+# should show a version number
+protoc --version
+```
+
+**Note:** *You might need to restart your shell.
+If you are using the integrated terminal in VS Code, you need to restart VS Code.
+See [here](https://docs.chocolatey.org/en-us/troubleshooting#my-path-is-not-getting-updated)
+for more troubleshooting tips, or feel free to ask for help in our [Discord](https://discord.gg/shuttle).*
+
+### Linux and Mac
+
+For Linux and Mac you can use these commands:
+```bash
+# Replace <arch> with your architecture, for example:
+# Linux with Intel/AMD:  linux-x86_64
+# Mac with Intel:        osx-x86_64
+# Mac M1 etc:            osx-aarch_64
+# see https://github.com/protocolbuffers/protobuf/releases for all alternatives
+ARCH="<arch>" && \
+VERSION="22.2" && \
+curl -OL "https://github.com/protocolbuffers/protobuf/releases/download/v$VERSION/protoc-$VERSION-$ARCH.zip" && \
+sudo unzip -o "protoc-$VERSION-$ARCH.zip" bin/protoc "include/*" -d /usr/local && \
+rm -f "protoc-$VERSION-$ARCH.zip"
+```
+
+If you'd like to do this yourself without the above script, see instructions here (but use a newer version):
+https://grpc.io/docs/protoc-installation/#install-pre-compiled-binaries-any-os
+
+On Mac you can also install protoc with `brew`: `brew install protobuf`.
+
+**Note:** *installing `protoc` on Linux with `apt-get install protobuf-compiler` will not be enough, 
+since it will install an old version of `protoc` (v3.12) but it needs to be at least v3.19. 
+Installing on mac using brew works.*
+
+Then, verify that it's working:
+
+```bash
+# should show a version number
+protoc --version
+```
+
+### Manual download
+
+You can check for the latest version and download manually here:
+https://github.com/protocolbuffers/protobuf/releases

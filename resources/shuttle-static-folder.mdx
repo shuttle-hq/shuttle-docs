@@ -7,14 +7,17 @@ This plugin allows services to get the path to a static folder at runtime
 ## Usage
 Add `shuttle-static-folder` to the dependencies for your service. This resource can be using by the `shuttle_static_folder::StaticFolder` attribute to get a `PathBuf` with the location of the static folder.
 
-An example using the Axum framework can be found on [GitHub](https://github.com/shuttle-hq/examples/tree/main/axum/websocket)
+An example using the Axum framework can be found on [GitHub](https://github.com/shuttle-hq/examples/tree/main/axum/static-files)
 
 ``` rust
-#[shuttle_service::main]
+#[shuttle_runtime::main]
 async fn main(
     #[shuttle_static_folder::StaticFolder] static_folder: PathBuf,
 ) -> __ { ... }
 ```
+
+> Note: if you use `shuttle-static-folder` in your project and your project is a workspace, the static assets
+> folder needs to be in the root of the workspace.
 
 ### Parameters
 | Parameter | Type | Default  | Description                                                        |
@@ -25,7 +28,7 @@ async fn main(
 Since this plugin defaults to the `static` folder, the arguments can be used to use the `public` folder instead.
 
 ``` rust
-#[shuttle_service::main]
+#[shuttle_runtime::main]
 async fn main(
     #[shuttle_static_folder::StaticFolder(folder = "public")] public_folder: PathBuf,
 ) -> __ { ... }
