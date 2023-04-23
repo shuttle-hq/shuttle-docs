@@ -522,4 +522,164 @@ https://myapp.shuttle.app.rs/RvpVU_
 
 </ResponseExample>
 
+---
 
+## Dynamic Template
+
+This example shows how to use [Rocket's dynamic templates](https://github.com/SergioBenitez/Rocket/tree/master/contrib/dyn_templates) feature with Shuttle, and optionally how to serve static content using [Rocket's FileServer handler](https://api.rocket.rs/v0.5-rc/rocket/fs/struct.FileServer.html).
+
+### Project structure
+
+The project consists of the following files
+
+
+- `src/main.rs` creates the shuttle service that
+will render the template.
+
+<Tip>If you uncomment the relevant line of code and corresponding import, it will serve any static content you add to the templates folder.</Tip>
+
+```toml Cargo.toml
+[package]
+name = "hello-world"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+rocket = "0.5.0-rc.2"
+shuttle-rocket = { version = "0.14.0" }
+shuttle-runtime = { version = "0.14.0" }
+shuttle-static-folder = "0.14.0"
+rocket_dyn_templates = { version = "0.1.0-rc.3", features = ["handlebars"] }
+tokio = { version = "1.26.0" }
+```
+Your `main.rs` should look like this:
+
+```Rust main.rs
+// main.rs
+#[macro_use]
+extern crate rocket;
+// uncomment if you also wish to serve static resources
+// use rocket::fs::{FileServer, relative};
+use rocket::response::Redirect;
+use rocket_dyn_templates::{context, Template};
+use std::path::PathBuf;
+
+#[get("/")]
+fn index() -> Redirect {
+    Redirect::to(uri!("/", hello(name = "Your Name")))
+}
+#[get("/hello/<name>")]
+pub fn hello(name: &str) -> Template {
+    Template::render(
+        "index",
+        context! {
+            title: "Hello",
+            name: Some(name),
+            items: vec!["Example", "List", "Of", "Five", "Items"],
+        },
+    )
+}
+
+#[shuttle_runtime::main]
+async fn rocket(
+    #[shuttle_static_folder::StaticFolder(folder = "templates")] static_folder: PathBuf,
+) -> shuttle_rocket::ShuttleRocket {
+    /* The provisioned static folder template directory will not be a sub folder
+       of the location of the executable so it is necessary to merge the
+       template_dir setting into the configuration at runtime so that dynamic templates work.
+
+       Note that shuttle does not include Rocket.toml
+       so merging config is the preferred way to modify any settings
+       that would otherwise be set in Rocket.toml
+    */
+    let template_dir = static_folder.to_str().unwrap();
+    let figment = rocket::Config::figment().merge(("template_dir", template_dir));
+    let rocket = rocket::custom(figment)
+        // If you also wish to serve static content, uncomment line below and corresponding 'use' on line 4
+        //.mount("/", FileServer::from(relative!("templates")))
+        .mount("/", routes![index, hello])
+        .attach(Template::fairing());
+
+    Ok(rocket.into())
+}
+```
+
+Your templates/index.html.hbs should look like this
+
+```html templates/index.html.hbs
+<!DOCTYPE html>
+<head>
+ <meta charset="UTF-8">
+ <title>Shuttle example: Rocket with Handlebars dynamic templates</title>
+</head>
+<body>
+<section id="hello">
+    <h1>Hi {{ name }}!</h1>
+    <p>Try entering your own name in the page url to see the page content change <a href="./your_name">./hello/edit_this_part_of_url</a></p>
+    <h3>Here are the items supplied by the vec! macro in the Template::render context:</h3>
+    <ul>
+        {{#each items}}
+            <li>{{ this }}</li>
+        {{/each}}
+    </ul>
+</section>
+<section id="notes">
+<p>Templates are evaluated on request, so if you edit a template while running locally using <code>cargo shuttle run</code> there is no need to rebuild.</p>
+</section>
+</body>
+</html>
+
+```
+### How to run locally
+
+```bash
+cargo shuttle run
+```
+
+This will compile and start Rocket on your machine.
+
+Make a change to the template\index.html.hbs file and reload the index page in your browser.
+Changes to the template take effect on the next request,
+so there is no need to restart.  
+
+<Tip>This example uses
+[Handlebars](https://docs.rs/crate/handlebars/4) but Rocket also enables [Tera](https://docs.rs/crate/tera/1) templates.</Tip>
+
+
+### How to deploy
+
+Create a shuttle project.  This will start an isolated deployer container for you under the hood:
+```bash
+cargo shuttle project start --name <your_project_name>
+```
+
+Once the project has started you can deploy the app by simply running:
+
+```bash
+cargo shuttle deploy --name <your_project_name>
+```
+
+And your app is live! 🎉🎉🎉
+
+### How to use it
+
+Point your browser at `https://<your_project_name>.shuttleapp.rs/`
+
+The request handler for `/` will tell your browser to request `/hello/Your Name`, and then the hello handler
+will render the `templates\index.html.hbs` template.
+
+Whatever is passed after the `/hello/` part of the uri path will be passed to the template for rendering in the `<h1>` element.  
+
+Make a request to `https://<your_project_name>.shuttleapp.rs/hello/shuttle` and the page will reload with the heading `Hi shuttle!`
+
+<Tip>The hello handler also passes a list of items to the template.  These are hard-coded in the handler but in a real application would likely be data from a database or other data source.</Tip>
+
+### How to serve static content 
+
+If you want to serve static content, such as a favicon.ico, image files, or scripts, the Rocket FileServer handler provides a convenient way to serve files.
+
+To use this edit `src\main.rs` and uncomment Line 4 `\\use rocket::fs::{FileServer, relative};` and Line 41 `\\.mount("/", FileServer::from(relative!("templates")))`.
+
+Now add a `favicon.ico` file to your `\templates\' folder.  When you recompile and redeploy, a favicon will be loaded into your browser.
+
+<Tip>In a real application you might want to organise the static files you wish to be served and templates (which are not served, but rather rendered) into sub-folders.</Tip>
