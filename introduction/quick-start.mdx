@@ -12,6 +12,9 @@ To initialize your project, simply write:
 ```sh
 cargo shuttle init
 ```
+> Note: if you use [sparse registries](https://blog.rust-lang.org/inside-rust/2023/01/30/cargo-sparse-protocol.html), you
+> may encounter [this bug](https://github.com/shuttle-hq/shuttle/issues/821) when running the `init` command. To resolve this,
+> see [this comment](https://github.com/shuttle-hq/shuttle/issues/821#issuecomment-1525317860).
 
 If you didn't create the project environment in the init command, run:
 
