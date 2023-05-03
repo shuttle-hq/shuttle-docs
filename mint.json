@@ -44,7 +44,8 @@
       "group": "Introduction",
       "pages": [
         "introduction/welcome",
-        "introduction/what-is-shuttle",
+        "introduction/the-problem-complexity",
+        "introduction/the-solution-shuttle",
         "introduction/installation",
         "introduction/quick-start",
         "introduction/local-run",
