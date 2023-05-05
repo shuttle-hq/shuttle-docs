@@ -97,6 +97,7 @@
     {
       "group": "Resources",
       "pages": [
+        "resources/overview",
         "resources/shuttle-aws-rds",
         "resources/shuttle-persist",
         "resources/shuttle-shared-db",
