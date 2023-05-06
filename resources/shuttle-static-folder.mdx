@@ -5,7 +5,9 @@ title: "Shuttle Static Folder"
 This plugin allows services to get the path to a static folder at runtime, enabling the serving of static files such as web pages.
 
 ## Usage
-Add `shuttle-static-folder` to the dependencies for your service by editing the `cargo.toml` file in the crate root. Then, add a parameter to the return values of the main function, annotated as follows:
+Add `shuttle-static-folder` to the dependencies for your service. This resource can be using by the `shuttle_static_folder::StaticFolder` attribute to get a `PathBuf` with the location of the static folder.
+
+An example using the Axum framework can be found on [GitHub](https://github.com/shuttle-hq/shuttle-examples/tree/main/axum/static-files)
 
 ``` rust
 #[shuttle_runtime::main]
