@@ -13,7 +13,7 @@ To be able to create this example, we'll need to grab an API token from the [Dis
 2. Navigate to the Bot tab in the lefthand menu, and add a new bot.
 3. On the bot page click the Reset Token button to reveal your token. Put this token in your `Secrets.toml` (explained below). It's very important that you don't reveal your token to anyone, as it can be abused. Create a `.gitignore` file to omit your `Secrets.toml` from version control.
 
-Your `Secrets.toml` file needs to be in the root of your directory once the project's been initialised - the file will use a format similar to a `.env` file, like so:
+Your `Secrets.toml` file needs to be in the root of your directory once the project has been initialised - the file will use a format similar to a `.env` file, like so:
 ```toml Secrets.toml
 DISCORD_TOKEN = 'the contents of my discord token'
 ```
@@ -28,7 +28,7 @@ To add the bot to a server, we need to create an invite link:
 ### Initial Setup
 Start by running the following command:
 ```bash
-cargo shuttle init --no-framework
+cargo shuttle init --template none
 ```
 
 This will simply initialize a new cargo crate with a dependency on `shuttle-service`.
@@ -47,9 +47,8 @@ axum = "0.6.4"
 hyper = "0.14.24"
 poise = "0.5.2"
 serde = "1.0"
+shuttle-runtime = "0.16.0"
 shuttle-secrets = "0.16.0"
-shuttle-service = { version = "0.16.0" }
-shuttle-runtime = { version = "0.16.0" }
 tokio = "1.26.0"
 ```
 
@@ -72,12 +71,12 @@ You can only have one HTTP service bound to the `addr`, but you can start other 
 binding to a socket, like so:
 
 ```rust main.rs
-#[shuttle_service::async_trait]
-impl shuttle_service::Service for CustomService {
+#[shuttle_runtime::async_trait]
+impl shuttle_runtime::Service for CustomService {
     async fn bind(
         mut self,
         addr: std::net::SocketAddr,
-    ) -> Result<(), shuttle_service::error::Error> {
+    ) -> Result<(), shuttle_runtime::Error> {
         
         let router = self.router.into_inner();
 
@@ -157,7 +156,7 @@ pub struct CustomService {
 #[shuttle_runtime::main]
 async fn init(
     #[shuttle_secrets::Secrets] secrets: SecretStore,
-) -> Result<CustomService, shuttle_service::Error> {
+) -> Result<CustomService, shuttle_runtime::Error> {
    let discord_api_key = secrets.get("DISCORD_API_KEY").unwrap();
 
     let discord_bot = poise::Framework::builder()
