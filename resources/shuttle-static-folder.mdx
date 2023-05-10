@@ -2,12 +2,12 @@
 title: "Shuttle Static Folder"
 ---
 
-This plugin allows services to get the path to a static folder at runtime
+This plugin allows services to get the path to a static folder at runtime, enabling the serving of static files such as web pages.
 
 ## Usage
 Add `shuttle-static-folder` to the dependencies for your service. This resource can be using by the `shuttle_static_folder::StaticFolder` attribute to get a `PathBuf` with the location of the static folder.
 
-An example using the Axum framework can be found on [GitHub](https://github.com/shuttle-hq/examples/tree/main/axum/static-files)
+An example using the Axum framework can be found on [GitHub](https://github.com/shuttle-hq/shuttle-examples/tree/main/axum/static-files)
 
 ``` rust
 #[shuttle_runtime::main]
@@ -16,16 +16,23 @@ async fn main(
 ) -> __ { ... }
 ```
 
+Addition of the `shuttle_static_folder::StaticFolder` attribute will provide a `PathBuf` which has the location of the static folder. A `PathBuf` is an owned, mutable path (similar to a String). To know more about `PathBuf`, head over to the [discussion](https://doc.rust-lang.org/std/path/struct.PathBuf.html) in [The Rust Standard Library](https://doc.rust-lang.org/std/index.html). By default, the folder is called `static`, unless specifically renamed (see below).
+
+An example using the Axum framework can be found here: [Axum Static Files Example](https://github.com/shuttle-hq/shuttle-examples/tree/main/axum/static-files)
+
 > Note: if you use `shuttle-static-folder` in your project and your project is a workspace, the static assets
 > folder needs to be in the root of the workspace.
 
 ### Parameters
+
+The folder parameter name can be changed in order to change the name of the static folder.
+
 | Parameter | Type | Default  | Description                                                        |
 |-----------|------|----------|--------------------------------------------------------------------|
 | folder    | str  | `static` | The relative path, from the crate root, to the directory containing static files to deploy |
 
-### Example: Using the public folder instead
-Since this plugin defaults to the `static` folder, the arguments can be used to use the `public` folder instead.
+### Example: Change the default folder name from static to public
+The plugin defaults to a folder name of `static`, but there is freedom to change it.  When annotating the parameter name, as noted above, add an argument in the format `folder = "<desired name>"`, as follows:
 
 ``` rust
 #[shuttle_runtime::main]
@@ -33,3 +40,5 @@ async fn main(
     #[shuttle_static_folder::StaticFolder(folder = "public")] public_folder: PathBuf,
 ) -> __ { ... }
 ```
+
+The parameter name should be changed to match, in this case being `folder = "public"`.

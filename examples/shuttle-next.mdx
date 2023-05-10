@@ -17,6 +17,9 @@ functionality, and more, in the near future. We're also hoping that the feedback
 will help us see which features we should prioritize, and which areas of the framework's design need the 
 most attention going forward.
 
+> Note: shuttle-next does not currently work on Windows, it only works on unix systems (i.e mac, Linux and 
+> Windows Subsystem for Linux). We aim to resolve this in future releases.
+
 ## Hello world!
 
 Simple 'Hello world' app using shuttle-next.
@@ -39,7 +42,7 @@ edition = "2021"
 crate-type = [ "cdylib" ]
 
 [dependencies]
-shuttle-next = "0.14.0"
+shuttle-next = "0.16.0"
 ```
 
 Using the `shuttle-next::app!` macro, we can create HTTP API endpoints, setting the
@@ -89,7 +92,7 @@ shuttle_next::app! {
     // all re-exported from axum 0.6
     use shuttle_next::body::StreamBody;
     use shuttle_next::extract::BodyStream;
-    use shuttle_next::response::IntoResponse;
+    use shuttle_next::response::{Response, IntoResponse};
     
     // We'll also need the futures `TryStreamExt` trait to manipulate 
     // the body stream

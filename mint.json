@@ -51,7 +51,6 @@
         "introduction/shuttle-commands",
         "introduction/telemetry",
         "introduction/idle-projects",
-        "introduction/node-cli",
         "introduction/workspaces"
       ]
     },
@@ -74,6 +73,12 @@
       ]
     },
     {
+      "group": "Migration",
+      "pages": [
+        "migration/migrating-to-shuttle"
+      ]
+    },
+    {
       "group": "How To",
       "pages": [
         "tutorials/discord-weather-forecast",
@@ -81,6 +86,12 @@
         "tutorials/authentication",
         "tutorials/serverless-calendar-app",
         "tutorials/websocket-chat-app-js"
+      ]
+    },
+    {
+      "group": "Fullstack Templates",
+      "pages": [
+        "fullstack/rust-next"
       ]
     },
     {
