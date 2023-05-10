@@ -29,7 +29,7 @@ To add the bot to a server we need to create an invite link.
 Create a new directory (`mkdir`) and move into it (`cd`) -- afterwards, execute the following command to initialize shuttle inside with the Salvo boilerplate.
 
 ```bash
-cargo shuttle init --serenity
+cargo shuttle init --template serenity
 ```
 
 Make sure that your `Cargo.toml` file looks like the one below -- having the right dependencies is key!
@@ -42,10 +42,10 @@ edition = "2021"
 
 [dependencies]
 anyhow = "1.0.66"
-shuttle-serenity = { version = "0.14.0" }
-shuttle-runtime = { version = "0.14.0" }
+shuttle-serenity = { version = "0.16.0" }
+shuttle-runtime = { version = "0.16.0" }
 serenity = { version = "0.11.5", default-features = false, features = ["client", "gateway", "rustls_backend", "model"] }
-shuttle-secrets = "0.14.0"
+shuttle-secrets = "0.16.0"
 tokio = { version = "1.26.0" }
 tracing = "0.1.37"
 ```
@@ -147,7 +147,7 @@ For more information please refer to the [Discord docs](https://discord.com/deve
 Create a new directory (`mkdir`) and move into it (`cd`) -- afterwards, execute the following command to initialize shuttle inside with the Salvo boilerplate.
 
 ```bash
-cargo shuttle init --serenity
+cargo shuttle init --template serenity
 ```
 
 Make sure that your `Cargo.toml` file looks like the one below -- having the right dependencies is key!
@@ -163,10 +163,10 @@ edition = "2021"
 anyhow = "1.0.66"
 serde = "1.0.148"
 serenity = { version = "0.11.5", default-features = false, features = ["client", "gateway", "rustls_backend", "model"] }
-shuttle-secrets = "0.14.0"
-shuttle-serenity = { version = "0.14.0" }
-shuttle-runtime = { version = "0.14.0" }
-shuttle-shared-db = { version = "0.14.0", features = ["postgres"] }
+shuttle-secrets = "0.16.0"
+shuttle-serenity = { version = "0.16.0" }
+shuttle-runtime = { version = "0.16.0" }
+shuttle-shared-db = { version = "0.16.0", features = ["postgres"] }
 sqlx = { version = "0.6.2", features = ["runtime-tokio-native-tls", "postgres"] }
 tokio = { version = "1.26.0" }
 tracing = "0.1.37"

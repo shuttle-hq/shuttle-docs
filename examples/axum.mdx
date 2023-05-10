@@ -19,7 +19,7 @@ Simple 'Hello world' app using Axum.
 Create a new directory (`mkdir`) and move into it (`cd`) -- afterwards, execute the following command to initialize shuttle inside with the Axum boilerplate.
 
 ```bash
-cargo shuttle init --axum
+cargo shuttle init --template axum
 ```
 
 Make sure that your `Cargo.toml` file looks like the one below -- having the right dependencies is key!
@@ -32,8 +32,8 @@ edition = "2021"
 
 [dependencies]
 axum = "0.6.10"
-shuttle-axum = { version = "0.14.0" }
-shuttle-runtime = { version = "0.14.0" }
+shuttle-axum = { version = "0.16.0" }
+shuttle-runtime = { version = "0.16.0" }
 tokio = { version = "1.26.0" }
 ```
 Your `main.rs` should look like this:
@@ -110,9 +110,9 @@ hyper = { version = "0.14.23", features = ["client", "http2"] }
 hyper-tls = "0.5.0"
 serde = { version = "1.0.148", features = ["derive"] }
 serde_json = "1.0.89"
-shuttle-axum = { version = "0.14.0" }
-shuttle-runtime = { version = "0.14.0" }
-shuttle-static-folder = "0.14.0"
+shuttle-axum = { version = "0.16.0" }
+shuttle-runtime = { version = "0.16.0" }
+shuttle-static-folder = "0.16.0"
 tokio = { version = "1.26.0", features = ["full"] }
 tower-http = { version = "0.3.0", features = ["fs"] }
 ```js assets/script.js

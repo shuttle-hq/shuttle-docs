@@ -6,12 +6,14 @@ This plugin manages databases that are shared with other services on [shuttle](h
 will share a postgres server with other users, but it will not be accessible by other users.
 
 ## Usage
-Add `shuttle-shared-db` to the dependencies for your service. Every type of shareable database is behind the following feature flag and attribute path
+Add `shuttle-shared-db` to the dependencies for your service. Every type of shareable database
+is behind the following feature flag and attribute path. `*-rustls` feature enables `rustls`-based implementation,
+otherwise some flavour of `native-tls` is used.
 
-| Engine   | Feature flag | Attribute path              |
-|----------|--------------|-----------------------------|
-| Postgres | postgres     | shuttle_shared_db::Postgres |
-| MongoDB  | mongodb      | shuttle_shared_db::MongoDb  |
+| Engine   | Feature flags                 | Attribute path                |
+|----------|-------------------------------|-------------------------------|
+| Postgres | `postgres`, `postgres-rustls` | `shuttle_shared_db::Postgres` |
+| MongoDB  | `mongodb`                     | `shuttle_shared_db::MongoDb`  |
 
 ### Parameters
 | Parameter | Type | Default  | Description                                                                                             |
@@ -50,4 +52,4 @@ async fn poem(
 }
 ```
 
-The full example can be found on [GitHub](https://github.com/shuttle-hq/examples/tree/main/poem/postgres)
+The full example can be found on [GitHub](https://github.com/shuttle-hq/shuttle-examples/tree/main/poem/postgres)

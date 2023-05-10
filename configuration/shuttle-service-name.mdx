@@ -12,7 +12,7 @@ A new Shuttle service can be named by passing in a project name as an argument a
 
 ```bash
 mkdir -p url-shortener
-cargo shuttle init --rocket --name url-shortener
+cargo shuttle init --template rocket --name url-shortener
 ```
 
 This will create a new Rocket framework based project called `url-shortener` and will populate the name field within the `[package]` section name of the generated `Cargo.toml` file.

@@ -7,7 +7,7 @@ description: "Using `tracing` or `log` with shuttle apps."
 
 When you build an app with the `#[shuttle_runtime::main]` macro, a global subscriber will be created and installed
 [behind the scenes](https://github.com/shuttle-hq/shuttle/blob/001dbcfcf47066713598f00a98f4972de450ff3b/codegen/src/main/mod.rs#L237-L245).
-This means if you can skip this step when implementing [tracing](https://docs.rs/tracing/latest/tracing/) in your application, 
+This means that you can skip this step when implementing [tracing](https://docs.rs/tracing/latest/tracing/) in your application, 
 all you have to do is add `tracing` as a dependency in your `Cargo.toml`, and you're good to go!
 
 ```rust
