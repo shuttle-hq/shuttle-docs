@@ -45,40 +45,71 @@
       "pages": [
         "introduction/welcome",
         "introduction/what-is-shuttle",
-        "introduction/installation",
-        "introduction/quick-start",
-        "introduction/local-run",
-        "introduction/shuttle-commands",
-        "introduction/telemetry",
-        "introduction/idle-projects",
-        "introduction/node-cli",
-        "introduction/workspaces"
-      ]
+          {
+            "group": "Getting Started",
+            "pages": [
+              "introduction/installation",
+              "introduction/quick-start",
+              "introduction/local-run",
+              "introduction/shuttle-commands",
+              "introduction/idle-projects",
+              "introduction/workspaces"
+            ]
+          },
+          "introduction/telemetry",
+          {
+            "group": "Custom Config",
+            "pages": [
+              "configuration/shuttle-service-name"
+            ]
+          }
+        ]
     },
     {
-      "group": "Configuration",
-      "pages": ["configuration/shuttle-service-name"]
+      "group": "Resources",
+      "pages": [
+        "resources/overview",
+        {
+          "group": "Databases",
+          "pages": [
+            "resources/shuttle-aws-rds",
+            "resources/shuttle-persist",
+            "resources/shuttle-shared-db"
+          ]
+        },
+        {
+          "group": "Environment Variables",
+          "pages": [
+            "resources/shuttle-secrets"
+          ]
+        },
+        {
+          "group": "Static Files",
+          "pages": [
+            "resources/shuttle-static-folder"
+          ]
+        }
+      ]
     },
     {
       "group": "Examples",
       "pages": [
         "examples/axum",
         "examples/actix",
-        "examples/poem",
-        "examples/rocket",
-        "examples/salvo",
-        "examples/shuttle-next",
         "examples/serenity",
-        "examples/thruster",
-        "examples/tide",
-        "examples/tower",
-        "examples/warp",
-        "examples/custom-service"
+        "examples/other"
       ]
     },
     {
-      "group": "Tutorials",
+      "group": "Migration",
       "pages": [
+        "migration/migrating-to-shuttle"
+      ]
+    },
+    {
+      "group": "How To",
+      "pages": [
+        "tutorials/custom-service",
         "tutorials/discord-weather-forecast",
         "tutorials/url-shortener",
         "tutorials/authentication",
@@ -87,22 +118,24 @@
       ]
     },
     {
+      "group": "Fullstack Templates",
+      "pages": [
+        "fullstack/rust-next"
+      ]
+    },
+    {
+      "group": "Shuttle Next (Framework) 🧪",
+      "pages": [
+        "shuttle-next/overview",
+        "shuttle-next/getting-started"
+      ]
+    },
+    {
       "group": "Support",
       "pages": [
         "support/faq",
         "support/troubleshooting",
         "support/installing-protoc"
-      ]
-    },
-    {
-      "group": "Resources",
-      "pages": [
-        "resources/overview",
-        "resources/shuttle-aws-rds",
-        "resources/shuttle-persist",
-        "resources/shuttle-shared-db",
-        "resources/shuttle-secrets",
-        "resources/shuttle-static-folder"
       ]
     },
     {

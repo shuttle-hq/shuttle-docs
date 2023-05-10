@@ -5,33 +5,16 @@ description:
   modularity."
 ---
 
+This section revolves around simple Axum examples you can get quickly started with by following these 3 steps:
+1. Initialize a new Axum project by running the `cargo shuttle init --template axum` command
+2. Copy pasting the contents of the example you want to deploy -- make sure to check the tabs of the snippet(s) to ensure you are copying the right code/file
+3. Running the `cargo shuttle deploy` command
+
+<Tip>If you are looking for step-by-step guides, check out our [How To](../tutorials) section.</Tip>
+
 ## Hello world!
 
-Simple 'Hello world' app using Axum.
-
-Create a new directory (`mkdir`) and move into it (`cd`) -- afterwards, execute the following command to initialize shuttle inside with the Axum boilerplate.
-
-```bash
-cargo shuttle init --axum
-```
-
-Make sure that your `Cargo.toml` file looks like the one below -- having the right dependencies is key!
-
-```toml Cargo.toml
-[package]
-name = "hello-world"
-version = "0.1.0"
-edition = "2021"
-
-[dependencies]
-axum = "0.6.10"
-shuttle-axum = { version = "0.15.0" }
-shuttle-runtime = { version = "0.15.0" }
-tokio = { version = "1.26.0" }
-```
-Your `main.rs` should look like this:
-
-```Rust main.rs
+```Rust src/main.rs
 use axum::{routing::get, Router};
 
 async fn hello_world() -> &'static str {
@@ -46,53 +29,51 @@ async fn axum() -> shuttle_axum::ShuttleAxum {
 }
 ```
 
-Finally, to deploy your app, all you need to do is:
-```bash
-cargo shuttle deploy
+## Static Files
+
+<CodeGroup>
+```rust src/main.rs
+use std::path::PathBuf;
+
+use axum::{routing::get, Router};
+use axum_extra::routing::SpaRouter;
+
+async fn hello_world() -> &'static str {
+    "Hello, world!"
+}
+
+#[shuttle_runtime::main]
+async fn axum(
+    // Name your static assets folder by passing `folder = <name>` to `StaticFolder`
+    // If you don't pass a name, it will default to `static`.
+    #[shuttle_static_folder::StaticFolder(folder = "assets")] static_folder: PathBuf,
+) -> shuttle_axum::ShuttleAxum {
+    let router = Router::new()
+        .route("/hello", get(hello_world))
+        .merge(SpaRouter::new("/assets", static_folder).index_file("index.html"));
+
+    Ok(router.into())
+}
 ```
 
-And your app is live! 🎉🎉🎉
-
-## Websocket
-
-A websocket example using Axum.
-
-> A WebSocket is a bidirectional, full-duplex protocol that is used in the same scenario of client-server communication, unlike HTTP it starts from ws:// or wss://. It is a stateful protocol, which means the connection between client and server will keep alive until it is terminated by either party (client or server).
-
-Create a new directory (`mkdir`) and move into it (`cd`) -- afterwards, execute the following command to initialize shuttle inside with the Axum boilerplate.
-
-```bash
-cargo shuttle init --axum
+```html assets/index.html
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Static Files</title>
+    </head>
+    <body>
+        <p>This is an example of serving static files with Axum and Shuttle.</p>
+    </body>
+</html>
 ```
+</CodeGroup>
 
-Make sure that your `Cargo.toml` file looks like the one below -- having the right dependencies is key!
+## Websockets
 
-```toml Cargo.toml
-[package]
-name = "websocket"
-version = "0.1.0"
-edition = "2021"
-
-
-[dependencies]
-axum = { version = "0.6.10", features = ["ws"] }
-chrono = { version = "0.4.23", features = ["serde"] }
-futures = "0.3.25"
-hyper = { version = "0.14.23", features = ["client", "http2"] }
-hyper-tls = "0.5.0"
-serde = { version = "1.0.148", features = ["derive"] }
-serde_json = "1.0.89"
-shuttle-axum = { version = "0.15.0" }
-shuttle-runtime = { version = "0.15.0" }
-shuttle-static-folder = "0.15.0"
-tokio = { version = "1.26.0", features = ["full"] }
-tower-http = { version = "0.3.0", features = ["fs"] }
-```
-Your `main.rs` should look like this:
-
-```rust main.rs
-// main.rs
-use std::{path::PathBuf, sync::Arc, time::Duration};
+<CodeGroup>
+```rust src/main.rs
+use std::{sync::Arc, time::Duration};
 
 use axum::{
     extract::{
@@ -228,10 +209,7 @@ async fn websocket(stream: WebSocket, state: Arc<Mutex<State>>) {
 }
 ```
 
-And your `index.html` should look like this:
-
-```html index.html
-<!-- index.html -->
+```html static/index.html
 <!DOCTYPE html>
 <html lang="en" class="bg-gray-600">
   <head>
@@ -337,10 +315,6 @@ And your `index.html` should look like this:
   </body>
 </html>
 ```
-
-Finally, to deploy your app, all you need to do is:
-```bash
-cargo shuttle deploy
-```
-
-And your app is live! 🎉🎉🎉
+</CodeGroup>
+---
+<Tip> If you want to explore other frameworks, we have more examples with popular ones like Tower and Warp. You can find them [right here](../examples/other). </Tip>

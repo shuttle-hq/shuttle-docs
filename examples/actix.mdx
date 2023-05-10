@@ -4,36 +4,16 @@ description:
   "Actix Web is a powerful, pragmatic, and extremely fast web framework for Rust."
 ---
 
-> ❗️ Actix currently segfaults on arm64 machines when trying to run locally. In order to "bypass" this,
-> make sure you are installing shuttle [via binary](../introduction/installation).
+This section revolves around simple Actix examples you can get quickly started with by following these 3 steps:
+1. Initialize a new Actix project by running the `cargo shuttle init --template actix` command
+2. Copy pasting the contents of the example you want to deploy -- make sure to check the tabs of the snippet(s) to ensure you are copying the right code/file
+3. Running the `cargo shuttle deploy` command
+
+<Tip>If you are looking for step-by-step guides, check out our [How To](../tutorials) section.</Tip>
 
 ## Hello world!
 
-Simple 'Hello world' app using Actix.
-
-Create a new directory (`mkdir`) and move into it (`cd`) -- afterwards, execute the following command to initialize shuttle inside with the Actix boilerplate.
-
-```bash
-cargo shuttle init --actix
-```
-
-Make sure that your `Cargo.toml` file looks like the one below -- having the right dependencies is key!
-
-```toml Cargo.toml
-[package]
-name = "hello-world"
-version = "0.1.0"
-edition = "2021"
-
-[dependencies]
-actix-web = "4.3.1"
-shuttle-actix-web = { version = "0.15.0" }
-shuttle-runtime = { version = "0.15.0" }
-tokio = { version = "1.26.0" }
-```
-Your `main.rs` should look like this:
-
-```Rust main.rs
+```Rust src/main.rs
 use actix_web::{get, web::ServiceConfig};
 use shuttle_actix_web::ShuttleActixWeb;
 
@@ -53,43 +33,9 @@ async fn actix_web(
 }
 ```
 
-Finally, to deploy your app, all you need to do is:
-```bash
-cargo shuttle deploy
-```
-
-And your app is live! 🎉🎉🎉
-
-## Todo App (Postgres)
-
-Simple todo app using Actix & Postgres.
-
-Create a new directory (`mkdir`) and move into it (`cd`) -- afterwards, execute the following command to initialize shuttle inside with the Actix boilerplate.
-
-```bash
-cargo shuttle init --actix
-```
-
-Make sure that your `Cargo.toml` file looks like the one below -- having the right dependencies is key!
-
-```toml Cargo.toml
-[package]
-name = "hello-world"
-version = "0.1.0"
-edition = "2021"
-
-[dependencies]
-actix-web = "4.3.1"
-shuttle-actix-web = { version = "0.15.0" }
-shuttle-runtime = { version = "0.15.0" }
-serde = "1.0.148"
-shuttle-shared-db = { version = "0.15.0", features = ["postgres"] }
-sqlx = { version = "0.6.2", features = ["runtime-tokio-native-tls", "postgres"] }
-tokio = { version = "1.26.0" }
-```
-Your `main.rs` should look like this:
-
-```Rust main.rs
+## Postgres Todo App
+<CodeGroup>
+```Rust src/main.rs
 use actix_web::middleware::Logger;
 use actix_web::{
     error, get, post,
@@ -163,8 +109,6 @@ struct Todo {
 }
 ```
 
-And your `schema.sql` should look like this:
-
 ```sql schema.sql
 DROP TABLE IF EXISTS todos;
 
@@ -173,60 +117,11 @@ CREATE TABLE todos (
   note TEXT NOT NULL
 );
 ```
-
-Finally, to deploy your app, all you need to do is:
-```bash
-cargo shuttle deploy
-```
-
-And your app is live! 🎉🎉🎉
-
+</CodeGroup>
 
 ## Websocket Actorless
-
-Simple 'Hello world' app using Actix.
-
-Create a new directory (`mkdir`) and move into it (`cd`) -- afterwards, execute the following command to initialize shuttle inside with the Actix boilerplate.
-
-```bash
-cargo shuttle init --actix
-```
-
-Make sure that your `Cargo.toml` file looks like the one below -- having the right dependencies is key!
-
-```toml Cargo.toml
-[package]
-name = "hello-world"
-version = "0.1.0"
-edition = "2021"
-
-[dependencies]
-actix-files = "0.6.2"
-actix-web = "4.3.1"
-actix-ws = "0.2.5"
-chrono = { version = "0.4.23", features = ["serde"] }
-futures = "0.3"
-reqwest = "0.11"
-serde = { version = "1.0", features = ["derive"] }
-serde_json = "1.0"
-shuttle-actix-web = { version = "0.15.0" }
-shuttle-runtime = { version = "0.15.0" }
-shuttle-static-folder = "0.15.0"
-tokio = { version = "1", features = ["rt-multi-thread", "sync"] }
-tracing = "0.1"
-```
-
-The structure for this example is:
-```
--> src
-    -> main.rs
--> static
-    ->  index.html
-```
-
-Your `main.rs` should look like this:
-
-```Rust main.rs
+<CodeGroup>
+```Rust src/main.rs
 use actix_files::NamedFile;
 use actix_web::{
     web::{self, ServiceConfig},
@@ -425,8 +320,7 @@ async fn get_api_status(client: &reqwest::Client) -> bool {
 }
 ```
 
-Your `index.html` should look like this:
-```html
+```html static/index.html
 <!DOCTYPE html>
 <html>
   <head>
@@ -602,10 +496,7 @@ Your `index.html` should look like this:
 </html>
 
 ```
-
-Finally, to deploy your app, all you need to do is:
-```bash
-cargo shuttle deploy
-```
-
-And your app is live! 🎉🎉🎉
+</CodeGroup>
+---
+<Tip> If you want to explore other frameworks, we have more examples with popular ones like Tower and Warp. You can find them [right here](../examples/other).
+If you wish to build/deploy your own custom service, head on [over here](../tutorials/custom-service)</Tip>
