@@ -26,32 +26,6 @@ To add the bot to a server we need to create an invite link.
 
 ### Hello World Bot
 
-Create a new directory (`mkdir`) and move into it (`cd`) -- afterwards, execute the following command to initialize shuttle inside with the Salvo boilerplate.
-
-```bash
-cargo shuttle init --template serenity
-```
-
-Make sure that your `Cargo.toml` file looks like the one below -- having the right dependencies is key!
-
-```toml Cargo.toml
-[package]
-name = "hello-world"
-version = "0.1.0"
-edition = "2021"
-
-[dependencies]
-anyhow = "1.0.66"
-shuttle-serenity = { version = "0.16.0" }
-shuttle-runtime = { version = "0.16.0" }
-serenity = { version = "0.11.5", default-features = false, features = ["client", "gateway", "rustls_backend", "model"] }
-shuttle-secrets = "0.16.0"
-tokio = { version = "1.26.0" }
-tracing = "0.1.37"
-```
-Your `main.rs` should look like this:
-
-```Rust main.rs
 <CodeGroup>
 ```Rust src/main.rs
 use anyhow::anyhow;
@@ -104,17 +78,8 @@ async fn serenity(
 ```toml Secrets.toml
 DISCORD_TOKEN = 'the contents of your discord token'
 ```
-Note that your `Secrets.toml` file should be in the root of your directory!
 </CodeGroup>
 
-Create a project, this will start an isolated deployer container for you under the hood:
-```bash
-cargo shuttle project start
-```
-Finally, to deploy your app, all you need to do is:
-```bash
-cargo shuttle deploy
-```
 ## Todo list bot
 
 ### Prerequisites
@@ -142,40 +107,6 @@ For this example we also need a `GuildId`.
 
 For more information please refer to the [Discord docs](https://discord.com/developers/docs/getting-started) as well as the [Serenity repo](https://github.com/serenity-rs/serenity) for more examples.
 
-### Coding time
-
-Create a new directory (`mkdir`) and move into it (`cd`) -- afterwards, execute the following command to initialize shuttle inside with the Salvo boilerplate.
-
-```bash
-cargo shuttle init --template serenity
-```
-
-Make sure that your `Cargo.toml` file looks like the one below -- having the right dependencies is key!
-
-```toml Cargo.toml
-[package]
-name = "serenity-postgres"
-version = "0.1.0"
-edition = "2021"
-
-
-[dependencies]
-anyhow = "1.0.66"
-serde = "1.0.148"
-serenity = { version = "0.11.5", default-features = false, features = ["client", "gateway", "rustls_backend", "model"] }
-shuttle-secrets = "0.16.0"
-shuttle-serenity = { version = "0.16.0" }
-shuttle-runtime = { version = "0.16.0" }
-shuttle-shared-db = { version = "0.16.0", features = ["postgres"] }
-sqlx = { version = "0.6.2", features = ["runtime-tokio-native-tls", "postgres"] }
-tokio = { version = "1.26.0" }
-tracing = "0.1.37"
-```
-Your `main.rs` should look like this:
-
-```Rust main.rs
-// main.rs
-### Todo list bot
 <CodeGroup>
 ```Rust src/main.rs
 use anyhow::Context as _;
