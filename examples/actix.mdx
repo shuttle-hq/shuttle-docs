@@ -4,8 +4,8 @@ description:
   "Actix Web is a powerful, pragmatic, and extremely fast web framework for Rust."
 ---
 
-This section revolves around simple Axum examples you can get quickly started with by following these 3 steps:
-1. Initialize a new Axum project by running the `cargo shuttle init --template actix` command
+This section revolves around simple Actix examples you can get quickly started with by following these 3 steps:
+1. Initialize a new Actix project by running the `cargo shuttle init --template actix` command
 2. Copy pasting the contents of the example you want to deploy -- make sure to check the tabs of the snippet(s) to ensure you are copying the right code/file
 3. Running the `cargo shuttle deploy` command
 
@@ -498,4 +498,5 @@ async fn get_api_status(client: &reqwest::Client) -> bool {
 ```
 </CodeGroup>
 ---
-<Tip> If you want to explore other frameworks, we have more examples with popular ones like Tower and Warp. You can find them [right here](../examples/other). </Tip>
+<Tip> If you want to explore other frameworks, we have more examples with popular ones like Tower and Warp. You can find them [right here](../examples/other).
+If you wish to build/deploy your own custom service, head on [over here](../tutorials/custom-service)</Tip>
