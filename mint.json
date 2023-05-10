@@ -51,7 +51,6 @@
         "introduction/shuttle-commands",
         "introduction/telemetry",
         "introduction/idle-projects",
-        "introduction/node-cli",
         "introduction/workspaces"
       ]
     },
@@ -69,21 +68,30 @@
         "examples/salvo",
         "examples/shuttle-next",
         "examples/serenity",
-        "examples/thruster",
-        "examples/tide",
-        "examples/tower",
-        "examples/warp",
-        "examples/custom-service"
+        "examples/custom-service",
+        "examples/other"
       ]
     },
     {
-      "group": "Tutorials",
+      "group": "Migration",
+      "pages": [
+        "migration/migrating-to-shuttle"
+      ]
+    },
+    {
+      "group": "How To",
       "pages": [
         "tutorials/discord-weather-forecast",
         "tutorials/url-shortener",
         "tutorials/authentication",
         "tutorials/serverless-calendar-app",
         "tutorials/websocket-chat-app-js"
+      ]
+    },
+    {
+      "group": "Fullstack Templates",
+      "pages": [
+        "fullstack/rust-next"
       ]
     },
     {

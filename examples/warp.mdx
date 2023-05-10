@@ -11,7 +11,7 @@ Simple 'Hello world' app using Warp.
 Create a new directory (`mkdir`) and move into it (`cd`) -- afterwards, execute the following command to initialize shuttle inside with the Warp boilerplate.
 
 ```bash
-cargo shuttle init --warp
+cargo shuttle init --template warp
 ```
 
 Make sure that your `Cargo.toml` file looks like the one below -- having the right dependencies is key!
@@ -23,8 +23,8 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
-shuttle-runtime = { version = "0.14.0" }
-shuttle-warp = { version = "0.14.0" }
+shuttle-runtime = { version = "0.16.0" }
+shuttle-warp = { version = "0.16.0" }
 tokio = { version = "1.26.0" }
 warp = "0.3.3"
 ```

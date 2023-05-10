@@ -12,7 +12,7 @@ Simple 'Hello world' app using Poem.
 Create a new directory (`mkdir`) and move into it (`cd`) -- afterwards, execute the following command to initialize shuttle inside with the Poem boilerplate.
 
 ```bash
-cargo shuttle init --poem
+cargo shuttle init --template poem
 ```
 
 Make sure that your `Cargo.toml` file looks like the one below -- having the right dependencies is key!
@@ -25,8 +25,8 @@ edition = "2021"
 
 [dependencies]
 poem = "1.3.55"
-shuttle-poem = { version = "0.14.0" }
-shuttle-runtime = { version = "0.14.0" }
+shuttle-poem = { version = "0.16.0" }
+shuttle-runtime = { version = "0.16.0" }
 tokio = { version = "1.26.0" }
 ```
 Your `main.rs` should look like this:
@@ -65,7 +65,7 @@ Simple 'todo app' example using MongoDB.
 Create a new directory (`mkdir`) and move into it (`cd`) -- afterwards, execute the following command to initialize shuttle inside with the Poem boilerplate.
 
 ```bash
-cargo shuttle init --poem
+cargo shuttle init --template poem
 ```
 
 Make sure that your `Cargo.toml` file looks like the one below -- having the right dependencies is key!
@@ -79,9 +79,9 @@ edition = "2021"
 [dependencies]
 mongodb = "2.4.0"
 poem = "1.3.55"
-shuttle-poem = { version = "0.14.0" }
-shuttle-shared-db = { version = "0.14.0", features = ["mongodb"] }
-shuttle-runtime = { version = "0.14.0" }
+shuttle-poem = { version = "0.16.0" }
+shuttle-shared-db = { version = "0.16.0", features = ["mongodb"] }
+shuttle-runtime = { version = "0.16.0" }
 serde = { version = "1.0.148", features = ["derive"] }
 serde_json = "1.0.89"
 tokio = { version = "1.26.0" }
@@ -183,7 +183,7 @@ Simple 'todo app' example using Postgres.
 Create a new directory (`mkdir`) and move into it (`cd`) -- afterwards, execute the following command to initialize shuttle inside with the Poem boilerplate.
 
 ```bash
-cargo shuttle init --poem
+cargo shuttle init --template poem
 ```
 
 Make sure that your `Cargo.toml` file looks like the one below -- having the right dependencies is key!
@@ -198,9 +198,9 @@ edition = "2021"
 [dependencies]
 poem = "1.3.55"
 serde = "1.0.148"
-shuttle-poem = { version = "0.14.0" }
-shuttle-runtime = { version = "0.14.0" }
-shuttle-shared-db = { version = "0.14.0", features = ["postgres"] }
+shuttle-poem = { version = "0.16.0" }
+shuttle-runtime = { version = "0.16.0" }
+shuttle-shared-db = { version = "0.16.0", features = ["postgres"] }
 sqlx = { version = "0.6.2", features = ["runtime-tokio-native-tls", "postgres"] }
 tokio = { version = "1.26.0" }
 ```
