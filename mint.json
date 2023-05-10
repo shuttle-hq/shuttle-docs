@@ -63,12 +63,8 @@
       "pages": [
         "examples/axum",
         "examples/actix",
-        "examples/poem",
-        "examples/rocket",
-        "examples/salvo",
         "examples/shuttle-next",
         "examples/serenity",
-        "examples/custom-service",
         "examples/other"
       ]
     },
@@ -81,6 +77,7 @@
     {
       "group": "How To",
       "pages": [
+        "tutorials/custom-service",
         "tutorials/discord-weather-forecast",
         "tutorials/url-shortener",
         "tutorials/authentication",
