@@ -68,11 +68,8 @@
         "examples/salvo",
         "examples/shuttle-next",
         "examples/serenity",
-        "examples/thruster",
-        "examples/tide",
-        "examples/tower",
-        "examples/warp",
-        "examples/custom-service"
+        "examples/custom-service",
+        "examples/other"
       ]
     },
     {
@@ -82,7 +79,7 @@
       ]
     },
     {
-      "group": "Tutorials",
+      "group": "How To",
       "pages": [
         "tutorials/discord-weather-forecast",
         "tutorials/url-shortener",
