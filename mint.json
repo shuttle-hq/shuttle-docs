@@ -51,7 +51,6 @@
         "introduction/shuttle-commands",
         "introduction/telemetry",
         "introduction/idle-projects",
-        "introduction/node-cli",
         "introduction/workspaces"
       ]
     },
@@ -90,6 +89,12 @@
         "tutorials/authentication",
         "tutorials/serverless-calendar-app",
         "tutorials/websocket-chat-app-js"
+      ]
+    },
+    {
+      "group": "Fullstack Templates",
+      "pages": [
+        "fullstack/rust-next"
       ]
     },
     {
