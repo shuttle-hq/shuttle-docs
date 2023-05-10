@@ -45,25 +45,56 @@
       "pages": [
         "introduction/welcome",
         "introduction/what-is-shuttle",
-        "introduction/installation",
-        "introduction/quick-start",
-        "introduction/local-run",
-        "introduction/shuttle-commands",
-        "introduction/telemetry",
-        "introduction/idle-projects",
-        "introduction/workspaces"
-      ]
+          {
+            "group": "Getting Started",
+            "pages": [
+              "introduction/installation",
+              "introduction/quick-start",
+              "introduction/local-run",
+              "introduction/shuttle-commands",
+              "introduction/idle-projects",
+              "introduction/workspaces"
+            ]
+          },
+          "introduction/telemetry",
+          {
+            "group": "Custom Config",
+            "pages": [
+              "configuration/shuttle-service-name"
+            ]
+          }
+        ]
     },
     {
-      "group": "Configuration",
-      "pages": ["configuration/shuttle-service-name"]
+      "group": "Resources",
+      "pages": [
+        {
+          "group": "Databases",
+          "pages": [
+            "resources/shuttle-aws-rds",
+            "resources/shuttle-persist",
+            "resources/shuttle-shared-db"
+          ]
+        },
+        {
+          "group": "Environment Variables",
+          "pages": [
+            "resources/shuttle-secrets"
+          ]
+        },
+        {
+          "group": "Static Files",
+          "pages": [
+            "resources/shuttle-static-folder"
+          ]
+        }
+      ]
     },
     {
       "group": "Examples",
       "pages": [
         "examples/axum",
         "examples/actix",
-        "examples/shuttle-next",
         "examples/serenity",
         "examples/other"
       ]
@@ -92,21 +123,18 @@
       ]
     },
     {
+      "group": "Shuttle Next (Framework) 🧪",
+      "pages": [
+        "shuttle-next/overview",
+        "shuttle-next/getting-started"
+      ]
+    },
+    {
       "group": "Support",
       "pages": [
         "support/faq",
         "support/troubleshooting",
         "support/installing-protoc"
-      ]
-    },
-    {
-      "group": "Resources",
-      "pages": [
-        "resources/shuttle-aws-rds",
-        "resources/shuttle-persist",
-        "resources/shuttle-shared-db",
-        "resources/shuttle-secrets",
-        "resources/shuttle-static-folder"
       ]
     },
     {
