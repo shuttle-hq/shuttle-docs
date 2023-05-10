@@ -2,7 +2,7 @@
 title: "Shuttle Shared Databases"
 ---
 
-This plugin manages databases that are shared with other services on [shuttle](https://www.shuttle.rs). Your database
+This plugin manages databases that are shared with other services on [Shuttle](https://www.shuttle.rs). Your database
 will share a postgres server with other users, but it will not be accessible by other users.
 
 ## Usage
@@ -31,7 +31,7 @@ async fn poem(#[shuttle_shared_db::Postgres(
 ```
 
 ## Example
-The shuttle poem main function below uses the `[shuttle_shared_db::Postgres]` attribute macro to provision a shared postgres database,
+The Shuttle poem main function below uses the `[shuttle_shared_db::Postgres]` attribute macro to provision a shared postgres database,
 which can be accessed using a pre-configured, authenticated [sqlx Pool](https://docs.rs/sqlx/latest/sqlx/pool/index.html).
 
 ```rust main.rs
