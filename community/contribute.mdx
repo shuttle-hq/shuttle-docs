@@ -1,11 +1,11 @@
 ---
 title: Contributing
-description: "This document describes the best way to get started with contributing to Shuttle"
+description: "This document describes the best way to get started with contributing to shuttle"
 ---
 
 ## Tenets
 
-Our goal with Shuttle open-source maintenance is to foster a thriving, collaborative, and sustainable ecosystem around the project, which allows it to continue to grow and evolve over time.
+Our goal with shuttle open-source maintenance is to foster a thriving, collaborative, and sustainable ecosystem around the project, which allows it to continue to grow and evolve over time.
 
 We will strive to adhere to the following tenets:
 
@@ -25,7 +25,7 @@ are always appreciated!
 
 ## Running Locally
 
-You can use Docker and docker-compose to test Shuttle locally during development. See the [Docker install](https://docs.docker.com/get-docker/)
+You can use Docker and docker-compose to test shuttle locally during development. See the [Docker install](https://docs.docker.com/get-docker/)
 and [docker-compose install](https://docs.docker.com/compose/install/) instructions if you do not have them installed already.
 
 > Note for Windows: The current [Makefile](https://github.com/shuttle-hq/shuttle/blob/main/Makefile) does not work on Windows systems by itself - if you want to build the local environment on Windows you could use [Windows Subsystem for Linux](https://learn.microsoft.com/en-us/windows/wsl/install). Additional Windows considerations are listed at the bottom of this page.
@@ -43,7 +43,7 @@ To make sure you have them, run `git fetch upstream --tags`, where upstream is t
 
 You should now be ready to setup a local environment to test code changes to core `shuttle` packages as follows:
 
-From the root of the Shuttle repo, build the required images with:
+From the root of the shuttle repo, build the required images with:
 
 ```bash
 USE_PANAMAX=disable make images
@@ -53,7 +53,7 @@ USE_PANAMAX=disable make images
 
 The images get built with [cargo-chef](https://github.com/LukeMathWalker/cargo-chef) and therefore support incremental builds (most of the time). So they will be much faster to re-build after an incremental change in your code - should you wish to deploy it locally straight away.
 
-You can now start a local deployment of Shuttle and the required containers with:
+You can now start a local deployment of shuttle and the required containers with:
 
 ```bash
 USE_PANAMAX=disable make up
@@ -94,7 +94,7 @@ shuttle-tower = { path = "[base]/shuttle/services/shuttle-tower" }
 shuttle-warp = { path = "[base]/shuttle/services/shuttle-warp" }
 ```
 
-Before we can login to our local instance of Shuttle, we need to create a user.
+Before we can login to our local instance of shuttle, we need to create a user.
 The following command inserts a user into the `auth` state with admin privileges:
 
 ```bash
@@ -102,14 +102,14 @@ The following command inserts a user into the `auth` state with admin privileges
 docker compose --file docker-compose.rendered.yml --project-name shuttle-dev exec auth /usr/local/bin/service --state=/var/lib/shuttle-auth init --name admin --key dh9z58jttoes3qvt
 ```
 
-Login to Shuttle service in a new terminal window from the root of the Shuttle directory:
+Login to shuttle service in a new terminal window from the root of the shuttle directory:
 
 ```bash
 # the --api-kei should be the same one you inserted in the auth state
 cargo run --bin cargo-shuttle -- login --api-key "dh9z58jttoes3qvt"
 ```
 
-The [Shuttle examples](https://github.com/shuttle-hq/shuttle-examples) are linked to the main repo as a [git submodule](https://git-scm.com/book/en/v2/Git-Tools-Submodules), to initialize it run the following commands:
+The [shuttle examples](https://github.com/shuttle-hq/shuttle-examples) are linked to the main repo as a [git submodule](https://git-scm.com/book/en/v2/Git-Tools-Submodules), to initialize it run the following commands:
 
 ```bash
 git submodule init
@@ -126,7 +126,7 @@ Create a new project, this will prompt your local instance of the gateway to
 start a deployer container:
 
 ```bash
-# the --manifest-path is used to locate the root of the Shuttle workspace
+# the --manifest-path is used to locate the root of the shuttle workspace
 cargo run --manifest-path ../../../Cargo.toml --bin cargo-shuttle -- project start
 ```
 
@@ -152,7 +152,7 @@ cargo run --manifest-path ../../../Cargo.toml --bin cargo-shuttle -- logs
 
 ### Testing deployer only
 
-The steps outlined above starts all the services used by Shuttle locally (ie. both `gateway` and `deployer`). However, sometimes you will want to quickly test changes to `deployer` only. To do this replace `make up` with the following:
+The steps outlined above starts all the services used by shuttle locally (ie. both `gateway` and `deployer`). However, sometimes you will want to quickly test changes to `deployer` only. To do this replace `make up` with the following:
 
 ```bash
 # if you didn't do this already, make the images
@@ -199,7 +199,7 @@ one you submitted when starting the deployer above. Then you can use the CLI lik
 would:
 
 ```bash
-# the manifest path is the path to the root Shuttle manifest from the example directory
+# the manifest path is the path to the root shuttle manifest from the example directory
 cargo run --bin cargo-shuttle --manifest-path="../../../Cargo.toml" -- deploy
 ```
 
@@ -212,7 +212,7 @@ Use Podman for building container images by setting `DOCKER_BUILD`.
 export DOCKER_BUILD=podman build --network host
 ```
 
-The Shuttle containers expect access to a Docker-compatible API over a socket. Expose a rootless Podman socket either
+The shuttle containers expect access to a Docker-compatible API over a socket. Expose a rootless Podman socket either
 - [with systemd](https://github.com/containers/podman/tree/main/contrib/systemd), if your system supports it,
     ```sh
     systemctl start --user podman.service
@@ -240,7 +240,7 @@ If you are using `nftables`, even with `iptables-nft`, it may be necessary to in
 
 ## Running Tests
 
-Shuttle has reasonable test coverage - and we are working on improving this
+shuttle has reasonable test coverage - and we are working on improving this
 every day. We encourage PRs to come with tests. If you're not sure about
 what a test should look like, feel free to [get in touch](https://discord.gg/shuttle).
 
