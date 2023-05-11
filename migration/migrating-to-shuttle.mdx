@@ -34,10 +34,10 @@ If you have any database records you'd like to keep, it would be a good idea to 
 
 To be able to run your project on Shuttle, you need to make a few changes to your code. Instead of running on the `tokio` runtime, you should use the `shuttle_service::main` macro instead like so and swap out `dotenvy` for Shuttle's Postgres annotation:
 
+This is what your `main.rs` file looks before:
+
 ```rust
 // main.rs
-
-// before...
 #[tokio::main]
 async fn main() {
     dotenv().ok();
@@ -59,8 +59,11 @@ async fn main() {
         .await
         .unwrap()
 }
+```
 
-// ... after
+And this is what it looks like after:
+
+```
 #[shuttle_runtime::main]
 pub async fn axum (
 #[shuttle_shared_db::Postgres] postgres: PgPool,
@@ -78,7 +81,7 @@ Ok(router.into())
 }
 ```
 
-If you need more than a simple router, you'll want to create a custom struct that holds all of your required app state information inside and then create an `impl` for the struct - you can find more about that [here.](https://docs.shuttle.rs/examples/custom-service) Anything outside of your entry point function (the function that uses the `shuttle_runtime::main` macro) doesn't need to be changed. If you are using secrets as well as a database connection, you may wish to create a struct that holds both of these values and then pass it into the function that generates the router.
+If you need more than a simple router, you'll want to create a custom struct that holds all of your required app state information inside and then create an `impl` for the struct - you can find more about that [here.](https://docs.shuttle.rs/tutorials/custom-service) Anything outside of your entry point function (the function that uses the `shuttle_runtime::main` macro) doesn't need to be changed. If you are using secrets as well as a database connection, you may wish to create a struct that holds both of these values and then pass it into the function that generates the router.
 
 ### Deploying
 
