@@ -32,8 +32,8 @@ edition = "2021"
 
 [dependencies]
 axum = "0.6.10"
-shuttle-axum = { version = "0.16.0" }
-shuttle-runtime = { version = "0.16.0" }
+shuttle-axum = { version = "0.17.0" }
+shuttle-runtime = { version = "0.17.0" }
 tokio = { version = "1.26.0" }
 ```
 Your `main.rs` should look like this:
@@ -110,9 +110,9 @@ hyper = { version = "0.14.23", features = ["client", "http2"] }
 hyper-tls = "0.5.0"
 serde = { version = "1.0.148", features = ["derive"] }
 serde_json = "1.0.89"
-shuttle-axum = { version = "0.16.0" }
-shuttle-runtime = { version = "0.16.0" }
-shuttle-static-folder = "0.16.0"
+shuttle-axum = { version = "0.17.0" }
+shuttle-runtime = { version = "0.17.0" }
+shuttle-static-folder = "0.17.0"
 tokio = { version = "1.26.0", features = ["full"] }
 tower-http = { version = "0.3.0", features = ["fs"] }
 ```js assets/script.js
@@ -403,8 +403,8 @@ edition = "2021"
 
 [dependencies]
 rocket = "0.5.0-rc.2"
-shuttle-rocket = { version = "0.16.0" }
-shuttle-runtime = { version = "0.16.0" }
+shuttle-rocket = { version = "0.17.0" }
+shuttle-runtime = { version = "0.17.0" }
 tokio = { version = "1.26.0" }
 ```
 Your `main.rs` should look like this:
@@ -466,8 +466,8 @@ jsonwebtoken = { version = "8.1.1", default-features = false }
 lazy_static = "1.4.0"
 rocket = { version = "0.5.0-rc.2", features = ["json"] }
 serde = { version = "1.0.148", features = ["derive"] }
-shuttle-rocket = { version = "0.16.0" }
-shuttle-runtime = { version = "0.16.0" }
+shuttle-rocket = { version = "0.17.0" }
+shuttle-runtime = { version = "0.17.0" }
 tokio = { version = "1.26.0" }
 ```
 Your `main.rs` should look like this:
@@ -762,10 +762,10 @@ edition = "2021"
 [dependencies]
 nanoid = "0.4.0"
 rocket = { version = "0.5.0-rc.2", features = ["json"] }
-shuttle-rocket = { version = "0.16.0" }
-shuttle-runtime = { version = "0.16.0" }
+shuttle-rocket = { version = "0.17.0" }
+shuttle-runtime = { version = "0.17.0" }
 serde = "1.0.148"
-shuttle-shared-db = { version = "0.16.0", features = ["postgres"] }
+shuttle-shared-db = { version = "0.17.0", features = ["postgres"] }
 sqlx = { version = "0.6.2", features = ["runtime-tokio-native-tls", "postgres"] }
 tokio = { version = "1.26.0" }
 url = "2.3.1"
