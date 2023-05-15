@@ -1,6 +1,6 @@
 ---
 title: Contributing
-description: "This document describes the best way to get started with contributing to Shuttle"
+description: "This document describes the best way to get started with contributing to shuttle"
 ---
 
 ## Tenets
@@ -31,7 +31,7 @@ and [docker-compose install](https://docs.docker.com/compose/install/) instructi
 > Note for Windows: The current [Makefile](https://github.com/shuttle-hq/shuttle/blob/main/Makefile) does not work on Windows systems by itself - if you want to build the local environment on Windows you could use [Windows Subsystem for Linux](https://learn.microsoft.com/en-us/windows/wsl/install). Additional Windows considerations are listed at the bottom of this page.
 > Note for Linux: When building on Linux systems, if the error unknown flag: --build-arg is received, install the docker-buildx package using the package management tool for your particular system.
 
-Clone the shuttle repository (or your fork):
+Clone the Shuttle repository (or your fork):
 
 ```bash
 git clone git@github.com:shuttle-hq/shuttle.git
@@ -39,7 +39,7 @@ cd shuttle
 ```
 
 > Note: We need the git tags for the local development workflow, but they may not be included when you clone the repository.
-To make sure you have them, run `git fetch upstream --tags`, where upstream is the name of the shuttle remote repository.
+To make sure you have them, run `git fetch upstream --tags`, where upstream is the name of the Shuttle remote repository.
 
 You should now be ready to setup a local environment to test code changes to core `shuttle` packages as follows:
 
@@ -109,7 +109,7 @@ Login to Shuttle service in a new terminal window from the root of the Shuttle d
 cargo run --bin cargo-shuttle -- login --api-key "dh9z58jttoes3qvt"
 ```
 
-The [Shuttle examples](https://github.com/shuttle-hq/shuttle-examples) are linked to the main repo as a [git submodule](https://git-scm.com/book/en/v2/Git-Tools-Submodules), to initialize it run the following commands:
+The [shuttle examples](https://github.com/shuttle-hq/shuttle-examples) are linked to the main repo as a [git submodule](https://git-scm.com/book/en/v2/Git-Tools-Submodules), to initialize it run the following commands:
 
 ```bash
 git submodule init
@@ -173,7 +173,7 @@ container and the auth CLI `init` command:
 AUTH_CONTAINER_ID=$(docker ps -qf "name=auth") \
     docker exec $AUTH_CONTAINER_ID ./usr/local/bin/service \
     --state=/var/lib/shuttle-auth \
-    init --name admin --key test-key
+    init --name admin --key dh9z58jttoes3qvt
 ```
 > Note: if you have done this already for this container you will get a "UNIQUE constraint failed"
 > error, you can ignore this.
@@ -182,7 +182,7 @@ We need to make sure we're logged in with the same key we inserted for the admin
 previous step:
 
 ```bash
-cargo shuttle login --api-key test-key
+cargo shuttle login --api-key dh9z58jttoes3qvt
 ```
 
 We're now ready to start a local run of the deployer:
@@ -323,7 +323,7 @@ graph BT
 
 ### Binaries
 
-- `cargo-shuttle` is the CLI used by users to initialize, deploy and manage their projects and services on shuttle.
+- `cargo-shuttle` is the CLI used by users to initialize, deploy and manage their projects and services on Shuttle.
 - `gateway` starts and manages instances of `deployer`. It proxies commands from the user sent via the CLI on port 8001 and traffic on port 8000 to the correct instance of `deployer`.
 - `auth` is an authentication service that creates and manages users. In addition to that, requests to the `gateway` that contain an api-key or cookie will be proxied to the `auth` service where it will be converted to a JWT for authorization between internal services (like a `deployer` requesting a database from
 `provisioner`).
