@@ -120,7 +120,8 @@
     {
       "group": "Fullstack Templates",
       "pages": [
-        "fullstack/rust-next"
+        "fullstack/rust-next",
+        "fullstack/saas-template"
       ]
     },
     {
