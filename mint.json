@@ -45,6 +45,7 @@
       "pages": [
         "introduction/welcome",
         "introduction/what-is-shuttle",
+        "introduction/how-shuttle-works",
           {
             "group": "Getting Started",
             "pages": [
