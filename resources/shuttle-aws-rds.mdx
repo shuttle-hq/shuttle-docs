@@ -8,13 +8,14 @@ This plugin provisions databases on AWS RDS using [Shuttle](https://www.shuttle.
 - MariaDB
 
 ## Usage
-Add `shuttle-aws-rds` to the dependencies for your service. Every engine is behind the following feature flags and attribute paths:
+Each engine is behind a feature flag, and can be installed with the following commands and
+used with the following attribute paths:
 
-| Engine   | Feature flag | Attribute path            |
-|----------|--------------|---------------------------|
-| Postgres | postgres     | shuttle_aws_rds::Postgres |
-| MySql    | mysql        | shuttle_aws_rds::MySql    |
-| MariaDB  | mariadb      | shuttle_aws_rds::MariaDB  |
+| Engine   | Command                                         | Attribute path            |
+|----------|-------------------------------------------------|---------------------------|
+| Postgres | `cargo add shuttle-aws-rds --features postgres` | shuttle_aws_rds::Postgres |
+| MySql    | `cargo add shuttle-aws-rds --features mysql`    | shuttle_aws_rds::MySql    |
+| MariaDB  | `cargo add shuttle-aws-rds --features mariadb`  | shuttle_aws_rds::MariaDB  |
 
 ### Parameters
 | Parameter | Type | Default  | Description                                                                                             |
