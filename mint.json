@@ -154,6 +154,10 @@
     "discord": "https://discord.com/invite/shuttle",
     "github": "https://github.com/shuttle-hq/shuttle"
   },
+  "feedback": {
+    "raiseIssue": true,
+    "suggestEdit": true
+  },
   "classes": {
     "anchors": "group-hover:bg-gradient-to-tr from-[#F53F2E] to-[#E9D739]",
     "activeAnchors": "bg-gradient-to-tr"
