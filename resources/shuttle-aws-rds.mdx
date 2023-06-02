@@ -32,19 +32,9 @@ async fn tide(#[shuttle_aws_rds::Postgres(
 ```
 
 The URI should be formatted according to the
-[postgres documentation](https://www.postgresql.org/docs/current/libpq-connect.html#LIBPQ-CONNSTRING),
-for example:
-
-```
-postgresql://
-postgresql://localhost
-postgresql://localhost:5432
-postgresql://localhost/mydb
-postgresql://user@localhost
-postgresql://user:secret@localhost
-postgresql://other@localhost/otherdb?connect_timeout=10&application_name=myapp
-postgresql://localhost/mydb?user=other&password=secret
-```
+[Postgres](https://www.postgresql.org/docs/current/libpq-connect.html#LIBPQ-CONNSTRING) or
+[MySql and MariaDB](https://dev.mysql.com/doc/refman/8.0/en/connecting-using-uri-or-key-value-pairs.html#connecting-using-uri)
+documentation, depending on which one you're using.
 
 If you do not specify a `local_uri`, then shuttle will attempt to spin up a docker instance and launch the database inside of it.
 For this to succeed, you must have docker installed and you must also have started the docker engine. If you have not used docker
