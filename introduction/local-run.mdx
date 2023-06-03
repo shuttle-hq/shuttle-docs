@@ -14,6 +14,21 @@ project directory, run:
 cargo shuttle run
 ```
 
+### Inner development loop
+The power of the inner development loop can be harnassed when developing locally with Shuttle! Leverage `cargo watch` like this:
+```bash
+cargo watch -x check -x clippy -x fmt -x test -x 'shuttle run'
+```
+This will:
+- start up cargo in watch mode (looks for changes to your files)
+- run cargo check
+- run cargo clippy
+- run cargo fmt
+- run any tests
+- run locally with shuttle
+
+The inner development loop provides a rapid cycle of feedback as you develop your app.
+
 ### Local runs with databases
 
 If your project relies on a database resource, it will default to starting a [docker](https://docs.docker.com/get-docker/) 
