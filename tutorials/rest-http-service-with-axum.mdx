@@ -185,12 +185,12 @@ Router::new()
     .route("/api", get(hello_world))
     .fallback_service(get(|req| async move {
 match ServeDir::new(opt.static_dir).oneshot(req).await {
-Ok(res) => res.map(boxed),
-Err(err) => Response::builder()
-.status(StatusCode::INTERNAL_SERVER_ERROR)
-.body(boxed(Body::from(format!("error: {err}"))))
-.expect("error response"),
-}
+    Ok(res) => res.map(boxed),
+    Err(err) => Response::builder()
+        .status(StatusCode::INTERNAL_SERVER_ERROR)
+        .body(boxed(Body::from(format!("error: {err}"))))
+        .expect("error response"),
+            }
 }))
 ```
 
@@ -242,13 +242,13 @@ async fn check_cookie(
     if !jar.get("hello") {
 // a similar thing can be done for deleting cookies, getting cookies etc
          (jar.add(Cookie::new("hello", "world")), StatusCode::CREATED)
-} 
+    } 
 
 StatusCode::OK
 }
 ```
 
-However, what if we want to make our own cookies? Suppose we have a backend that uses CORS and requires secure, same-site cookies - what would we do? In this case, we can declare a variable as a cookie using Axum's `build` method for the Cookie struct. Let's see what building this might look like:
+However, what if we want to make our own cookies? Suppose we have a backend that uses CORS and requires secure, same-site cookies - what would we do? In this case, we can declare a variable as a cookie using the `CookieBuilder` struct from the `cookie` crate, re-imported to `axum-extra` (requires the 'cookie' flag enabled). Let's see what building this might look like:
 
 ```rust
 // bear in mind this uses the "time" crate for the duration
@@ -286,10 +286,9 @@ There's two ways to be able to create middleware in Axum, but we will be focusin
 async fn check_hello_world<B>(
 req: Request<B>,
 next: Next<B>) -> Result<Response, StatusCode> {
-let string = "Hello world!";
-
-if string != "Hello world!" {
-    return Err(StatusCode::INTERNAL_SERVER_ERROR);
+// requires the http crate to get the header name
+if req.headers().get(CONTENT_TYPE).unwrap() != "application/json" {
+    return Err(StatusCode::BAD_REQUEST);
 }
 
 Ok(next.run(req).await)
@@ -302,20 +301,22 @@ Now that we've written a middleware function, we can implement it in our router 
 
 ```rust
  Router::new()
-.route("/", get(hello_world))
-.layer(middleware::from_fn(check_hello_world))
+    .route("/", get(hello_world))
+    .layer(middleware::from_fn(check_hello_world))
 ```
 
 The `layer` method is a very versatile method that we can use to layer multiple things - a CORS layer (which will be discussed later), middleware as well as tracing. what if we want to implement a middleware that has state? Thankfully, Axum has an aptly named `from_fn_with_state` method that we can use instead of `from fn`, like so:
 
 ```rust
  Router::new()
-.route("/", get(hello_world))
-.layer(middleware::from_fn_with_state(check_hello_world))
-.with_state(state)
+    .route("/", get(hello_world))
+    .layer(middleware::from_fn_with_state(check_hello_world))
+    .with_state(state)
 ```
 
 Ideally your middleware should come after all of the routes you are trying to cover with it, as well as before the `with_state` method if your middleware function requires state to access things like a database connection pool.
+
+You can read more about writing middleware with Axum [here](https://docs.rs/axum/latest/axum/middleware/index.html).
 
 ### CORS
 
@@ -335,10 +336,10 @@ As you can see, this statement declares a new `CorsLayer` that accepts GET and P
 
 ```rust
 let cors = CorsLayer::new()
-.allow_credentials(true)
-.allow_methods(vec![Method::GET, Method::POST, Method::PUT, Method::DELETE])
-.allow_headers(vec![ORIGIN, AUTHORIZATION, ACCEPT])
-.allow_origin(state.domain.parse::<HeaderValue>().unwrap());
+    .allow_credentials(true)
+    .allow_methods(vec![Method::GET, Method::POST, Method::PUT, Method::DELETE])
+    .allow_headers(vec![ORIGIN, AUTHORIZATION, ACCEPT])
+    .allow_origin(state.domain.parse::<HeaderValue>().unwrap());
 
 // once we've created our CORS layer, we can layer it on top of our router
 // in a nested router you'll want to layer it only after all the routes where it's required
@@ -346,12 +347,7 @@ Router::new().layer(cors)
 ```
 
 ### Deployment
-Normally, you'd need to bind your router to an IP address with port (making it into a service) to be able to run it:
 
-```rust
-let router = Router::new().route("/", get(hello_world));
+With Shuttle, you can deploy your app with `cargo shuttle deploy` and then it'll deploy your app to a live URL (assuming there's no errors). No Docker containerisation required!
 
-axum::Server::bind([0,0,0,0,8000]).serve(router.into_make_service()).await
-```
-
-However, with Shuttle you can wrap your entry point function with the Shuttle runtime macro and then add relevant code annotations, and it'll work without needing to do anything else. You can also then deploy your app with `cargo shuttle deploy` and then it'll deploy your app to a live URL (assuming there's no errors). No Docker containerisation required!
+If you're migrating to Shuttle, you need to wrap your entry point function with the Shuttle runtime macro and then add relevant code annotations, and it'll work without needing to do anything else. You can read more about this [here](https://docs.shuttle.rs/migration/migrating-to-shuttle).

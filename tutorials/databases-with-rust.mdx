@@ -36,7 +36,7 @@ sqlx::migrate!().run(&pool).await.expect("Migrations failed :(");
 
 Be aware however that this will run every time the program starts, so if you only want your migrations to run once or you're not using `CREATE TABLE IF NOT EXISTS`, you will probably want to make sure you either comment this statement out or just delete it once the migrations have run.
 
-To get started with querying using SQLx, we'll need to connect to our database. Normally you'd have to set up your connection pool manually - however, with shuttle you can just set the macro up and you'll receive the connection pool immediately:
+To get started with querying using SQLx, we'll need to connect to our database. Normally you'd have to set up your connection pool manually - however, with Shuttle you can just set the macro up and you'll receive the connection pool immediately:
 
 ```rust
 #[shuttle_runtime::main]
@@ -52,11 +52,11 @@ Now when you need to make a query, you can use `&pool` in your queries as the da
 At a basic level, we can use `sqlx::query` to query something and then chain the `.bind()` method to insert our own variables into the query:
 
 ```rust
-let query = sqlx::query("SELECT * FROM users WHERE id = $1)
-.bind(id)
 // fetch one row
-.fetch_one(&pool)
-.await;
+let query = sqlx::query("SELECT * FROM users WHERE id = $1)
+    .bind(id)
+    .fetch_one(&pool)
+    .await;
 
 let number: i32 = query.get("id");
 ```
@@ -66,13 +66,13 @@ While this is pretty cool, what we probably want to do if we know what we want t
 ```rust
 #[derive(sqlx::FromRow)]
 struct Message {
-id: i32,
-message: String
+    id: i32,
+    message: String
 }
 
 let query = sqlx::query::_as<_, Message>("SELECT id, message FROM messages")
-.fetch_all(&pool)
-.await;
+    .fetch_all(&pool)
+    .await;
 ```
 
 This is much more convenient for us for gathering information since we already know what we want the outputted data type from the query to be, so when we carry out the query it'll now automatically be converted into a vector of structs. 
@@ -83,25 +83,25 @@ One of SQLx's main strengths in addition to the above is being able to create da
 cargo add sqlx --features macros
 ```
 
-This will allow us to be able to use the `query!()` and `query_as!()` queries, which like the above allows us to execute general queries as well as queries that can directly return structs. The main difference however is that these are statically checked at compile-time, so they'll always be syntactically correct at runtime. Let's have a look at how we can use these below:
+This will allow us to be able to use the `query!()` and `query_as!()` macros, which like the above allows us to execute general queries as well as queries that can directly return structs. The main difference however is that these macros do compile-time syntactic and semantic verification of the SQL, meaning you'll get errors at compile time if the queries are invalid. Let's have a look at how we can use them below:
 
 ```rust
 // as you can see this is pretty much the same
 let messages = sqlx::query!("SELECT * FROM messages")
-.fetch_all(&pool)
-.await;
+    .fetch_all(&pool)
+    .await;
 
 #[derive(sqlx::FromRow)]
 struct Message {
-id: i32,
-message: String
+    id: i32,
+    message: String
 }
 
 // as you can see we input the struct type in-macro, then the query & bound variables
 let messages_to_struct = sqlx::query_as!(Message, "SELECT id, message FROM messages
  WHERE id = (1)", 1i32)
-.fetch_one(&pool)
-.await;
+    .fetch_one(&pool)
+    .await;
 ```
 
 Once we've built all of our queries that we want to use, all we need to do is run the following command which will create query metadata at the current working directory:
@@ -138,14 +138,14 @@ cargo add shuttle-persist
 // as you can see this allows for a nested struct
 #[derive(Deserialize, Serialize)]
 pub struct Data {
-people: Vec<Person>,
-total_records: i32
+    people: Vec<Person>,
+    total_records: i32
 }
 
 #[derive(Deserialize, Serialize)]
 pub struct Person {
-name: String,
-age: i32
+    name: String,
+    age: i32
 }
 
 // add a new() function so the struct can be initialised if it doesn't exist
