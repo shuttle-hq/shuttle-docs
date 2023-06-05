@@ -136,8 +136,7 @@
       "group": "Support",
       "pages": [
         "support/faq",
-        "support/troubleshooting",
-        "support/installing-protoc"
+        "support/troubleshooting"
       ]
     },
     {
