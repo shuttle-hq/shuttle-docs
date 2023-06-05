@@ -183,16 +183,15 @@ async fn add_record(
     State(state): State<AppState>,
     Json(req): Json<Person>,
 ) -> Result<impl IntoResponse, impl IntoResponse> {
-
-let mut data = state.persist.load::<Data>("data");
-
-data.people.push( Person { name: req.name, age: req.age } );
-data.total_records += 1;
-
-match state.persist.save::<Data>("data", data) {
-    Ok(_) => Ok((StatusCode::OK, "Successful!".to_string())),
-    Err(e) => Err((StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))
-}
+    let mut data = state.persist.load::<Data>("data");
+    
+    data.people.push( Person { name: req.name, age: req.age } );
+    data.total_records += 1;
+    
+    match state.persist.save::<Data>("data", data) {
+        Ok(_) => Ok((StatusCode::OK, "Successful!".to_string())),
+        Err(e) => Err((StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))
+    }
 }
 ```
 

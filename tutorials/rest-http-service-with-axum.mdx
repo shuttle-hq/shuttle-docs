@@ -21,16 +21,16 @@ In Axum, routers can be made by writing `Router::new()` to create it and then ad
 ```rust
 #[shuttle_runtime::main]
 async fn axum() -> shuttle_axum::ShuttleAxum {
+let router = Router::new()
+    .route("/", get(hello_world));
 
-let router = Router::new().route("/", get(hello_world));
-
-Ok(router.into())
+    Ok(router.into())
 }
 
 // this is a function that returns a static string
 // all functions used as endpoints must return a HTTP-compatible response
 async fn hello_world() -> &'static str {
-"Hello world!"
+    "Hello world!"
 }
 ```
 
@@ -38,11 +38,10 @@ However, this is quite basic. We are also missing a HTTP status code from our fu
 
 ```rust
 async fn hello_world() -> impl IntoResponse {
-
 // the json! macro is from the serde_json library
-let hello_world = json!({ "hello": "world" });
+    let hello_world = json!({ "hello": "world" });
 
-(StatusCode::OK, hello_world)
+    (StatusCode::OK, hello_world)
 }
 ```
 
@@ -73,7 +72,7 @@ We can also utilise dynamic routing by using the Path type, allowing us to use t
 ```rust
 // this assumes the dynamic variable is called "id"
 async fn hello_world(
-Path(id): Path<i32>
+    Path(id): Path<i32>
 ) -> impl IntoResponse {
     let string = format!("Hello world {}!");
 
@@ -124,7 +123,7 @@ struct MyAppState {
     db_connection: PgPool,
 }
 
-async fn router() -> Router {
+fn router() -> Router {
     let db_connection = PgPoolOptions::new()
         .max_connections(5)
         .connect(<db-connection-string-here>).await;
@@ -173,7 +172,7 @@ Router::new().nest_service("/", ServeDir::new("dist"));
 If you're using a SPA like React, Vue or something similar, you can  build the assets into the relevant folder and then use the following:
 
 ```rust
-    Router::new().nest_service(
+Router::new().nest_service(
     "/", ServeDir::new("dist").not_found_service(ServeFile::new("dist/index.html")),
 );
 ```
@@ -184,14 +183,16 @@ However, in rare cases this might not work - in which case, you will probably wa
 Router::new()
     .route("/api", get(hello_world))
     .fallback_service(get(|req| async move {
-match ServeDir::new(opt.static_dir).oneshot(req).await {
-    Ok(res) => res.map(boxed),
-    Err(err) => Response::builder()
-        .status(StatusCode::INTERNAL_SERVER_ERROR)
-        .body(boxed(Body::from(format!("error: {err}"))))
-        .expect("error response"),
+        match ServeDir::new(opt.static_dir).oneshot(req).await {
+            Ok(res) => res.map(boxed),
+            Err(err) => Response::builder()
+                .status(StatusCode::INTERNAL_SERVER_ERROR)
+                .body(boxed(Body::from(format!("error: {err}"))))
+                .expect("error response"),
             }
-}))
+        }
+    )
+)
 ```
 
 ### Cookies
@@ -221,9 +222,8 @@ impl FromRef<AppState> for Key {
     }
 }
 
-[tokio::main]
-async fn main() {
- 
+[shuttle_runtime::main]
+async fn axum() -> shuttle_axum::ShuttleAxum {
 let state = AppState {
     key: Key::generate() 
 };
@@ -238,7 +238,6 @@ Now that we're done with that, we can pass our cookiejar into whatever function 
 async fn check_cookie(
     jar: PrivateCookieJar,
 ) -> impl IntoResponse {
-
     if !jar.get("hello") {
 // a similar thing can be done for deleting cookies, getting cookies etc
          (jar.add(Cookie::new("hello", "world")), StatusCode::CREATED)
@@ -270,7 +269,7 @@ Deleting a cookie is also pretty much the same as adding a cookie; to be able to
 
 ```rust
 async fn logout(
-jar: PrivateCookieJar
+    jar: PrivateCookieJar
 ) -> impl IntoResponse {
     (jar.remove(Cookie::named("foo"), StatusCode::OK)
 }
@@ -284,14 +283,15 @@ There's two ways to be able to create middleware in Axum, but we will be focusin
 
 ```rust
 async fn check_hello_world<B>(
-req: Request<B>,
-next: Next<B>) -> Result<Response, StatusCode> {
+    req: Request<B>,
+    next: Next<B>
+) -> Result<Response, StatusCode> {
 // requires the http crate to get the header name
-if req.headers().get(CONTENT_TYPE).unwrap() != "application/json" {
-    return Err(StatusCode::BAD_REQUEST);
-}
+    if req.headers().get(CONTENT_TYPE).unwrap() != "application/json" {
+        return Err(StatusCode::BAD_REQUEST);
+        }
 
-Ok(next.run(req).await)
+    Ok(next.run(req).await)
 }
 ```
 
