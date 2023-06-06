@@ -115,7 +115,9 @@
         "tutorials/url-shortener",
         "tutorials/authentication",
         "tutorials/serverless-calendar-app",
-        "tutorials/websocket-chat-app-js"
+        "tutorials/websocket-chat-app-js",
+        "tutorials/rest-http-service-with-axum",
+        "tutorials/databases-with-rust"
       ]
     },
     {
