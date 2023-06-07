@@ -46,25 +46,25 @@
         "introduction/welcome",
         "introduction/what-is-shuttle",
         "introduction/how-shuttle-works",
-          {
-            "group": "Getting Started",
-            "pages": [
-              "introduction/installation",
-              "introduction/quick-start",
-              "introduction/local-run",
-              "introduction/shuttle-commands",
-              "introduction/idle-projects",
-              "introduction/workspaces"
-            ]
-          },
-          "introduction/telemetry",
-          {
-            "group": "Custom Config",
-            "pages": [
-              "configuration/shuttle-service-name"
-            ]
-          }
-        ]
+        {
+          "group": "Getting Started",
+          "pages": [
+            "introduction/installation",
+            "introduction/quick-start",
+            "introduction/local-run",
+            "introduction/shuttle-commands",
+            "introduction/idle-projects",
+            "introduction/workspaces"
+          ]
+        },
+        "introduction/telemetry",
+        {
+          "group": "Custom Config",
+          "pages": [
+            "configuration/shuttle-service-name"
+          ]
+        }
+      ]
     },
     {
       "group": "Resources",
@@ -96,7 +96,14 @@
     {
       "group": "Examples",
       "pages": [
-        "examples/axum",
+        {
+          "group": "Axum",
+          "pages": [
+            "examples/axum-hello-world",
+            "examples/axum-static-files",
+            "examples/axum-websockets"
+          ]
+        },
         "examples/actix",
         "examples/serenity",
         "examples/other"
