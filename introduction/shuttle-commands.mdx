@@ -60,3 +60,14 @@ For example, the `project` command has the following sub-commands:
 | list        | List all projects belonging to the calling account |
 
 Sub-commands may also have options which can be set if desired.
+
+# Cookbook
+
+These are some useful commands that are handy to keep in your back pocket:
+
+- `cargo shuttle run`: Run the project locally so you can test your changes.
+- `cargo shuttle project start`: Initialize an environment for this project on shuttle.
+- `cargo shuttle deploy`: Deploy the current state of the project to the public internet though shuttle.
+- `cargo shuttle deploy --allow-dirty`: Deploy the project to shuttle (including files not committed to git).
+- `cargo shuttle deployment`: Either list existing deployments or get the status of a particular deployment.
+- `cargo shuttle logs --follow`: Fetch the logs of the deployed service and stream them to your terminal.
