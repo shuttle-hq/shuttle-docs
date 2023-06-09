@@ -32,6 +32,16 @@ async fn tide(#[shuttle_aws_rds::Postgres(
     )] pool: PgPool) -> ShuttleTide<MyState> { ... }
 ```
 
+The URI should be formatted according to the
+[Postgres](https://www.postgresql.org/docs/current/libpq-connect.html#LIBPQ-CONNSTRING) or
+[MySql and MariaDB](https://dev.mysql.com/doc/refman/8.0/en/connecting-using-uri-or-key-value-pairs.html#connecting-using-uri)
+documentation, depending on which one you're using.
+
+If you do not specify a `local_uri`, then shuttle will attempt to spin up a docker instance and launch the database inside of it.
+For this to succeed, you must have docker installed and you must also have started the docker engine. If you have not used docker
+before, the easiest way is to [install the desktop app](https://docs.docker.com/get-docker/) and then launch it in order to start
+the docker engine.
+
 ## Example
 This snippet shows the main function of a tide app that uses the `shuttle_aws_rds::Postgres` attribute to provision an RDS Postgres database.
 It gives you an authenticated  [sqlx Pool](https://docs.rs/sqlx/latest/sqlx/pool/index.html), which you can use to interact with the database.
