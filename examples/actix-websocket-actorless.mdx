@@ -1,127 +1,11 @@
 ---
-title: "Actix Web"
-description:
-  "Actix Web is a powerful, pragmatic, and extremely fast web framework for Rust."
+title: "Actix WebSocket Actorless"
 ---
 
-This section revolves around simple Actix Web examples you can get quickly started with by following these 3 steps:
-1. Initialize a new Actix Web project by running the `cargo shuttle init --template actix` command
-2. Copy pasting the contents of the example you want to deploy -- make sure to check the tabs of the snippet(s) to ensure you are copying the right code/file
-3. Running the `cargo shuttle deploy` command
+This example shows how to use a WebSocket to show the live status of the Shuttle API on a web page. The app also provides an echo service and notifies when the number of connected users change.
 
-<Tip>If you are looking for step-by-step guides, check out our [How To](../tutorials) section.</Tip>
-
-## Hello world!
-
-```Rust src/main.rs
-use actix_web::{get, web::ServiceConfig};
-use shuttle_actix_web::ShuttleActixWeb;
-
-#[get("/hello")]
-async fn hello_world() -> &'static str {
-    "Hello World!"
-}
-
-#[shuttle_runtime::main]
-async fn actix_web(
-) -> ShuttleActixWeb<impl FnOnce(&mut ServiceConfig) + Send + Clone + 'static> {
-    let config = move |cfg: &mut ServiceConfig| {
-        cfg.service(hello_world);
-    };
-
-    Ok(config.into())
-}
-```
-
-## Postgres Todo App
 <CodeGroup>
-```Rust src/main.rs
-use actix_web::middleware::Logger;
-use actix_web::{
-    error, get, post,
-    web::{self, Json, ServiceConfig},
-    Result,
-};
-use serde::{Deserialize, Serialize};
-use shuttle_actix_web::ShuttleActixWeb;
-use shuttle_runtime::{CustomError};
-use sqlx::{Executor, FromRow, PgPool};
-
-#[get("/{id}")]
-async fn retrieve(path: web::Path<i32>, state: web::Data<AppState>) -> Result<Json<Todo>> {
-    let todo = sqlx::query_as("SELECT * FROM todos WHERE id = $1")
-        .bind(*path)
-        .fetch_one(&state.pool)
-        .await
-        .map_err(|e| error::ErrorBadRequest(e.to_string()))?;
-
-    Ok(Json(todo))
-}
-
-#[post("")]
-async fn add(todo: web::Json<TodoNew>, state: web::Data<AppState>) -> Result<Json<Todo>> {
-    let todo = sqlx::query_as("INSERT INTO todos(note) VALUES ($1) RETURNING id, note")
-        .bind(&todo.note)
-        .fetch_one(&state.pool)
-        .await
-        .map_err(|e| error::ErrorBadRequest(e.to_string()))?;
-
-    Ok(Json(todo))
-}
-
-#[derive(Clone)]
-struct AppState {
-    pool: PgPool,
-}
-
-#[shuttle_runtime::main]
-async fn actix_web(
-    #[shuttle_shared_db::Postgres] pool: PgPool,
-) -> ShuttleActixWeb<impl FnOnce(&mut ServiceConfig) + Send + Clone + 'static> {
-    pool.execute(include_str!("../schema.sql"))
-        .await
-        .map_err(CustomError::new)?;
-
-    let state = web::Data::new(AppState { pool });
-
-    let config = move |cfg: &mut ServiceConfig| {
-        cfg.service(
-            web::scope("/todos")
-                .wrap(Logger::default())
-                .service(retrieve)
-                .service(add)
-                .app_data(state),
-        );
-    };
-
-    Ok(config.into())
-}
-
-#[derive(Deserialize)]
-struct TodoNew {
-    pub note: String,
-}
-
-#[derive(Serialize, Deserialize, FromRow)]
-struct Todo {
-    pub id: i32,
-    pub note: String,
-}
-```
-
-```sql schema.sql
-DROP TABLE IF EXISTS todos;
-
-CREATE TABLE todos (
-  id serial PRIMARY KEY,
-  note TEXT NOT NULL
-);
-```
-</CodeGroup>
-
-## Websocket Actorless
-<CodeGroup>
-```Rust src/main.rs
+```rust src/main.rs
 use actix_files::NamedFile;
 use actix_web::{
     web::{self, ServiceConfig},
@@ -494,9 +378,28 @@ async fn get_api_status(client: &reqwest::Client) -> bool {
     </script>
   </body>
 </html>
+```
 
+```toml Cargo.toml
+[package]
+name = "websocket-actorless"
+version = "0.1.0"
+edition = "2021"
+publish = false
+
+[dependencies]
+actix-files = "0.6.2"
+actix-web = "4.3.1"
+actix-ws = "0.2.5"
+chrono = { version = "0.4.23", features = ["serde"] }
+futures = "0.3"
+reqwest = "0.11"
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+shuttle-actix-web = "0.18.0"
+shuttle-runtime = "0.18.0"
+shuttle-static-folder = "0.18.0"
+tokio = { version = "1", features = ["rt-multi-thread", "sync"] }
+tracing = "0.1"
 ```
 </CodeGroup>
----
-<Tip> If you want to explore other frameworks, we have more examples with popular ones like Tower and Warp. You can find them [right here](../examples/other).
-If you wish to build/deploy your own custom service, head on [over here](../tutorials/custom-service)</Tip>

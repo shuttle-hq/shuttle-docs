@@ -1,8 +1,10 @@
 {
+  "$schema": "https://mintlify.com/schema.json",
   "name": "Shuttle",
   "logo": {
     "light": "/images/logo/light.png",
-    "dark": "/images/logo/dark.png"
+    "dark": "/images/logo/dark.png",
+    "href": "https://www.shuttle.rs"
   },
   "favicon": "/favicon.png",
   "colors": {
@@ -12,21 +14,15 @@
     "ultraLight": "#F8E9DF",
     "ultraDark": "#9D3400"
   },
-  "topbarLinks": [
-    {
-      "name": "shuttle.rs",
-      "url": "https://www.shuttle.rs"
-    }
-  ],
   "topbarCtaButton": {
     "name": "Log In",
     "url": "https://www.shuttle.rs/login"
   },
   "anchors": [
     {
-      "name": "API Docs",
+      "name": "Crate Docs",
       "icon": "rectangle-terminal",
-      "url": "https://docs.rs/shuttle-service/latest/shuttle_service/"
+      "url": "https://docs.rs/shuttle-runtime/latest/shuttle_runtime/"
     },
     {
       "name": "Blog",
@@ -37,6 +33,11 @@
       "name": "Community",
       "icon": "discord",
       "url": "https://discord.gg/shuttle"
+    },
+    {
+      "name": "GitHub",
+      "icon": "github",
+      "url": "https://github.com/shuttle-hq/shuttle"
     }
   ],
   "navigation": [
@@ -104,8 +105,21 @@
             "examples/axum-websockets"
           ]
         },
-        "examples/actix",
-        "examples/serenity",
+        {
+          "group": "Actix Web",
+          "pages": [
+            "examples/actix-hello-world",
+            "examples/actix-postgres",
+            "examples/actix-websocket-actorless"
+          ]
+        },
+        {
+          "group": "Serenity",
+          "pages": [
+            "examples/serenity-hello-world",
+            "examples/serenity-todo"
+          ]
+        },
         "examples/other"
       ]
     },
