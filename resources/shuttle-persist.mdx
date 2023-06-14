@@ -2,119 +2,28 @@
 title: "Shuttle Persist"
 ---
 
-This plugin allows you to store and load any struct that implements
-`serde::Serialize` and `serde::Deserialize`. Usually this is as easy
-as adding `#[derive(Deserialize, Serialize)]` above your struct and
-adding `#[shuttle_persist::Persist] persist: PersistInstance` as a
-parameter to your main function.
+This plugin allows persisting struct that implement `serde::Serialize` and loading them again using `serde::Deserialize`.
 
 ## Usage
-Add `shuttle-persist` and `serde` to the dependencies for your service:
+Add `shuttle-persist` to the dependencies for your service with `cargo add shuttle-persist`. You can get this resource
+using the `shuttle-persist::Persist` attribute to get a `PersistInstance`. Objects can now be saved using
+`PersistInstance.save()` and loaded again using `PersistInstance.load()`.
 
-```sh
-cargo add shuttle-persist serde --features serde/derive
-```
+## Example
+This snippet shows a Shuttle rocket main function that uses the `shuttle_persist::Persist` attribute to provision and get access to a `PersistInstance`.
 
-Import the `derive` macros for serde at the top of the file containing your struct:
-
-```rs
-/// In whichever file contains the struct you want to store:
-use serde::{Serialize, Deserialize};
-```
-
-Add `#[derive(Deserialize, Serialize)]` above the struct you want to store.
-Note that if your struct contains another struct, then that child struct
-*also* needs to `#[derive(Deserialize, Serialize)]`.
-
-```rust
-use serde::{Serialize, Deserialize};
-...
-#[derive(Deserialize, Serialize)]
-struct ShuttleHq {
-   coolness: f64,
-}
-```
-
-Add `#[shuttle_persist::Persist] persist: PersistInstance` as a parameter
-to your main function:
-
-```
+```rust main.rs
 #[shuttle_runtime::main]
 async fn rocket(
     #[shuttle_persist::Persist] persist: PersistInstance,
-) -> shuttle_rocket::ShuttleRocket {
-    ...
-}
-```
-
-Then, you can store your struct using `persist.save("name_of_my_struct", my_struct)`
-and load it using `persist.load("name_of_my_struct")`:
-
-```rust src/main.rs
-#[macro_use]
-extern crate rocket;
-
-use rocket::State;
-use serde::{Deserialize, Serialize};
-use shuttle_persist::PersistInstance;
-
-/// A struct to keep track of the amount of cool in Shuttle HQ
-#[derive(Deserialize, Serialize)]
-struct ShuttleHq {
-    coolness: f64,
-}
-
-struct MyState {
-    persist: PersistInstance,
-}
-
-#[post("/coolness/<new_coolness>")]
-async fn coolness(new_coolness: f64, state: &State<MyState>) -> Result<(), String> {
-    // Create a key by which we'll fetch the data later
-    let coolness_key = "coolness";
-
-    // Get the persist instance from your state
-    let persist = &state.persist;
-
-    // get the old coolness (which might not have been set yet)
-    let old_coolness = persist
-        .load::<f64>(coolness_key)
-        // If the coolness isn't already set, set it to be over 9000
-        .unwrap_or(9001.0);
-
-    // Make sure someone didn't try to make shuttle_hq less cool
-    if new_coolness < old_coolness {
-        return Err("How could coolness ever go down? You must have made a mistake.".to_string());
-    }
-
-    // Set the coolness of shuttle_hq
-    let shuttle_hq = ShuttleHq {
-        coolness: new_coolness,
-    };
-
-    // Store the new struct via persist
-    persist
-        .save::<ShuttleHq>(coolness_key, shuttle_hq)
-        .map_err(|e| e.to_string())?;
-
-    Ok(())
-}
-
-#[shuttle_runtime::main]
-async fn rocket(
-    #[shuttle_persist::Persist] persist: PersistInstance,
-) -> shuttle_rocket::ShuttleRocket {
-    // Create a state struct to store the persistance instance
+) -> ShuttleRocket {
     let state = MyState { persist };
-
-    // Setup rocket.rs
     let rocket = rocket::build()
-        .mount("/", routes![coolness])
-        // Pass the state through to rocket, to make it available to the handlers
+        .mount("/", routes![retrieve, add])
         .manage(state);
 
     Ok(rocket.into())
 }
 ```
 
-Another example can be found on [GitHub](https://github.com/shuttle-hq/shuttle-examples/tree/main/rocket/persist)
+The full example can be found on [GitHub](https://github.com/shuttle-hq/shuttle-examples/tree/main/rocket/persist)
