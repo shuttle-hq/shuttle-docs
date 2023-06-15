@@ -8,17 +8,19 @@ Our docs are powered by [mintlify](https://mintlify.com/). To run them for local
 
 Install [their cli](https://www.npmjs.com/package/mintlify):
 
+*NOTE: This requires Node v19*
+
 ```bash
-yarn install
+npm i -g mintlify
+npm i -g yarn
+mintlify install
 ```
 
 And from the root of the repository, run:
 
 ```bash
-yarn mintlify dev
+mintlify dev
 ```
-
-*PS: This requires Node 18+*
 
 ## Contribution docs
 
