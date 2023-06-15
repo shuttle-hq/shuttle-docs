@@ -7,6 +7,8 @@ This plugin provisions databases on AWS RDS using [Shuttle](https://www.shuttle.
 - MySql
 - MariaDB
 
+Shuttle makes sure that any data stored in your provisioned database is stored permanently and will persist if you redeploy your server  via `cargo shuttle deploy`, as well as if you restart your service via `cargo shuttle project restart`.
+
 ## Usage
 Each engine is behind a feature flag, and can be installed with the following commands and
 used with the following attribute paths:
