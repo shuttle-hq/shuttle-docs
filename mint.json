@@ -100,7 +100,7 @@
         {
           "group": "Axum",
           "pages": [
-            "examples/axum-hello-world",
+            "examples/axum",
             "examples/axum-static-files",
             "examples/axum-websockets"
           ]
@@ -108,7 +108,7 @@
         {
           "group": "Actix Web",
           "pages": [
-            "examples/actix-hello-world",
+            "examples/actix",
             "examples/actix-postgres",
             "examples/actix-websocket-actorless"
           ]
@@ -116,8 +116,9 @@
         {
           "group": "Serenity",
           "pages": [
-            "examples/serenity-hello-world",
-            "examples/serenity-todo"
+            "examples/serenity",
+            "examples/serenity-todo",
+            "examples/poise"
           ]
         },
         "examples/other"
