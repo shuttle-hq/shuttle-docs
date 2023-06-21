@@ -121,7 +121,8 @@
             "examples/poise"
           ]
         },
-        "examples/other"
+        "examples/other",
+        "examples/examples-repo-link"
       ]
     },
     {
