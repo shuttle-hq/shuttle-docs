@@ -1,15 +1,16 @@
 ---
-title: "Shuttle Static Folder"
+title: 'Shuttle Static Folder'
 ---
 
 This plugin allows services to get the path to a static folder at runtime, enabling the serving of static files such as web pages.
 
 ## Usage
+
 Add `shuttle-static-folder` to the dependencies for your service. This resource can be utilized by adding a parameter to the main function and annoting it with the `shuttle_static_folder::StaticFolder` attribute, to get a `PathBuf` with the location of the static folder.
 
 Here is a code snippet to illustrate::
 
-``` rust
+```rust
 #[shuttle_runtime::main]
 async fn main(
     #[shuttle_static_folder::StaticFolder] static_folder: PathBuf,
@@ -25,14 +26,15 @@ A `PathBuf` is an owned, mutable path (similar to a String). To know more about 
 
 The folder parameter name can be customized in order to change the name of the static folder.
 
-| Parameter | Type | Default  | Description                                                        |
-|-----------|------|----------|--------------------------------------------------------------------|
+| Parameter | Type | Default  | Description                                                                                |
+| --------- | ---- | -------- | ------------------------------------------------------------------------------------------ |
 | folder    | str  | `static` | The relative path, from the crate root, to the directory containing static files to deploy |
 
 ### Customization Example: Static Folder Renamed to Public Folder
-The plugin defaults to a folder name of `static`, but there is freedom to change it.  When annotating the parameter name, as noted above, add an argument in the format `folder = "<desired name>"`, as follows:
 
-``` rust
+The plugin defaults to a folder name of `static`, but there is freedom to change it. When annotating the parameter name, as noted above, add an argument in the format `folder = "<desired name>"`, as follows:
+
+```rust
 #[shuttle_runtime::main]
 async fn main(
     #[shuttle_static_folder::StaticFolder(folder = "public")] public_folder: PathBuf,
@@ -40,6 +42,60 @@ async fn main(
 ```
 
 The parameter name should be changed to match, in this case being `folder = "public"`.
+
+## Caveats
+
+### Static folders in .gitignore
+
+If you happen to be including your static folder in a `.gitignore` file, you will probably hit an error while trying to deploy your Shuttle app.
+
+Shuttle is using the [ignore](https://crates.io/crates/ignore) crate under the hood, and it will ignore all the files and folders included in your `.gitignore` file. This means that the static folder will not be included in the final archive.
+
+Take into account that this will only affect you if you are using the `shuttle deploy` command. If you are using the `shuttle run` command, you will not have any problems.
+
+If you want to overcome this issue, you'll have to add a `.ignore` file to your project and include your static folder in it. The `.ignore` file takes precedence over the `.gitignore` file, so the static folder will be included in the final archive but will be still ignored by git.
+
+For example, if you have a `.gitignore` file like this:
+
+```gitignore
+dist/
+static/
+target/
+```
+
+Then, in order to include the static folder in the final archive, you'll have to create a `.ignore` file like this:
+
+```ignore
+!static/
+```
+
+The team is working in a more simple way to support this scenario, but this will do the trick for now.
+
+### Working with a workspace
+
+If you are working with a workspace, and depending on the structure of your workspace members you may stumble upon a problem when trying to deploy your Shuttle app.
+
+Imagine you have a workspace like this:
+
+```text
+├── api            # Rust API code
+├── front          # Dioxus front-end code
+├── shared         # Shared code between the API and the front-end
+└── Cargo.toml
+```
+
+And you have a process that will generate a static folder called `static` in the `front` member of the workspace.
+
+Now, you have to think about two different scenarios:
+
+1. You are using the `shuttle run` command to run your app locally.
+1. You are using the `shuttle deploy` command to deploy your app to the cloud.
+
+The problem is that, in the **first scenario**, the static folder should be in the **`api` member of the workspace**, but in the **second scenario**, the static folder should be in the **root of the workspace**.
+
+So, the solution is to generate the static folder in the right place depending on the scenario you need to support.
+
+The team is also working on a solution for this issue to make this behaviour consistent in both scenarios.
 
 ## Example Usage
 
