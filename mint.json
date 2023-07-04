@@ -75,7 +75,8 @@
           "pages": [
             "resources/shuttle-aws-rds",
             "resources/shuttle-persist",
-            "resources/shuttle-shared-db"
+            "resources/shuttle-shared-db",
+            "resources/shuttle-turso"
           ]
         },
         {
