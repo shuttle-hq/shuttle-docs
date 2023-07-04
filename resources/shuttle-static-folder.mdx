@@ -8,7 +8,7 @@ This plugin allows services to get the path to a static folder at runtime, enabl
 
 Add `shuttle-static-folder` to the dependencies for your service. This resource can be utilized by adding a parameter to the main function and annoting it with the `shuttle_static_folder::StaticFolder` attribute, to get a `PathBuf` with the location of the static folder.
 
-Here is a code snippet to illustrate::
+Here is a code snippet to illustrate:
 
 ```rust
 #[shuttle_runtime::main]
@@ -21,6 +21,8 @@ A `PathBuf` is an owned, mutable path (similar to a String). To know more about 
 
 > Note: if you use `shuttle-static-folder` in your project and your project is a workspace, the static assets
 > folder needs to be in the root of the workspace.
+
+> Note: if you don't have anything in your static folder when attempting to deploy, the deployer will fail to provision the static folder.
 
 ## Customization
 
