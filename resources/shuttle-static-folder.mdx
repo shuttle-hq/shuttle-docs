@@ -22,8 +22,6 @@ A `PathBuf` is an owned, mutable path (similar to a String). To know more about 
 > Note: if you use `shuttle-static-folder` in your project and your project is a workspace, the static assets
 > folder needs to be in the root of the workspace.
 
-> Note: if you don't have anything in your static folder when attempting to deploy, the deployer will fail to provision the static folder.
-
 ## Customization
 
 The folder parameter name can be customized in order to change the name of the static folder.
@@ -102,3 +100,7 @@ The team is also working on a solution for this issue to make this behaviour con
 ## Example Usage
 
 An example of how to use the Static Folder Resource, using the Axum framework, can be found here: [Axum Static Files Example](https://github.com/shuttle-hq/shuttle-examples/tree/main/axum/static-files)
+
+## Troubleshooting
+
+If you don't have anything in your static folder when attempting to deploy, the deployer will fail to provision the static folder.
