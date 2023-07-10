@@ -17,7 +17,7 @@ We will be walking through implementing the system including a frontend for
 interacting with it. We will be using Axum for routing and other handling logic.
 The [source code](https://github.com/kaleidawave/axum-shuttle-postgres-authentication-demo)
 for this tutorial can be found here (opens new window). We will then deploy the
-code on shuttle, which will handle running the server and giving us access to a
+code on Shuttle, which will handle running the server and giving us access to a
 Postgres server.
 
 To prevent this post from being an hour long, some things are skipped over (such
@@ -28,7 +28,7 @@ This isn't verified to be secure, use it at your own risk!!
 
 ### Let's get started
 
-First, we will install shuttle for creating the project (and later for deployment). If you don't already have it you can install it with `cargo install cargo-shuttle`. We will first go to a new directory for our project and create a new Axum app with `cargo shuttle init --template axum`.
+First, we will install Shuttle for creating the project (and later for deployment). If you don't already have it you can install it with `cargo install cargo-shuttle`. We will first go to a new directory for our project and create a new Axum app with `cargo shuttle init --template axum`.
 
 You should see the following in `src/main.rs`:
 
@@ -209,7 +209,7 @@ pointing to the wrong places.
 ### Registering our database
 
 Before our app can use the database we have to add sqlx with some features: `cargo add sqlx -F postgres runtime-tokio-native-tls`.
-We will also enable the Postgres feature for shuttle with
+We will also enable the Postgres feature for Shuttle with
 `cargo add shuttle-service -F sqlx-postgres`.
 
 Now back in the code we add a parameter with
@@ -798,7 +798,7 @@ async fn axum(
 
 This is great, we now have a site with signup and login functionality. But we
 have no users, our friends can't log in on our localhost. We want it live on the
-interwebs. Luckily we are using shuttle, so it is as simple as:
+interwebs. Luckily we are using Shuttle, so it is as simple as:
 
 `cargo shuttle deploy`
 

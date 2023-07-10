@@ -217,7 +217,7 @@ If you're on Windows and don't have WSL, you can find the install page for Rust 
 
 However you install it, you'll also get Rust's package manager called Cargo, which is like NPM for Rust. Cargo allows you to install Rust's packages which are called "crates".
 
-For the back end part, because we'll be serving the web server through shuttle, we will need to install their CLI which we can do with the following command:
+For the back end part, because we'll be serving the web server through Shuttle, we will need to install their CLI which we can do with the following command:
 
 ```bash
 cargo install cargo-shuttle
@@ -231,7 +231,7 @@ cargo binstall cargo-shuttle\
 
 The installation may take a while depending on your Internet connection, so feel free to grab a drink while you wait. You will also want to log onto their website here through GitHub and make sure you have your API key as you will need to log in on the CLI with your key before you can make any projects.
 
-Once the installation is done, you can start a shuttle project with the following command below (run this in your React project at the packages.json level):
+Once the installation is done, you can start a Shuttle project with the following command below (run this in your React project at the packages.json level):
 
 ```bash
 cargo shuttle init --template axum
@@ -438,7 +438,7 @@ async fn axum(
 }
 ```
 
-Let's dissect our new additions quickly. `shuttle_secrets::Secrets` allows us to set environmental variables using a Secrets.toml file, much like how you'd typically use a .env file to be able to use environment variables locally and in production. `shuttle_static_folder::StaticFolder` provides a path to our static assets folder so that when we deploy to shuttle, the deployment will know where to find our static assets (although we won't implement that just yet).
+Let's dissect our new additions quickly. `shuttle_secrets::Secrets` allows us to set environmental variables using a Secrets.toml file, much like how you'd typically use a .env file to be able to use environment variables locally and in production. `shuttle_static_folder::StaticFolder` provides a path to our static assets folder so that when we deploy to Shuttle, the deployment will know where to find our static assets (although we won't implement that just yet).
 
 Now that our setup for this section is out of the way, let's cover the admin route first as that'll mean we can make sure our WebSocket service is complete before we compile any assets. Let's make a function that will take a user ID and manually disconnect them using the disconnect function we already have:
 
@@ -589,8 +589,8 @@ Now we're pretty much done and ready to deploy! We can call our deploy script at
   }
 ```
 
-Now if we run `npm run deploy`, it should build all of our assets into the required folder and then attempt to deploy to shuttle - assuming there are no issues, it should deploy successfully!
+Now if we run `npm run deploy`, it should build all of our assets into the required folder and then attempt to deploy to Shuttle - assuming there are no issues, it should deploy successfully!
 
 If you would like to change the name of your folder while keeping the deployment name the same, you can do so by simply creating a file called `Shuttle.toml` at the `Cargo.toml` level and creating a variable for the `name` key like in a .env file (so for example if I wanted to call my project `keyboard-cat`, I'd type "name='keyboard-cat'" into the file).
 
-If you need to check the status of your shuttle project at any time, you can do so by using `cargo shuttle status` at the `Cargo.toml` file, or you can add the `--name` flag followed by the project's name to use it from any directory.
+If you need to check the status of your Shuttle project at any time, you can do so by using `cargo shuttle status` at the `Cargo.toml` file, or you can add the `--name` flag followed by the project's name to use it from any directory.
