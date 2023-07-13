@@ -387,7 +387,7 @@ description:
 
 Simple 'Hello world' app using Rocket.
 
-Create a new directory (`mkdir`) and move into it (`cd`) -- afterwards, execute the following command to initialize shuttle inside with the Rocket boilerplate.
+Create a new directory (`mkdir`) and move into it (`cd`) -- afterwards, execute the following command to initialize Shuttle inside with the Rocket boilerplate.
 
 ```bash
 cargo shuttle init --template rocket
@@ -697,7 +697,7 @@ mod tests {
 ```
 
 ### Deploy
-After logging into shuttle, use the following command to deploy this example:
+After logging into Shuttle, use the following command to deploy this example:
 
 Create a project, this will start an isolated deployer container for you under the hood:
 ```bash
@@ -742,7 +742,7 @@ Since tokens usually have a longer than 5 minutes expiration time, we can create
 
 ## URL Shortener
 
-A URL shortener that you can use from your terminal - built with shuttle, rocket and postgres/sqlx.
+A URL shortener that you can use from your terminal - built with Shuttle, rocket and postgres/sqlx.
 
 ### Project structure
 
@@ -750,7 +750,7 @@ The project consists of the following files
 
 - `Shuttle.toml` contains the name of the app (if name is `myapp` domain will be `myapp.shuttleapp.rs`)
 - `migrations` folder is for DB migration files created by [sqlx-cli](https://github.com/launchbadge/sqlx/tree/master/sqlx-cli)
-- `src/main.rs` is where all the magic happens - it creates a shuttle service with two endpoints: one for creating new short URLs and one for handling shortened URLs.
+- `src/main.rs` is where all the magic happens - it creates a Shuttle service with two endpoints: one for creating new short URLs and one for handling shortened URLs.
 
 ```toml Cargo.toml
 [package]

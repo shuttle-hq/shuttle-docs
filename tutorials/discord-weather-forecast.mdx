@@ -5,7 +5,7 @@ title: "Discord Weather Forecast Bot"
 In this tutorial, we will look at a simple way to add custom functionality to a
 Discord server using a bot written in Rust. We will first register a bot with
 Discord, then go about how to create a Serenity application that will later run
-on shuttle. Finally, we will make the bot do something useful, writing some Rust
+on Shuttle. Finally, we will make the bot do something useful, writing some Rust
 code to get information from an external service.
 
 The full code can be found in
@@ -68,7 +68,7 @@ write it and run it before we can start interacting with it.
 Serenity is a library for writing Discord bots (and communicating with the
 Discord API).
 
-If you don't have shuttle yet, you can install it with
+If you don't have Shuttle yet, you can install it with
 `cargo install cargo-shuttle`. Afterwards, run the following in an empty
 directory:
 
@@ -215,7 +215,7 @@ impl EventHandler for Bot {
 Now with the code written we can test it locally. Before we do that we have to
 authenticate the bot with Discord. We do this with the value we got from "Reset
 Token" on the bot screen in one of the previous steps. To register a secret with
-shuttle we create a `Secrets.toml` file with a key value pair. This pair is read
+Shuttle we create a `Secrets.toml` file with a key value pair. This pair is read
 by the `pool.get_secret("DISCORD_TOKEN")` call in the `ready` hook:
 
 ```toml Secrets.toml
@@ -223,7 +223,7 @@ DISCORD_TOKEN="your discord token"
 DISCORD_GUILD_ID="the guild we are testing on"
 ```
 
-> Currently secrets are stored using shuttle's database Postgres offering (thus
+> Currently secrets are stored using Shuttle's database Postgres offering (thus
 > why the parameter on main is PgPool). Therefore during local testing you need
 > access to a Postgres database. Shuttle's local runner does this using Docker
 > which will require Docker desktop (opens new window)being locally installed to
@@ -551,7 +551,7 @@ error handling we added to the `get_forecast` function:
 
 ![](/images/discord-weather-forecast-11.png)
 
-### Deploying on shuttle
+### Deploying on Shuttle
 
 With all of that setup, it is really easy to get your bot hosted and running
 without having to run your PC 24/7.
@@ -569,7 +569,7 @@ You could now take this idea even further:
 - Use a different API, to create a bot that can return
   [funny facts](https://asli-fun-fact-api.herokuapp.com/) or return
   [new spaceflights](https://spaceflightnewsapi.net/)
-- Maybe you could use one of shuttle's provided databases to remember certain
+- Maybe you could use one of Shuttle's provided databases to remember certain
   information about a user
 - Expand on the weather forecast idea by adding more advanced options and
   follow-ups to command options

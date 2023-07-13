@@ -84,7 +84,7 @@ open a terminal.
 
 ### Building the Barebones - 09:59 minutes remaining
 
-I'm using [shuttle](https://www.shuttle.rs/) for this project. It's a serverless
+I'm using [Shuttle](https://www.shuttle.rs/) for this project. It's a serverless
 platform built for Rust and I don't have to deal with provisioning databases, or
 subdomains or any of that gunk. I already have the CLI
 [installed](https://docs.shuttle.rs/introduction/installation).
@@ -93,7 +93,7 @@ I stop and think for a little bit - which web framework do I want to use? I thin
 I'm going to go with Rocket. It's pretty much production ready with a sweet API and
 I'm reasonably proficient with it.
 
-To initialize a rocket project with boilerplate, I can use the shuttle CLI `init` command:
+To initialize a rocket project with boilerplate, I can use the Shuttle CLI `init` command:
 
 ```bash
 cargo shuttle init --template rocket url-shortener
@@ -134,7 +134,7 @@ shuttle-runtime = { version = "0.21.0" }
 tokio = { version = "1.26.0" }
 ```
 
-The `init` command also created a new shuttle project for us. This starts an
+The `init` command also created a new Shuttle project for us. This starts an
 isolated container in Shuttle's infrastructure.
 
 Now, to deploy:
@@ -183,7 +183,7 @@ to the list of acceptable hosts etc etc etc. Oof that sounds like a lot of work.
 
 Shuttle does a lot of this stuff for you - I just didn't remember how. I
 quickly head over to the
-[shuttle shared database](https://docs.shuttle.rs/resources/shuttle-shared-db)
+[Shuttle shared database](https://docs.shuttle.rs/resources/shuttle-shared-db)
 section in the docs. I added the `sqlx` dependency to `Cargo.toml` and change
 one line in `main.rs`:
 
@@ -194,7 +194,7 @@ async fn rocket(#[shuttle_shared_db::Postgres] pool: PgPool) -> ShuttleRocket {
 }
 ```
 
-By adding a parameter to the main `rocket` function, `shuttle` will
+By adding a parameter to the main `rocket` function, `Shuttle` will
 automatically provision a Postgres database for you, create an account and hand
 you back an authenticated connection pool which is usable from your application
 code.
@@ -218,13 +218,13 @@ I have a database! I couldn't help but chuckle a little bit. So far so good.
 
 ### Setting up the Schema - 06:30 minutes remaining
 
-The database provisioned by `shuttle` is completely empty - I'm going to need to
+The database provisioned by `Shuttle` is completely empty - I'm going to need to
 either connect to Postgres and create the schema myself, or write some sort of
 code to automatically perform the migration. As I start to ponder this seemingly
 existential question I decide not to overthink it. I'm just going to go with
 whatever is easiest.
 
-I connect to the database provisioned by shuttle using
+I connect to the database provisioned by Shuttle using
 [pgAdmin](https://www.pgadmin.org/) using the provided database URI and run the
 following script:
 
@@ -302,13 +302,13 @@ async fn redirect(id: String, pool: &State<PgPool>) -> Result<Redirect, Status> 
 Whoops there's a typo in the SQL query.
 
 After I fixed my typo and sorted out the various unresolved dependencies by
-letting my IDE do the heavy lifting for me, I deployed to shuttle for the last
+letting my IDE do the heavy lifting for me, I deployed to Shuttle for the last
 time.
 
 ### Moment of truth - 00:25 minutes remaining
 
 Feeling like an off-brand Tom Cruise in mission impossible I stared intently at
-the clock counting down as shuttle deployed my url-shortener. 19.3 seconds and
+the clock counting down as Shuttle deployed my url-shortener. 19.3 seconds and
 we're live. As soon as the `DEPLOYED` dialog came up, I instantly tested it out:
 
 ```bash
