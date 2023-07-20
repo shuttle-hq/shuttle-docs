@@ -1,0 +1,60 @@
+---
+title: "Static Files"
+---
+
+This example shows how to serve files from a folder with static assets.
+Running this example and going to `/assets` will serve you the `assets/index.html` file.
+
+<CodeGroup>
+```rust src/main.rs
+use std::path::PathBuf;
+
+use axum::{routing::get, Router};
+use tower_http::services::ServeDir;
+
+async fn hello_world() -> &'static str {
+    "Hello, world!"
+}
+
+#[shuttle_runtime::main]
+async fn axum(
+    // Name your static assets folder by passing `folder = <name>` to `StaticFolder`
+    // If you don't pass a name, it will default to `static`.
+    #[shuttle_static_folder::StaticFolder(folder = "assets")] static_folder: PathBuf,
+) -> shuttle_axum::ShuttleAxum {
+    let router = Router::new()
+        .route("/", get(hello_world))
+        .nest_service("/assets", ServeDir::new(static_folder));
+
+    Ok(router.into())
+}
+```
+
+```html assets/index.html
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Static Files</title>
+    </head>
+    <body>
+        <p>This is an example of serving static files with Axum and Shuttle.</p>
+    </body>
+</html>
+```
+
+```toml Cargo.toml
+[package]
+name = "static-files"
+version = "0.1.0"
+edition = "2021"
+publish = false
+
+[dependencies]
+axum = "0.6.18"
+shuttle-axum = "0.21.0"
+shuttle-runtime = "0.21.0"
+shuttle-static-folder = "0.21.0"
+tokio = "1.28.2"
+tower-http = { version = "0.4.0", features = ["fs"] }
+```
+</CodeGroup>

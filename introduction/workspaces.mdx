@@ -10,7 +10,7 @@ directory name of the workspace or a `Shuttle.toml` with a name key in the root 
 > Note: if you use `shuttle-static-folder` in your project and your project is a workspace, the static assets
 > folder needs to be in the root of the workspace.
 
-### Caveats
+## Caveats
 
 We currently only support one Shuttle service per workspace, so you can have many crates in a workspace, but only
 one crate with a `shuttle_runtime::main` macro. We intend to allow starting several services in deployment too. 
