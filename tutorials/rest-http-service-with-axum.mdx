@@ -118,7 +118,7 @@ async fn router() -> Router {
 State in Axum is a way to share scoped app-wide variables over your Router - this is great for us as we can store things like a database connection pool, a hashmap key-value store or an API key for an external service inside. Basic usage of a state struct might look like this:
 
 ```rust
-[derive(Deserialize, Serialize)]
+#[derive(Deserialize, Serialize)]
 struct MyAppState {
     db_connection: PgPool,
 }
