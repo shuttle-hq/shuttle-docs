@@ -47,3 +47,57 @@ cargo shuttle run --external --port 8123
 ```
 
 *PS: you may need to open the port your app is started on in your firewall.*
+
+### Development Tips
+
+Here are some small tips and tricks to boost your productivity when developing locally.
+
+#### Live reload backend with `cargo watch`
+
+To live reload your Shuttle app when you save a file, you can use [cargo-watch](https://crates.io/crates/cargo-watch):
+
+```bash
+# This will e(x)ecute `cargo shuttle run` when you save a file.
+cargo watch -x 'shuttle run'
+# This will also (q)uietly (c)lear the console between runs.
+cargo watch -qcx 'shuttle run'
+
+# There are many other helpful options, see `cargo watch --help`
+```
+
+Small caveat: Be aware that ignoring files with `.ignore` will also affect the behaviour of `cargo shuttle deploy`.
+
+#### Live reload frontend with `tower-livereload`
+
+Using `cargo watch` will only reload the "backend" Shuttle process.
+If you are developing a frontend in the browser that is hosted by your Shuttle app,
+you might also want the web page to reload when files change.
+If you are using Axum or other Tower-compatible frameworks, the Tower layer [tower-livereload](https://crates.io/crates/tower-livereload) can help you.
+
+First, add it to your project:
+
+```bash
+cargo add tower-livereload
+```
+
+Then, when constructing your Axum router, add the layer like this:
+
+```rust
+let router = Router::new()
+    .route(/* ... */)
+    .layer(tower_livereload::LiveReloadLayer::new());
+```
+
+This will inject HTML responses with code for live reloading your web page when the server restarts.
+This also works in combination with `cargo watch`!
+
+If you want to exclude this functionality from the release build, add this:
+
+```rust
+let mut router = /* ... */;
+
+if cfg!(debug_assertions) {
+    router = router.layer(tower_livereload::LiveReloadLayer::new());
+}
+```
+
