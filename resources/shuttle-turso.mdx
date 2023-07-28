@@ -7,7 +7,9 @@ This plugin allows services to connect to a [Turso](https://turso.tech) database
 ## Usage
 **IMPORTANT:** Currently Shuttle isn't able to provision a Turso database for you (yet). This means you will have to create an account on their [website](https://turso.tech/) and follow the few steps required to create a database and create a token to access it.
 
-Add `shuttle-turso` to the dependencies for your service by running `cargo add shuttle-turso`. This resource will be provided by adding the `shuttle_turso::Turso` attribute to your Shuttle main decorated function.
+Add `shuttle-turso` and `libsql-client` to the dependencies for your service by running `cargo add shuttle-turso libsql-client`. This resource will be provided by adding the `shuttle_turso::Turso` attribute to your Shuttle main decorated function.
+
+<Note>Internally, `shuttle_turso::Turso` pins version 0.30.1 of `libsql-client`. If you add `libsql-client` either with `cargo add` or manually, it will be necessary to edit your Cargo.toml file afterwards to downgrade to version 0.30.1.</Note>
 
 It returns a `libsql_client::Client`. When running locally it will instantiate a local SQLite database of the name of your service instead of connecting to your edge database.
 
