@@ -28,7 +28,7 @@ created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
 ``` 
 
-When we run our migrations, this folder will be the default that will be used - when we're ready to run our migrations, we can run `sqlx migrate run --database-url <database-url>`. We can also just run the migrate macro programatically after connecting to the database:
+When we run our migrations, this folder will be the default that will be used - when we're ready to run our migrations, we can run `sqlx migrate run --database-url <database-url>`. We can also just run the migrate macro programmatically after connecting to the database:
 
 ```rust
 sqlx::migrate!().run(&pool).await.expect("Migrations failed :(");

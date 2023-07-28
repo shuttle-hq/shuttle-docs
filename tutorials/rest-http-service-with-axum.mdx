@@ -199,7 +199,7 @@ Router::new()
 
 Cookies are essentially a way to store data on the user side. They have a variety of uses for web development; we can use them for tracking metrics for targeted advertising, we can use them for storing player score data and more. Cookies are also used for application authentication; however, it should be said that although this is a valid use case, **no user information like username or passwords should be stored through cookies - only session IDs that get validated against a database.**
 
-Cookies in Axum can be easily handled through use of axum-extra's [cookiejar](https://docs.rs/axum-extra/latest/axum_extra/extract/cookie/struct.CookieJar.html) types. There are three types, a private cookiejar (where it uses private signing), a signed cookiejar where all cookies are signed publically and then a regular cookiejar. You will need to enable the relevant flag to be able to use cookies, but you can enable the private cookiejar (for example) by running the following command:
+Cookies in Axum can be easily handled through use of axum-extra's [cookiejar](https://docs.rs/axum-extra/latest/axum_extra/extract/cookie/struct.CookieJar.html) types. There are three types, a private cookiejar (where it uses private signing), a signed cookiejar where all cookies are signed publicly and then a regular cookiejar. You will need to enable the relevant flag to be able to use cookies, but you can enable the private cookiejar (for example) by running the following command:
 
 ```bash
 cargo add axum-extra --features cookie-private
