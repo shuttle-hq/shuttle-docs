@@ -43,8 +43,7 @@ async fn axum(
 ) -> shuttle_axum::ShuttleAxum {
     let router = Router::new()
         .route("/hello", get(hello_world))
-        .merge(SpaRouter::new("/assets", static_folder).index_file("index.html"));
-        // TODO: SpaRouter is deprecated, use ServeDir instead
+        .nest_service("/", ServeDir::new(static_folder));
 
     Ok(router.into())
 }
