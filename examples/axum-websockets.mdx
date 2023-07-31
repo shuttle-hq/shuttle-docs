@@ -64,8 +64,7 @@ async fn axum(#[shuttle_static_folder::StaticFolder] static_folder: PathBuf) -> 
         let uri: Uri = STATUS_URI.parse().unwrap();
 
         loop {
-            let is_up = client.get(uri.clone()).await;
-            let is_up = is_up.is_ok();
+            let is_up = client.get(uri.clone()).await.is_ok();
 
             let response = Response {
                 clients_count: state_send.lock().await.clients_count,
