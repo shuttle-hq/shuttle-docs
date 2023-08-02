@@ -1,4 +1,4 @@
-name: contrib
+name: Replicate contribution docs from main repo
 on:
   schedule:
     # run 15:35UTC daily
@@ -6,8 +6,8 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: write # to update contribute.mdx
-  pull-requests: write # to send the update contribute.mdx PRs
+  contents: write # to update files
+  pull-requests: write # to send the PRs
 
 jobs:
   update-contribute:
@@ -27,15 +27,25 @@ jobs:
           repository: shuttle-hq/shuttle
           path: shuttle
 
-      - name: Convert CONTRIBUTING.md title to frontmatter 
+      - name: Convert CONTRIBUTING.md title to frontmatter
         run: |
           sed -i -e '1i ---' \
-          -e '1s/#/title:/' \
-          -e '2i description:\ "This document describes the best way to get started with contributing to shuttle"' \
-          -e '2i ---' shuttle/CONTRIBUTING.md;
+          -e '1i title:\ "Contribution Guidelines"' \
+          -e '1i description:\ "The best way to get started with contributing to Shuttle"' \
+          -e '1i ---' shuttle/CONTRIBUTING.md;
 
       - name: Copy CONTRIBUTING.md to community/contribute.mdx
         run: cp -a shuttle/CONTRIBUTING.md community/contribute.mdx
+
+      - name: Convert DEVELOPING.md title to frontmatter
+        run: |
+          sed -i -e '1i ---' \
+          -e '1s/#/title:/' \
+          -e '2i description:\ "How to get started with developing the core Shuttle stack"' \
+          -e '2i ---' shuttle/DEVELOPING.md;
+
+      - name: Copy DEVELOPING.md to community/develop-shuttle.mdx
+        run: cp -a shuttle/DEVELOPING.md community/develop-shuttle.mdx
 
       - uses: gr2m/create-or-update-pull-request-action@v1
         env:
@@ -43,12 +53,12 @@ jobs:
         with:
           author: github-actions <github-actions@github.com>
           branch: actions/update-contribute
-          title: 'docs: update contribute doc'
+          title: "docs: update contribute doc"
           body: >
-            The contribute.mdx doc is likely out of date. This is an automatically 
+            The contribution docs are likely out of date. This is an automatically
             generated PR by the `replicate.yml` GitHub workflow, which clones the doc
-            from the main repo, implements the changes here then submits a new PR or 
+            from the main repo, implements the changes here then submits a new PR or
             updates an existing PR.
-          commit-message: 'docs: update contribute doc'
-          path: community/contribute.mdx
+          commit-message: "docs: update contribute doc"
+          path: "community/"
 

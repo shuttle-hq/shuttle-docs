@@ -169,7 +169,13 @@
       "group": "Community",
       "pages": [
         "community/get-involved",
-        "community/contribute",
+        {
+          "group": "Contribute",
+          "pages": [
+            "community/contribute",
+            "community/develop-shuttle"
+          ]
+        },
         "community/open-source"
       ]
     }
