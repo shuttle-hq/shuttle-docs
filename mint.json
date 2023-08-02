@@ -10,9 +10,7 @@
   "colors": {
     "primary": "#F25100",
     "light": "#F09050",
-    "dark": "#C34100",
-    "ultraLight": "#F8E9DF",
-    "ultraDark": "#9D3400"
+    "dark": "#C34100"
   },
   "topbarCtaButton": {
     "name": "Log In",
@@ -169,13 +167,7 @@
       "group": "Community",
       "pages": [
         "community/get-involved",
-        {
-          "group": "Contribute",
-          "pages": [
-            "community/contribute",
-            "community/develop-shuttle"
-          ]
-        },
+        "community/contribute",
         "community/open-source"
       ]
     }
@@ -187,10 +179,7 @@
   },
   "feedback": {
     "raiseIssue": true,
-    "suggestEdit": true
-  },
-  "classes": {
-    "anchors": "group-hover:bg-gradient-to-tr from-[#F53F2E] to-[#E9D739]",
-    "activeAnchors": "bg-gradient-to-tr"
+    "suggestEdit": true,
+    "thumbsRating": true
   }
 }
