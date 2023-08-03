@@ -18,6 +18,11 @@ This section is aimed at collecting common questions users have to provide docum
   <Accordion title="What happens when I deploy to Shuttle?">
     Your code is analyzed and built on our servers. The first time you introduce additional resources in your code, like the first time you use a database, we will add that resource to your project and wire it automatically to your deployment.
   </Accordion>
+  <Accordion title="Which version of Rust will my project be compiled with?">
+    Currently all your projects are built in a container that is pinned to rustc 1.70. It's not currently possible
+    for you to change this, but being able to choose which toolchain your project will be compiled with is a planned
+    feature.
+  </Accordion>
   <Accordion title="Can I use frontend frameworks with Shuttle?">
     Of course! When you deploy a project on Shuttle, your API becomes available at a URL of the form `${project_name}.shuttleapp.rs`. And since Shuttle is compatible with any of the common frontend hosting solutions (Vercel, Netlify, etc), you just have to make your API calls to the URL of your project, and you're up.
 
