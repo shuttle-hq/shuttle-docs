@@ -484,14 +484,12 @@ At this point, your router function should look like this (if not, you have like
     .route("/disconnect/:user_id", get(disconnect_user))
     .layer(RequireAuthorizationLayer::bearer(&secret));
 
-    let static_assets = SpaRouter::new("/", static_folder)
-        .index_file("index.html");
     // return a new router and nest the admin route into the websocket route
      Router::new()
         .route("/ws", get(ws_handler))
         .nest("/admin", admin)
+        .fallback_service("/", ServeDir::new(static_folder).not_found_service(ServeFile::new(static_folder.join("/index.html"))))
         .layer(Extension(users))
-        .merge(static_assets)
 }
 ```
 
@@ -539,7 +537,7 @@ const websocket = new WebSocket(wsUri);
 
 Now that we've changed the connection URL, our compiled assets in our Rust folder will work on the local Rust run without us having to use our local Vite deployment! However, if we try to run our front end by itself, it won't connect as this connection string relies on using the local Rust project - but you can change the connection string as required.
 
-Now we can update our main function and router together so that the router will use a `SpaRouter` function provided by `axum_extra`, as well as use the static file path:
+Now we can update our main function and router together so that the router will use `tower_http`'s `ServeDir` function for serving static files:
 
 ```rust
 #[shuttle_runtime::main]
@@ -565,14 +563,12 @@ fn router(secret: String, static_folder: PathBuf) -> Router {
     .route("/disconnect/:user_id", get(disconnect_user))
     .layer(RequireAuthorizationLayer::bearer(&secret));
 
-    let static_assets = SpaRouter::new("/", static_folder)
-        .index_file("index.html");
     // return a new router and nest the admin route into the websocket route
      Router::new()
         .route("/ws", get(ws_handler))
         .nest("/admin", admin)
+        .fallback_service("/", ServeDir::new(static_folder).not_found_service(ServeFile::new(static_folder.join("/index.html"))))
         .layer(Extension(users))
-        .merge(static_assets)
 }
 ```
 
