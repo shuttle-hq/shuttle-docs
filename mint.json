@@ -112,6 +112,13 @@
           ]
         },
         {
+          "group": "Rocket",
+          "pages": [
+            "examples/rocket",
+            "examples/rocket-jwt-authentication"
+          ]
+        },
+        {
           "group": "Serenity",
           "pages": [
             "examples/serenity",
