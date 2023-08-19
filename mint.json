@@ -44,26 +44,26 @@
       "pages": [
         "introduction/welcome",
         "introduction/what-is-shuttle",
-        "introduction/how-shuttle-works",
-        {
-          "group": "Getting Started",
-          "pages": [
-            "introduction/installation",
-            "introduction/quick-start",
-            "introduction/local-run",
-            "introduction/shuttle-commands",
-            "introduction/idle-projects",
-            "introduction/workspaces"
-          ]
-        },
-        "introduction/telemetry",
-        {
-          "group": "Custom Config",
-          "pages": [
-            "configuration/shuttle-service-name"
-          ]
-        }
+        "introduction/how-shuttle-works"
       ]
+    },
+    {
+      "group": "Getting Started",
+      "pages": [
+        "getting-started/installation",
+        "getting-started/quick-start",
+        "getting-started/local-run",
+        "getting-started/shuttle-commands",
+        "getting-started/idle-projects",
+        "getting-started/telemetry",
+        "getting-started/workspaces"
+      ]
+    },
+    {
+      "group": "Custom Config",
+      "pages": [
+        "configuration/shuttle-service-name"
+         ]
     },
     {
       "group": "Resources",
