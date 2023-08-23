@@ -281,7 +281,7 @@ When storing passwords in a database, for security reasons we don't want them to
 be in the exact format as plain text. To transform them away from the plain text
 format we will use a
 [cryptographic hash function](https://en.wikipedia.org/wiki/Cryptographic_hash_function)from
-[pbkdf2](https://crates.io/crates/pbkdf2)(cargo add pbkdf2):
+[pbkdf2](https://github.com/RustCrypto/password-hashes/tree/master/pbkdf2)(cargo add pbkdf2):
 
 ```rust
 fn create_user(username: &str, password: &str, database: &Database) -> Result<i32, SignupError> {
@@ -431,7 +431,7 @@ find the next one. A simple globally incremented u128 wouldn't be secure because
 if I know I have session 10 then I can send requests with session 11 for the
 user who logged in after. With a cryptographically secure generator, there isn't
 a distinguishing pattern between subsequently generated tokens. We will use the
-[ChaCha](https://crates.io/crates/rand_chacha) algorithm/crate (we will add
+[ChaCha](https://github.com/rust-random/rand/tree/master/rand_chacha) algorithm/crate (we will add
 cargo add rand_core rand_chacha).
 [We can see that it does implement the crypto marker-trait confirming it is valid for cryptographic scenarios](https://docs.rs/rand_chacha/0.3.1/rand_chacha/struct.ChaCha8Rng.html#impl-CryptoRng).
 
