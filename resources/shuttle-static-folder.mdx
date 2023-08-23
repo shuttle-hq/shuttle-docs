@@ -49,7 +49,7 @@ The parameter name should be changed to match, in this case being `folder = "pub
 
 If you happen to be including your static folder in a `.gitignore` file, you will probably hit an error while trying to deploy your Shuttle app.
 
-Shuttle is using the [ignore](https://crates.io/crates/ignore) crate under the hood, and it will ignore all the files and folders included in your `.gitignore` file. This means that the static folder will not be included in the final archive.
+Shuttle is using the [ignore](https://github.com/BurntSushi/ripgrep/tree/master/crates/ignore) crate under the hood, and it will ignore all the files and folders included in your `.gitignore` file. This means that the static folder will not be included in the final archive.
 
 Take into account that this will only affect you if you are using the `shuttle deploy` command. If you are using the `shuttle run` command, you will not have any problems.
 
