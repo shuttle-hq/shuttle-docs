@@ -54,7 +54,7 @@ Here are some small tips and tricks to boost your productivity when developing l
 
 #### Live reload backend with `cargo watch`
 
-To live reload your Shuttle app when you save a file, you can use [cargo-watch](https://crates.io/crates/cargo-watch):
+To live reload your Shuttle app when you save a file, you can use [cargo-watch](https://github.com/watchexec/cargo-watch):
 
 ```bash
 # This will e(x)ecute `cargo shuttle run` when you save a file.
@@ -72,7 +72,7 @@ Small caveat: Be aware that ignoring files with `.ignore` will also affect the b
 Using `cargo watch` will only reload the "backend" Shuttle process.
 If you are developing a frontend in the browser that is hosted by your Shuttle app,
 you might also want the web page to reload when files change.
-If you are using Axum or other Tower-compatible frameworks, the Tower layer [tower-livereload](https://crates.io/crates/tower-livereload) can help you.
+If you are using Axum or other Tower-compatible frameworks, the Tower layer [tower-livereload](https://github.com/leotaku/tower-livereload) can help you.
 
 First, add it to your project:
 
