@@ -21,8 +21,8 @@ In Axum, routers can be made by writing `Router::new()` to create it and then ad
 ```rust
 #[shuttle_runtime::main]
 async fn axum() -> shuttle_axum::ShuttleAxum {
-let router = Router::new()
-    .route("/", get(hello_world));
+    let router = Router::new()
+        .route("/", get(hello_world));
 
     Ok(router.into())
 }
@@ -38,7 +38,7 @@ However, this is quite basic. We are also missing a HTTP status code from our fu
 
 ```rust
 async fn hello_world() -> impl IntoResponse {
-// the json! macro is from the serde_json library
+    // the json! macro is from the serde_json library
     let hello_world = json!({ "hello": "world" });
 
     (StatusCode::OK, hello_world)
@@ -90,7 +90,7 @@ Now that we know the basics of writing endpoint functions, we can use them to wr
 
 ```rust
 async fn router() -> Router {
-// make a route that uses dynamic routing at "/:id"
+    // make a route that uses dynamic routing at "/:id"
     Router::new().route("/", get(get_worlds))
         .route("/create", post(make_world))
         .route("/:id",  get(get_one_world).put(edit_world).delete(delete_world))
@@ -101,7 +101,6 @@ We can also nest routers in other routers, which is quite helpful for use cases 
 
 ```rust
 async fn router() -> Router {
-
     let world_router = Router::new()
        .route("/", get(get_worlds))
        .route("/create", post(make_world))
@@ -131,7 +130,7 @@ fn router() -> Router {
     let state = MyAppState { db_connection };
 
     Router::new()
-    .route("/", get(hello_world)).with_state(state)
+        .route("/", get(hello_world)).with_state(state)
 }
 ```
 
@@ -141,7 +140,7 @@ As you can see, we have defined the struct and are initialising it in our functi
 // the application state
 #[derive(Clone)]
 struct AppState {
-// this holds some api specific state
+    // this holds some api specific state
     api_state: ApiState,
 }
 
@@ -224,11 +223,11 @@ impl FromRef<AppState> for Key {
 
 #[shuttle_runtime::main]
 async fn axum() -> shuttle_axum::ShuttleAxum {
-let state = AppState {
-    key: Key::generate() 
-};
+    let state = AppState {
+        key: Key::generate() 
+    };
 
-// ... the rest of your code
+    // ... the rest of your code
 }
 ```
 
@@ -239,11 +238,11 @@ async fn check_cookie(
     jar: PrivateCookieJar,
 ) -> impl IntoResponse {
     if !jar.get("hello") {
-// a similar thing can be done for deleting cookies, getting cookies etc
-         (jar.add(Cookie::new("hello", "world")), StatusCode::CREATED)
-    } 
+        // a similar thing can be done for deleting cookies, getting cookies etc
+        (jar.add(Cookie::new("hello", "world")), StatusCode::CREATED)
+    }
 
-StatusCode::OK
+    StatusCode::OK
 }
 ```
 
@@ -263,7 +262,7 @@ let cookie = Cookie::build("foo", session_id)
     .finish();
 ```
 
-Then we can put this cookie as the cookie we want to add to the jar as the return instead of `Cookie::new`! 
+Then we can put this cookie as the cookie we want to add to the jar as the return instead of `Cookie::new`!
 
 Deleting a cookie is also pretty much the same as adding a cookie; to be able to pass the changes properly, the deletion of the cookie needs to be specified in the return otherwise it will not delete properly:
 
@@ -286,10 +285,10 @@ async fn check_hello_world<B>(
     req: Request<B>,
     next: Next<B>
 ) -> Result<Response, StatusCode> {
-// requires the http crate to get the header name
+    // requires the http crate to get the header name
     if req.headers().get(CONTENT_TYPE).unwrap() != "application/json" {
         return Err(StatusCode::BAD_REQUEST);
-        }
+    }
 
     Ok(next.run(req).await)
 }
