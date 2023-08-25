@@ -53,7 +53,7 @@ We can also attach things like a request body type which we need to define as a 
 use serde::{Deserialize, Serialize};
 use axum::{State, Json, http::StatusCode};
 
-[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize)]
 struct MyRequestType {
     message: String
 }
@@ -222,7 +222,7 @@ impl FromRef<AppState> for Key {
     }
 }
 
-[shuttle_runtime::main]
+#[shuttle_runtime::main]
 async fn axum() -> shuttle_axum::ShuttleAxum {
 let state = AppState {
     key: Key::generate() 
