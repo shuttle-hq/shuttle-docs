@@ -12,7 +12,7 @@ Relational databases are the classical way to store data in the backend of web a
 To get started with SQLx (and using our new database), we'll want to add the `sqlx` crate to an initialised Rust program. We will also want to add the `shuttle-shared-db` crate which allows us to use the macro that provisions the database instance to us.
 
 ```bash
-cargo add sqlx shuttle-shared-db --features sqlx/runtime-tokio-native-tls,sqlx/postgres,sqlx/macros,sqlx/offline,shuttle-shared-db/postgres,shuttle-shared-db/sqlx
+cargo add sqlx shuttle-shared-db --features sqlx/macros,shuttle-shared-db/postgres
 cargo install sqlx-cli
 ```
 
