@@ -2,13 +2,22 @@
 title: "Shuttle Persist"
 ---
 
-The persist plugin allows data to be persisted in a key-value store, which is backed by a struct type.  The struct implements `serde::Serialize` for serialization (prepare data for saving or transmission) and `serde::Deserialize` for deserialization (load data to memory, either from storage or fetched via the network). The persist plugin is useful for saving and retrieving data when it is not desired to hard code that data into the app.  An example is saved settings for a Discord bot that need to remain the same between updates.  State data, used in web frameworks such as Axum and Rocket, is also a good candidate for use of the persist plugin. 
+The persist plugin allows data to be persisted in a key-value store, which is backed by a struct type. The struct implements `serde::Serialize` for serialization (prepare data for saving or transmission) and `serde::Deserialize` for deserialization (load data to memory, either from storage or fetched via the network). The persist plugin is useful for saving and retrieving data when it is not desired to hard code that data into the app. An example is saved settings for a Discord bot that need to remain the same between updates. State data, used in web frameworks such as Axum and Rocket, is also a good candidate for use of the persist plugin.
 
 ## Usage
-To use the persist plugin, add `shuttle-persist` to the dependencies of your service with `cargo add shuttle-persist`.  Then, annotate your `shuttle_runtime::main` function by adding the `shuttle-persist::Persist` attribute as a parameter.  This will give a `PersistInstance`. There are two methods available to `PersistInstance`,  `.save()` and `.load()`. Objects can be saved or loaded with these two methods. 
+
+To use the persist plugin, add `shuttle-persist` to the dependencies of your service with `cargo add shuttle-persist`. Then, annotate your `shuttle_runtime::main` function by adding the `shuttle-persist::Persist` attribute as a parameter. This will give a `PersistInstance`. There are six methods available to `PersistInstance`, providing tools to manage the data stored within. The methods are:
+
+- `clear()`: removes the keys within the `PersistInstance`
+- `list()`: returns a vector of strings containing all the keys associated with a `PersistInstance`
+- `load()`: loads the contents of the `PersistInstance`
+- `new()`: constructs a new `PersistInstance` along with its associated storage folder
+- `save()`: saves a key-value pair into the `PersistInstance`
+- `remove()`: deletes a key from the `PersistInstance`
 
 ## Example
-This snippet shows a Shuttle rocket main function that uses the `shuttle_persist::Persist` attribute to provision and get access to a `PersistInstance`.  In this example,the `PersistInstance` is used to store state for the app.
+
+This snippet shows a Shuttle rocket main function that uses the `shuttle_persist::Persist` attribute to provision and get access to a `PersistInstance`. In this example,the `PersistInstance` is used to store state for the app.
 
 ```rust main.rs
 #[shuttle_runtime::main]
