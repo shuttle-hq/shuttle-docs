@@ -71,6 +71,7 @@
       "group": "Resources",
       "pages": [
         "resources/overview",
+        "resources/shuttle-metadata",
         {
           "group": "Databases",
           "pages": [
@@ -82,15 +83,11 @@
         },
         {
           "group": "Environment Variables",
-          "pages": [
-            "resources/shuttle-secrets"
-          ]
+          "pages": ["resources/shuttle-secrets"]
         },
         {
           "group": "Static Files",
-          "pages": [
-            "resources/shuttle-static-folder"
-          ]
+          "pages": ["resources/shuttle-static-folder"]
         }
       ]
     },
@@ -115,10 +112,7 @@
         },
         {
           "group": "Rocket",
-          "pages": [
-            "examples/rocket",
-            "examples/rocket-jwt-authentication"
-          ]
+          "pages": ["examples/rocket", "examples/rocket-jwt-authentication"]
         },
         {
           "group": "Serenity",
@@ -134,9 +128,7 @@
     },
     {
       "group": "Migration",
-      "pages": [
-        "migration/migrating-to-shuttle"
-      ]
+      "pages": ["migration/migrating-to-shuttle"]
     },
     {
       "group": "How To",
@@ -153,24 +145,15 @@
     },
     {
       "group": "Fullstack Templates",
-      "pages": [
-        "fullstack/rust-next",
-        "fullstack/saas-template"
-      ]
+      "pages": ["fullstack/rust-next", "fullstack/saas-template"]
     },
     {
       "group": "Shuttle Next (Framework) 🧪",
-      "pages": [
-        "shuttle-next/overview",
-        "shuttle-next/getting-started"
-      ]
+      "pages": ["shuttle-next/overview", "shuttle-next/getting-started"]
     },
     {
       "group": "Support",
-      "pages": [
-        "support/faq",
-        "support/troubleshooting"
-      ]
+      "pages": ["support/faq", "support/troubleshooting"]
     },
     {
       "group": "Community",
