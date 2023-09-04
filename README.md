@@ -11,9 +11,8 @@ Install [their cli](https://www.npmjs.com/package/mintlify):
 *NOTE: This requires Node v19*
 
 ```bash
-npm i -g mintlify
 npm i -g yarn
-mintlify install
+npm i -g mintlify
 ```
 
 And from the root of the repository, run:

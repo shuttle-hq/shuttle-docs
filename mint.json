@@ -55,14 +55,16 @@
         "getting-started/local-run",
         "getting-started/shuttle-commands",
         "getting-started/idle-projects",
-        "getting-started/telemetry",
-        "getting-started/workspaces",
-        {
-          "group": "Custom Config",
-          "pages": [
-            "configuration/shuttle-service-name"
-          ]
-        }
+        "getting-started/workspaces"
+      ]
+    },
+    {
+      "group": "Configuration",
+      "pages": [
+        "configuration/project-name",
+        "configuration/shuttle-versions",
+        "configuration/logs",
+        "configuration/ci-cd"
       ]
     },
     {
