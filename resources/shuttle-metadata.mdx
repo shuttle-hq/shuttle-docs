@@ -1,0 +1,37 @@
+---
+title: Metadata
+---
+
+The metadata plugin allows applications to obtain certain information about their runtime environment.
+
+## Usage
+
+To use the metadata plugin, add `shuttle-metadata` to the dependencies for your service by manually editing the project's `cargo.toml` file or by invoking `cargo add shuttle-metadata` from the command line.
+
+Once the metadata plugin dependency is available to your project, use the resource by annotating your main function with the `shuttle_metadata::ShuttleMetadata` attribute. Doing this enables return of a MetaData struct which will contain information such as the Shuttle service name.
+
+## Example
+
+This snippet shows an Axum main function, annotated with the `shuttle_metadata::ShuttleMetadata` attribute.
+
+```rust main.rs
+use axum::{routing::get, Router};
+use shuttle_metadata::Metadata;
+
+#[shuttle_runtime::main]
+async fn axum(
+    #[shuttle_metadata::ShuttleMetadata] metadata: Metadata,
+) -> shuttle_axum::ShuttleAxum {
+    let router = Router::new().route("/", get(format!("{:?}", metadata)));
+
+    Ok(router.into())
+}
+```
+
+This example has one route which returns the Shuttle service name in JSON format:
+
+```JSON
+Metadata { service_name: "metadata-example" }
+```
+
+The full example can also be found on [GitHub](https://github.com/shuttle-hq/shuttle-examples/tree/main/axum/metadata)
