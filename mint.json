@@ -68,7 +68,7 @@
       "pages": [
         "resources/overview",
         {
-          "group": "Data Persistence",
+          "group": "Databases",
           "pages": [
             "resources/shuttle-aws-rds",
             "resources/shuttle-persist",
