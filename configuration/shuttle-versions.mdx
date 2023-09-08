@@ -1,0 +1,28 @@
+---
+title: "Shuttle versions"
+description: "How Shuttle versions work"
+---
+
+- When you start or restart a project, a Shuttle `deployer` Docker container is started with the [latest released](https://github.com/shuttle-hq/shuttle/releases) version of Shuttle.
+- When you deploy something to that project, the version of your `shuttle-runtime` and other `shuttle-...` cargo dependencies are recommended to be of the same version of `deployer`, as there might be breaking changes between releases.
+- It is also recommended to keep `cargo-shuttle` up to date with the current version of the Shuttle API (see [latest release](https://github.com/shuttle-hq/shuttle/releases)).
+
+## Upgrading Shuttle version
+
+Combining all of the above, these are the recommended steps for upgrading a Shuttle app.
+
+<Info>Note: Please check the [release page](https://github.com/shuttle-hq/shuttle/releases) for any considerations regarding breaking changes in the new release.</Info>
+
+1. Upgrade your `cargo-shuttle` CLI with `cargo install cargo-shuttle`, or if you're using cargo-binstall, `cargo binstall cargo-shuttle`.
+
+2. Update your project's `shuttle-...` dependencies in `Cargo.toml`:
+   ```toml Cargo.toml
+   shuttle-runtime = "0.25.0"
+   # etc
+   ```
+
+3. Test that your project works with `cargo check` / `cargo build` / `cargo shuttle run`.
+
+4. Upgrade your project container with `cargo shuttle project restart`. (Remember to use `--idle-minutes` if relevant.) This will not delete any databases, and you will keep your project name.
+
+5. Finally, redeploy your Shuttle app: `cargo shuttle deploy`. *(if you want to, commit your changes first)*
