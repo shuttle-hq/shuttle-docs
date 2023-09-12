@@ -14,7 +14,7 @@ The next sections go over one by one the the resources currently supported by Sh
 
 ### Amazon Web Services Relational Database Service (AWS RDS)
 
-This plugin allows applications to leverage AWS RDS for database needs, instead of a shared database. This will result in improved availability and reliability given the "managed" nature of the service and its increased resources. It can be a good choice if the database backing the application requires the performance increase that results from improved isolation. 
+This plugin allows applications to leverage AWS RDS for database needs, instead of a shared database. This will result in improved availability and reliability given the "managed" nature of the service and its increased resources. It can be a good choice if the database backing the application requires the performance increase that results from improved isolation.
 
 ### Persist
 
@@ -22,7 +22,11 @@ This plugin allows data to be persisted in a key-value store, which is backed by
 
 ### Shared Databases
 
-The Shared Databases plugin will spin up a shared Postgres or MongoDB database instance, which is shared with other users.  This is the option to choose if database isolation isn't a concern. It's the suitable choice for prototyping applications on Shuttle.
+The Shared Databases plugin will spin up a shared Postgres or MongoDB database instance, which is shared with other users. This is the option to choose if database isolation isn't a concern. It's the suitable choice for prototyping applications on Shuttle.
+
+### Turso
+
+This plugin allows services to connect to a Turso database. Turso is an edge-hosted distributed database based on libSQL, which is a fork of SQLite.
 
 ### Secrets
 
