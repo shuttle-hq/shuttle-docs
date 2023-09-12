@@ -1,13 +1,17 @@
 ---
 title: "Logs"
-description: "Using `tracing` or `log` with Shuttle apps."
+description: "Tracing or logging in Shuttle apps."
 ---
 
-## Tracing
+When you build an app with Shuttle, a global subscriber will be created and installed behind the scenes. If you'd rather set up
+your own tracing or logging, you can opt-out of the default subscriber by disabling the default features on `shuttle-runtime`:
 
-When you build an app with the `#[shuttle_runtime::main]` macro, a global subscriber will be created and installed
-[behind the scenes](https://github.com/shuttle-hq/shuttle/blob/v0.25.0/codegen/src/shuttle_main/mod.rs#L279-L289).
-This means that you can skip this step when implementing [tracing](https://docs.rs/tracing/latest/tracing/) in your application, all you have to do is add `tracing` as a dependency in your `Cargo.toml`, and you're good to go!
+`shuttle-runtime = { version = "*", default-features = false }`
+
+## Default Tracing Subscriber
+
+With the default features enabled you can skip the step of initializing your subscriber when implementing [tracing](https://docs.rs/tracing/latest/tracing/)
+in your application, all you have to do is add `tracing` as a dependency in your `Cargo.toml`, and you're good to go!
 
 ```rust
 // [...]
@@ -24,21 +28,23 @@ async fn axum(#[shuttle_shared_db::Postgres] pool: PgPool) -> ShuttleAxum {
 }
 ```
 
-### Custom Layer
-
-Injecting a custom tracing layer is possible ([examples](https://github.com/shuttle-hq/shuttle-examples/tree/main/tracing)), but this will soon change to make it easier to take full control of your logging setup.
-
-## Log
-
 If you'd rather use [log](https://docs.rs/log/latest/log/), everything from the above section on tracing applies.
 A log-compatible layer is added to the global subscriber, so like with tracing, all you need to do to use `log` macros
 in your project is add it to your `Cargo.toml`.
 
-## Setting Log Level
+### Configuring the default subscriber
 
 The global subscriber has an `env_filter` which defaults to the `INFO` log level if no `RUST_LOG` variable is set. You can change the log level for local runs with `RUST_LOG="<crate-name>=trace" cargo shuttle run`.
 
 We do not currently allow changing the log level for deployments. Deployments use `RUST_LOG=debug,shuttle=trace,h2=warn` at the moment.
+
+## Custom logging setup
+
+If you opt-out of the default subscriber, you can set up logging or tracing the way you would in any other Rust application.
+Shuttle will record any ouput written to `stdout`, so as long as your set up writes to `stdout` you can set it up however you
+want. 
+
+We've created an example Axum app with a simple `tracing` setup here: TODO: update this link: https://github.com/shuttle-hq/shuttle-examples/pull/84.
 
 ## Viewing Logs
 
