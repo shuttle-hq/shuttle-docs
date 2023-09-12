@@ -41,7 +41,7 @@ We do not currently allow changing the log level for deployments. Deployments us
 ## Custom logging setup
 
 If you opt-out of the default subscriber, you can set up logging or tracing the way you would in any other Rust application.
-The only thing you need to ensure is that your setup writes to `stdout`, as this is what Shuttle will record and return for
+The only thing you need to ensure is that your setup writes to `stdout`, as this is what Shuttle will record and return from
 the `cargo shuttle logs` commands.
 
 We've created an example Axum app with a simple `tracing` setup here: TODO: update this link: https://github.com/shuttle-hq/shuttle-examples/pull/84.
