@@ -3,7 +3,8 @@ title: "Logs"
 description: "Tracing or logging in Shuttle apps."
 ---
 
-When you build an app with Shuttle, a global subscriber will be created and installed behind the scenes. If you'd rather set up
+Shuttle will record anything your application writes to `stdout`, e.g. a `tracing` or `log` crate configured to write to `stdout`,
+or simply `println!`. By default, Shuttle will set up a global tracing subscriber behind the scenes. If you'd rather set up
 your own tracing or logging, you can opt-out of the default subscriber by disabling the default features on `shuttle-runtime`:
 
 `shuttle-runtime = { version = "*", default-features = false }`
@@ -34,7 +35,8 @@ in your project is add it to your `Cargo.toml`.
 
 ### Configuring the default subscriber
 
-The global subscriber has an `env_filter` which defaults to the `INFO` log level if no `RUST_LOG` variable is set. You can change the log level for local runs with `RUST_LOG="<crate-name>=trace" cargo shuttle run`.
+The global subscriber has an `env_filter` which defaults to the `INFO` log level if no `RUST_LOG` variable is set. You can change the
+log level for local runs with `RUST_LOG="<crate-name>=trace" cargo shuttle run`.
 
 We do not currently allow changing the log level for deployments. Deployments use `RUST_LOG=debug,shuttle=trace,h2=warn` at the moment.
 
@@ -44,7 +46,7 @@ If you opt-out of the default subscriber, you can set up logging or tracing the 
 The only thing you need to ensure is that your setup writes to `stdout`, as this is what Shuttle will record and return from
 the `cargo shuttle logs` commands.
 
-We've created an example Axum app with a simple `tracing` setup here: TODO: update this link: https://github.com/shuttle-hq/shuttle-examples/pull/84.
+We've created an example Axum app with a simple `tracing`: [custom tracing example](https://github.com/shuttle-hq/shuttle-examples/tree/main/tracing/custom-tracing-subscriber).
 
 ## Viewing Logs
 
