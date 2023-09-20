@@ -30,6 +30,8 @@ async fn poem(#[shuttle_shared_db::Postgres(
     )] pool: PgPool) -> ShuttlePoem<impl poem::Endpoint> { ... }
 ```
 
+<Note>If you are interpolating a secret from `Secrets.dev.toml`, you need to set the same secret in `Secrets.toml` to a empty string so that this step does not crash in deployment.</Note>
+
 ## Example
 The Shuttle poem main function below uses the `[shuttle_shared_db::Postgres]` attribute macro to provision a shared postgres database,
 which can be accessed using a pre-configured, authenticated [sqlx Pool](https://docs.rs/sqlx/latest/sqlx/pool/index.html).
