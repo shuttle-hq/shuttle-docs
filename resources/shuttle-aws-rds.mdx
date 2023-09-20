@@ -29,9 +29,11 @@ When setting the `local_uri` you can also insert secrets from `Secrets.toml` usi
 
 ```rust
 #[shuttle_runtime::main]
-async fn tide(#[shuttle_aws_rds::Postgres(
+async fn tide(
+    #[shuttle_aws_rds::Postgres(
         local_uri = "postgres://postgres:{secrets.PASSWORD}@localhost:16695/postgres"
-    )] pool: PgPool) -> ShuttleTide<MyState> { ... }
+    )] pool: PgPool,
+) -> ShuttleTide<MyState> { ... }
 ```
 
 The URI should be formatted according to the
