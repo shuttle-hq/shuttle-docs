@@ -72,7 +72,6 @@
       "group": "Resources",
       "pages": [
         "resources/overview",
-        "resources/shuttle-metadata",
         {
           "group": "Databases",
           "pages": [
@@ -83,6 +82,7 @@
           ]
         },
         "resources/shuttle-secrets",
+        "resources/shuttle-metadata",
         "resources/shuttle-static-folder"
       ]
     },
