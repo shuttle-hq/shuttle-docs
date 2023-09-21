@@ -2,8 +2,6 @@
 title: "Overview"
 ---
 
-## Benefits
-
 The next sections go over one by one the the resources currently supported by Shuttle. In broad terms, for the resource needed, simply mark up your code with the appropriate annotation. This is very powerful and brings several benefits:
 
 - simplicity
@@ -18,11 +16,11 @@ This plugin allows applications to leverage AWS RDS for database needs, instead 
 
 ### Persist
 
-This plugin allows data to be persisted in a key-value store, which is backed by a struct that implements `serde` for serialization and deserialization. It is useful for saving data that is not desirable to be hard coded. An example is saved settings for a Discord bot that need to remain the same between updates.
+This plugin allows data that implements `serde` serialization and deserialization to be saved in files in a key-value store fashion. It is useful for saving data that is not desirable to be hard coded. An example is saved settings for a Discord bot that need to remain the same between updates.
 
 ### Shared Databases
 
-The Shared Databases plugin will spin up a shared Postgres or MongoDB database instance, which is shared with other users. This is the option to choose if database isolation isn't a concern. It's the suitable choice for prototyping applications on Shuttle.
+The Shared Databases plugin can give you your own Postgres or MongoDB database inside an instance which is shared with other users. This is the option to choose if total database isolation isn't a concern. It's great starting point for prototyping applications on Shuttle.
 
 ### Turso
 
@@ -30,8 +28,4 @@ This plugin allows services to connect to a Turso database. Turso is an edge-hos
 
 ### Secrets
 
-The Shuttle Secrets plugin provides a place to store environment variables which are sensitive and cannot be committed into version control.
-
-### Static Folder
-
-The Static Folder plugin provides a way to store static files, such as web pages, cascading style sheets, or other assets, to be served up as part of a web application.
+The Shuttle Secrets plugin provides a place to store variables which are sensitive and cannot be committed into version control.

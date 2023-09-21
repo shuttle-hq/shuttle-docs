@@ -5,7 +5,7 @@ description: "Shuttle is a Rust-native cloud development platform that lets you 
 
 ![](/images/infra-from-code.gif)
 
-<Info>The GIF above displays a sneak-peek for our upcoming console and does a good job of demonstrating how easy it is to add resources to your project.</Info>
+<Info>The GIF above demonstrates how easy it is to add resources to your project, visualized with the [Shuttle Console](https://console.shuttle.rs/).</Info>
 
 As a platform designed with a focus on providing an exceptional developer experience, our goal is to make building and deploying applications a breeze. Shuttle's **<Tooltip tip="Provisioning resources directly from your code, instead of having to deal with complex consoles and yaml files">Infrastructure from Code</Tooltip>** capabilities make provisioning resources simple and hassle-free. Getting a database is just a matter of asking for one with a macro:
 
@@ -21,21 +21,34 @@ async fn rocket(
 
 You can hit the ground running and swiftly transform your ideas into tangible solutions. Accelerate your project's progress by rapidly building and deploying prototypes, ensuring you bring your vision to life in record time.
 
-<Info>Our mission is aligned with the wave of Rust becoming the future of web development, as we strive to deliver cutting-edge solutions that leverage the full potential of [the most loved programming language](https://survey.stackoverflow.co/2022/).</Info>
+<Info>Our mission is aligned with the wave of Rust becoming the future of web development, as we strive to deliver cutting-edge solutions that leverage the full potential of [the most loved programming language](https://survey.stackoverflow.co/2023/).</Info>
 
-## Supported Frameworks
+## Supported Applications and Frameworks
 
-Currently we support most of the popular Rust web frameworks: [Axum](../examples/axum), [Actix Web](../examples/actix), [Rocket](../examples/other), [Warp](../examples/other), [Tower](../examples/other), [Salvo](../examples/other), [Poem](../examples/other), [Tide](../examples/other),
-  
-And also some of the Discord Bot building frameworks: [Serenity](../examples/serenity), [Poise](https://github.com/shuttle-hq/examples/tree/main/poise/hello-world)
+Shuttle can host many types of Rust programs.
+The Shuttle environment provides a network port for web traffic exposed to the Internet.
+Therefore, the most common use case is to deploy web apps.
+Apps that can bind to a socket and accept incoming HTTP traffic can run on Shuttle.
+
+To make life easier we have implemented all the boilerplate required for these Rust web frameworks. Get started with just a few lines of code.
+
+- [Axum](/examples/axum)
+- [Actix Web](/examples/actix)
+- [Rocket](/examples/other)
+- [Warp](/examples/other)
+- [Tower](/examples/other)
+- [Salvo](/examples/other)
+- [Poem](/examples/other)
+- [Tide](/examples/other)
+- [Thruster](/examples/other)
+- [shuttle-next](/shuttle-next/overview)
+
+The Discord Bot building frameworks [Serenity](/examples/serenity) and [Poise](/examples/poise) are also officially supported.
 
 If you need a custom service, you can take a look at our guide [right here](../tutorials/custom-service).
 
 ## Resource Provisioning
 
-At this moment, Shuttle supports the provisioning of the following resources:
-- [Shuttle AWS RDS](../resources/shuttle-aws-rds)
-- [Shuttle Persist](../resources/shuttle-persist)
-- [Shuttle Shared Databases](../resources/shuttle-shared-db)
-- [Shuttle Secrets](../resources/shuttle-secrets)
-- [Shuttle Static Folder](../resources/shuttle-static-folder)
+One of the great features of Shuttle is the provisioning of resources through macros.
+With just a few lines of code, you can get access to [AWS RDS](/resources/shuttle-aws-rds), [shared Postgres or Mongo databases](/resources/shuttle-shared-db), and more.
+Check the [Resources](/resources/overview) section for a full overview.

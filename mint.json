@@ -14,7 +14,7 @@
   },
   "topbarCtaButton": {
     "name": "Log In",
-    "url": "https://www.shuttle.rs/login"
+    "url": "https://console.shuttle.rs/"
   },
   "anchors": [
     {
@@ -63,6 +63,7 @@
       "pages": [
         "configuration/project-name",
         "configuration/shuttle-versions",
+        "configuration/files",
         "configuration/logs",
         "configuration/ci-cd"
       ]
@@ -71,7 +72,6 @@
       "group": "Resources",
       "pages": [
         "resources/overview",
-        "resources/shuttle-metadata",
         {
           "group": "Databases",
           "pages": [
@@ -81,14 +81,9 @@
             "resources/shuttle-turso"
           ]
         },
-        {
-          "group": "Environment Variables",
-          "pages": ["resources/shuttle-secrets"]
-        },
-        {
-          "group": "Static Files",
-          "pages": ["resources/shuttle-static-folder"]
-        }
+        "resources/shuttle-secrets",
+        "resources/shuttle-metadata",
+        "resources/shuttle-static-folder"
       ]
     },
     {

@@ -25,10 +25,14 @@ When setting the `local_uri` you can also insert secrets from `Secrets.toml` usi
 
 ```rust
 #[shuttle_runtime::main]
-async fn poem(#[shuttle_shared_db::Postgres(
+async fn poem(
+    #[shuttle_shared_db::Postgres(
         local_uri = "postgres://postgres:{secrets.PASSWORD}@localhost:16695/postgres"
-    )] pool: PgPool) -> ShuttlePoem<impl poem::Endpoint> { ... }
+    )] pool: PgPool,
+) -> ShuttlePoem<impl poem::Endpoint> { ... }
 ```
+
+<Note>If you are interpolating a secret from `Secrets.dev.toml`, you need to set the same secret in `Secrets.toml` to a empty string so that this step does not crash in deployment.</Note>
 
 ## Example
 The Shuttle poem main function below uses the `[shuttle_shared_db::Postgres]` attribute macro to provision a shared postgres database,

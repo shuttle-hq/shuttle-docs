@@ -6,9 +6,9 @@ The metadata plugin allows applications to obtain certain information about thei
 
 ## Usage
 
-To use the metadata plugin, add `shuttle-metadata` to the dependencies for your service by manually editing the project's `Cargo.toml` file or by invoking `cargo add shuttle-metadata` from the command line.
+To use the metadata plugin, add `shuttle-metadata` to the dependencies of your project by manually editing the project's `Cargo.toml` file or by invoking `cargo add shuttle-metadata` from the command line.
 
-Once the metadata plugin dependency is available to your project, use the resource by annotating your main function with the `shuttle_metadata::ShuttleMetadata` attribute. Doing this enables return of a MetaData struct which will contain information such as the Shuttle service name.
+Once the metadata plugin dependency is available to your project, use the resource by annotating your main function with the `shuttle_metadata::ShuttleMetadata` attribute.
 
 ## Example
 
@@ -28,10 +28,10 @@ async fn axum(
 }
 ```
 
-This example has one route which returns the Shuttle service name in JSON format:
+This example has one route which returns the debug print of the `Metadata` struct:
 
 ```text
-Metadata { service_name: "metadata-example" }
+DeploymentMetadata { env: Local, project_name: ProjectName("metadata-axum-app"), service_name: "metadata-axum-app", storage_path: ".shuttle-storage" }
 ```
 
-The full example can also be found on [GitHub](https://github.com/shuttle-hq/shuttle-examples/tree/main/axum/metadata)
+The full example can also be found on [GitHub](https://github.com/shuttle-hq/shuttle-examples/tree/main/axum/metadata).
