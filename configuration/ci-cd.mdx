@@ -7,8 +7,12 @@ Shuttle currently provides one GitHub Action for automating deployments.
 
 ## GitHub Deploy Action
 
-[How to use and Options here.](https://github.com/shuttle-hq/deploy-action#readme)
+<Frame type="glass">
+  <img src="/images/shuttle-deploy-action.png" />
+</Frame>
 
 This action can run the `cargo shuttle deploy` command for you, enabling continuous deployments on every push.
+
+[How to use and options here](https://github.com/shuttle-hq/deploy-action#readme).
 
 Bear in mind that it does not handle `cargo shuttle project restart`, which is needed when upgrading Shuttle version. It is recommended to handle project restarts yourself, and let this action automate deployments that use the same version.

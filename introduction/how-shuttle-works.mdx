@@ -2,9 +2,8 @@
 title: "How Shuttle works"
 ---
 
-### Runtime
+The simplest way to build and deploy a web app on Shuttle looks like this:
 
-The simplest way to build & deploy an app with Shuttle looks something like this:
 ```rust
 async fn hello_world() -> &'static str {
     "Hello, world!"
@@ -12,44 +11,26 @@ async fn hello_world() -> &'static str {
 
 #[shuttle_runtime::main]
 async fn axum() -> shuttle_axum::ShuttleAxum {
-    let router = Router::new().route("/hello", get(hello_world));
+    let router = Router::new().route("/", get(hello_world));
 
     Ok(router.into())
 }
 ```
 
-This example spins up a server with an `/hello` endpoint that, when called, returns "Hello, world!". But most importantly, the code you see in the snippet above, is all it takes for `cargo shuttle deploy` to deploy it.
+This example spins up a server where the `/` endpoint returns `Hello, world!`.
+But most importantly, the code you see in the snippet above, is all it takes for `cargo shuttle deploy` to deploy it.
 
-That's possible due to the `#[shuttle_runtime::main]` macro which contains our `proc-macro` code which gets exposed to user services from runtime. The runtime contains the alpha runtime, which is a gRPC server and a Loader in a service with the `#[shuttle_runtime::main]` macro.
-
-The gRPC server receives commands from the deployers, such as `start` and `stop`. The `Loader` provisions resources for the users service (see Provisioning Resources below).
+This is possible due to the `#[shuttle_runtime::main]` procedural macro. The macro wraps your app with Shuttle's runtime. The Shuttle runtime receives commands from the deployers, such as `load`, `start`, and `stop`. The loading phase provisions resources for the app (see Provisioning Resources below).
 
 ### Provisioning Resources
 
-![Image](/images/shuttle-macros.png)
+![Shuttle macros](/images/shuttle-macros.png)
 
-As you can see in the example above, the 3 annotations that you are passing to your `main()` function, at compile time, get provisioned on our end.
+In the example above, the 3 annotations in the main function expand to code that makes the Shuttle runtime provision them on our end.
 
 Here are the examples on how to use them, once you add the required annotations to your code:
 
-**Static Folder**
-
-```rust
-#[shuttle_runtime::main]
-async fn axum(
-    // Name your static assets folder by passing `folder = <name>` to `StaticFolder`
-    // If you don't pass a name, it will default to `static`.
-    #[shuttle_static_folder::StaticFolder(folder = "assets")] static_folder: PathBuf,
-) -> shuttle_axum::ShuttleAxum {
-    let router = Router::new()
-        .route("/hello", get(hello_world))
-        .nest_service("/", ServeDir::new(static_folder));
-
-    Ok(router.into())
-}
-```
-
-**Secrets Store**
+**Secrets**
 
 ```rust
 #[shuttle_runtime::main]
@@ -70,16 +51,16 @@ async fn axum(
 ```rust
 #[shuttle_runtime::main]
 async fn axum(
-    #[shuttle_shared_db::Postgres] postgres: PgPool,
+    #[shuttle_shared_db::Postgres] pool: PgPool,
 ) -> shuttle_axum::ShuttleAxum {
-    postgres.execute(include_str!("../schema.sql")) // We can reference our database instance by using `pool` and perform actions
+    // We can query our Postgres database with `pool`
+    pool.execute(include_str!("../schema.sql"))
         .await
         .map_err(CustomError::new)?;
 }
 ```
 
-For more info on resources, head on over to our [resources](../resources/overview) section.
-
+For more info on resources, head on over to our [Resources](/resources/overview) section.
 
 ### Deploying your Project
 
@@ -97,4 +78,4 @@ Other than that any reasonable usage is acceptable during our beta, but we will 
 
 ---
 
-If you wish to contribute to Shuttle and learn more about how Shuttle works under the hood, check out our [Contributing Guide](../community/contribute).
+If you wish to contribute to Shuttle and learn more about how Shuttle works under the hood, check out our [Contributing Guide](/community/contribute).
