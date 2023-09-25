@@ -30,6 +30,7 @@ use tokio::{
 };
 use tower_http::services::ServeDir;
 
+
 struct State {
     clients_count: usize,
     rx: watch::Receiver<Message>,
@@ -48,8 +49,10 @@ struct Response {
 
 #[shuttle_runtime::main]
 async fn axum() -> ShuttleAxum {
+// create a receiver/sender for a channel for us to send and receive messages over
     let (tx, rx) = watch::channel(Message::Text("{}".to_string()));
 
+// generate state
     let state = Arc::new(Mutex::new(State {
         clients_count: 0,
         rx,
@@ -62,8 +65,12 @@ async fn axum() -> ShuttleAxum {
         let https = HttpsConnector::new();
         let client = Client::builder().build::<_, hyper::Body>(https);
         let uri: Uri = STATUS_URI.parse().unwrap();
-
+	
+	// every 15 seconds, send a HTTP request to the URL we want to check
+	
         loop {
+		// if OK, send a response to all connected clients
+		// if not, break loop
             let is_up = client.get(uri.clone()).await.is_ok();
 
             let response = Response {
@@ -72,7 +79,7 @@ async fn axum() -> ShuttleAxum {
                 is_up,
             };
             let msg = serde_json::to_string(&response).unwrap();
-
+		
             if tx.send(Message::Text(msg)).is_err() {
                 break;
             }

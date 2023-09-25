@@ -1,0 +1,72 @@
+---
+title: "Static Files"
+---
+
+This example shows how to serve files from a folder with static assets.
+Running this example and going to `/assets` will serve you the `assets/index.html` file.
+
+Note that we declare what files we want to serve through the `Shuttle.toml` file using the "assets" key.
+Files we need to serve must be within the project folder itself. 
+ 
+<CodeGroup>
+```rust src/main.rs
+
+use rocket::fs::{FileServer, relative};
+
+// If we wanted or needed to serve files manually, we'd use `NamedFile`. Always
+// prefer to use `FileServer`!
+mod manual {
+    use std::path::{PathBuf, Path};
+    use rocket::fs::NamedFile;
+
+    #[rocket::get("/second/<path..>")]
+    pub async fn second(path: PathBuf) -> Option<NamedFile> {
+        let mut path = Path::new(super::relative!("static")).join(path);
+        if path.is_dir() {
+            path.push("index.html");
+        }
+
+        NamedFile::open(path).await.ok()
+    }
+}
+
+#[shuttle_runtime::main]
+fn rocket() -> shuttle_rocket::ShuttleRocket {
+    let rocket = rocket::build()
+        .mount("/", rocket::routes![manual::second])
+        .mount("/", FileServer::from(relative!("static")));
+
+	Ok(rocket.into())
+}
+```
+
+```html static/index.html
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Static Files</title>
+    </head>
+    <body>
+        <p>This is an example of serving static files with Rocket and Shuttle.</p>
+    </body>
+</html>
+```
+
+```toml Cargo.toml
+[package]
+name = "static-files"
+version = "0.1.0"
+edition = "2021"
+publish = false
+
+[dependencies]
+rocket = "0.5.0-rc.2"
+shuttle-rocket = "0.27.0"
+shuttle-runtime = "0.27.0"
+tokio = "1.26.0"
+```
+
+```toml Shuttle.toml
+assets = ["static/*"]
+```
+</CodeGroup>

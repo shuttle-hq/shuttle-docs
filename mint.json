@@ -93,8 +93,10 @@
           "group": "Axum",
           "pages": [
             "examples/axum",
+            "examples/axum-postgres",
             "examples/axum-static-files",
-            "examples/axum-websockets"
+            "examples/axum-websockets",
+	"examples/axum-jwt-authentication"
           ]
         },
         {
@@ -102,12 +104,19 @@
           "pages": [
             "examples/actix",
             "examples/actix-postgres",
+	    "examples/actix-static-files",
             "examples/actix-websocket-actorless"
           ]
         },
         {
           "group": "Rocket",
-          "pages": ["examples/rocket", "examples/rocket-jwt-authentication"]
+          "pages": [
+		"examples/rocket", 
+		"examples/rocket-postgres",
+		"examples/rocket-static-files",
+		"examples/rocket-websockets",
+		"examples/rocket-jwt-authentication"
+		]
         },
         {
           "group": "Serenity",

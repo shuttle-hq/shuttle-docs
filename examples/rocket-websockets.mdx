@@ -1,0 +1,152 @@
+---
+title: "WebSockets"
+---
+
+This example shows how to make a simple websockets handler app using Rocket.
+
+<CodeGroup>
+```rust src/main.rs
+#[macro_use] extern crate rocket;
+
+use rocket::fs::{self, FileServer};
+use rocket::futures::{SinkExt, StreamExt};
+
+#[get("/echo?stream", rank = 1)]
+fn echo_stream(ws: ws::WebSocket) -> ws::Stream!['static] {
+    ws::Stream! { ws =>
+        for await message in ws {
+            yield message?;
+        }
+    }
+}
+
+#[get("/echo?channel", rank = 2)]
+fn echo_channel(ws: ws::WebSocket) -> ws::Channel<'static> {
+    // This is entirely optional. Change default configuration.
+    let ws = ws.config(ws::Config {
+        max_send_queue: Some(5),
+        ..Default::default()
+    });
+
+    ws.channel(move |mut stream| Box::pin(async move {
+        while let Some(message) = stream.next().await {
+            let _ = stream.send(message?).await;
+        }
+
+        Ok(())
+    }))
+}
+
+#[get("/echo?raw", rank = 3)]
+fn echo_raw(ws: ws::WebSocket) -> ws::Stream!['static] {
+    ws.stream(|stream| stream)
+}
+
+#[shuttle_runtime::main]
+fn rocket() -> shuttle_rocket::ShuttleRocket {
+    let rocket = rocket::build()
+        .mount("/", routes![echo_channel, echo_stream, echo_raw])
+        .mount("/", FileServer::from(fs::relative!("static")));
+
+	Ok(rocket.into())
+}
+```
+
+```html assets/index.html
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <title>WebSocket Client Test</title>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+    </head>
+    <body>
+        <h1>WebSocket Client Test</h1>
+        <form action="#">
+            <input type="text" id="message" name="message" value="" placeholder="Send a message...">
+            <input type="submit" value="Submit">
+        </form>
+        <div id="log"></div>
+    </body>
+    <script language="javascript" type="text/javascript">
+    var wsUri = "ws://127.0.0.1:8000/echo";
+    var log;
+
+    function init() {
+        log = document.getElementById("log");
+        form = document.getElementsByTagName("form")[0];
+        message = document.getElementById("message");
+
+        testWebSocket();
+
+        form.addEventListener("submit", (e) => {
+            e.preventDefault();
+            if (message.value !== "") {
+                sendMessage(message.value);
+                message.value = "";
+            }
+        });
+    }
+
+    function testWebSocket() {
+        websocket = new WebSocket(wsUri);
+        websocket.onopen = onOpen;
+        websocket.onclose = onClose;
+        websocket.onmessage = onMessage;
+        websocket.onerror = onError;
+    }
+
+    function onOpen(evt) {
+        writeLog("CONNECTED");
+        sendMessage("Hello, Rocket!");
+    }
+
+    function onClose(evt) {
+        writeLog("Websocket DISCONNECTED");
+    }
+
+    function onMessage(evt) {
+        writeLog('<span style="color: blue;">RESPONSE: ' + evt.data+'</span>');
+    }
+
+    function onError(evt) {
+        writeLog('<span style="color: red;">ERROR:</span> ' + evt.data);
+    }
+
+    function sendMessage(message) {
+        writeLog("SENT: " + message);
+        websocket.send(message);
+    }
+
+    function writeLog(message) {
+        var pre = document.createElement("p");
+        pre.innerHTML = message;
+        log.prepend(pre);
+    }
+
+    window.addEventListener("load", init, false);
+    </script>
+</html>
+```
+
+```toml Cargo.toml
+[package]
+name = "postgres"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+
+rocket = { version = "0.5.0-rc.2", features = ["json"] }
+serde = "1.0.148"
+shuttle-shared-db = { version = "0.27.0", features = ["postgres"] }
+shuttle-rocket = "0.27.0"
+shuttle-runtime = "0.27.0"
+sqlx = { version = "0.7.1", features = ["runtime-tokio-native-tls", "postgres"] }
+tokio = "1.26.0"
+```
+
+```toml Shuttle.toml
+assets = ["assets/*"]
+```
+</CodeGroup>

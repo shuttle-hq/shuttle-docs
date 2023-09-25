@@ -5,6 +5,9 @@ title: "Static Files"
 This example shows how to serve files from a folder with static assets.
 Running this example and going to `/assets` will serve you the `assets/index.html` file.
 
+Note that we declare what files we want to serve through the `Shuttle.toml` file using the "assets" key.
+Files we need to serve must be within the project folder itself. 
+ 
 <CodeGroup>
 ```rust src/main.rs
 use std::path::PathBuf;
@@ -51,5 +54,9 @@ shuttle-axum = "0.27.0"
 shuttle-runtime = "0.27.0"
 tokio = "1.28.2"
 tower-http = { version = "0.4.0", features = ["fs"] }
+```
+
+```toml Shuttle.toml
+assets = ["assets/*"]
 ```
 </CodeGroup>
