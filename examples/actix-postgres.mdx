@@ -4,6 +4,18 @@ title: "Postgres Todo App"
 
 This example shows how to make a simple TODO app using Actix Web and a shared Shuttle Postgres DB.
 
+The following routes are provided:
+```
+- GET /todos/<id> - Get a to-do item by ID.
+- POST /todos - Create a to-do item. Takes "note" as a JSON body parameter.
+```
+
+You can clone the example below by running the following (you'll need `cargo-shuttle` installed):
+```bash
+cargo shuttle init --from https://github.com/shuttle-hq/shuttle-examples.git \
+ --subfolder actix-web/postgres
+```
+
 <CodeGroup>
 ```rust src/main.rs
 use actix_web::middleware::Logger;

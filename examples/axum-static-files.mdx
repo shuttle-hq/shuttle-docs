@@ -7,7 +7,13 @@ Running this example and going to `/assets` will serve you the `assets/index.htm
 
 Note that we declare what files we want to serve through the `Shuttle.toml` file using the "assets" key.
 Files we need to serve must be within the project folder itself. 
- 
+
+You can clone the example below by running the following (you'll need `cargo-shuttle` installed):
+```bash
+cargo shuttle init --from https://github.com/shuttle-hq/shuttle-examples.git \
+ --subfolder axum/static-files
+```
+
 <CodeGroup>
 ```rust src/main.rs
 use std::path::PathBuf;
