@@ -84,8 +84,7 @@
         "resources/shuttle-secrets",
         "resources/shuttle-metadata",
         "resources/shuttle-static-folder",
-	"resources/custom-resources",
-	"resources/deleting-resources"
+	"resources/custom-resources" 
       ]
     },
     {

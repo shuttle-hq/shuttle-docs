@@ -1,13 +1,12 @@
 ---
 title: "Cookie Authentication"
+description: "Explore how you can secure your Actix Web application by using cookies."
 ---
 
-This example shows how to use authentication within actix-web with cookies, assisted by actix-identity and actix-session.
-The idea is that all requests authenticate first at https://authentication-rocket-app.shuttleapp.rs/login to get a JWT.
-Then the JWT is sent with all requests requiring authentication using the HTTP header `Authorization: Bearer <token>`.
+## Description
 
-This example uses the [`jsonwebtoken`](https://github.com/Keats/jsonwebtoken) which supports symmetric and asymmetric secret encoding, built-in validations, and most JWT algorithms.
-However, this example only makes use of symmetric encoding and validation on the expiration claim.
+This example shows how to use authentication within actix-web with cookies, assisted by actix-identity and actix-session.
+The idea is that all requests authenticate first at the login route to get a cookie, then the cookie is sent with all requests requiring authentication using the HTTP cookie header.
 
 You can clone the example below by running the following (you'll need `cargo-shuttle` installed):
 ```bash
@@ -15,14 +14,14 @@ cargo shuttle init --from https://github.com/shuttle-hq/shuttle-examples.git \
  --subfolder actix-web/cookie-authentication
 ```
 
-### src/main.rs
 Three Actix Web routes are registered in this file:
-1. `/public`: a route that can be called without needing any authentication.
-1. `/login`: a route for posting a JSON object with a username and password to get a cookie.
-1. `/private`: a route that will display whether you're logged in or not, based on if you're logged in.
+- `/public`: a route that can be called without needing any authentication.
+- `/login`: a route for posting a JSON object with a username and password to get a cookie.
+- `/private`: a route that will display whether you're logged in or not, based on if you're logged in.
 
 The example uses `actix-identity` and `actix-session` with a cookie store to assist with easy setup.
 
+## Code
 
 ```toml Cargo.toml
 [package]
@@ -121,44 +120,44 @@ async fn actix_web() -> ShuttleActixWeb<impl FnOnce(&mut ServiceConfig) + Send +
 }
 ```
 
-### Deploy
-After logging into Shuttle, use the following command to deploy this example:
+## Usage
 
-Create a project, this will start an isolated deployer container for you under the hood:
-```bash
-cargo shuttle project start
-```
+Once you've cloned this example, launch it locally by using `cargo shuttle run`. Once you've verified that it's up, you'll now be able to go to `http://localhost:8000` and start trying the example out!
 
-```bash
-cargo shuttle deploy
-```
-
-Make a note of the `Host` for the deploy to use in the examples below.
-
-### Seeing it in action
 First, we should be able to access the public endpoint without any authentication using:
 
 ```sh
-$ curl https://<host>/public
+$ curl http://localhost:8000/public
 ```
 
 But trying to access the private endpoint will return "Hello anonymous":
 
 ```sh
-$ curl https://<host>/private
+$ curl http://localhost:8000/private
 ```
 
 So let's get a cookie from the login route first:
 
 ```sh
-$ curl https://<host>/login
+$ curl http://localhost:8000/login
 ```
 
 Accessing the private endpoint with the token will now succeed:
 
 ```sh
-$ curl --header "Authorization: Bearer <token>" https://<host>/private
+$ curl --header "Authorization: Bearer <token>" http://localhost:8000/private
 ```
 
-The token is set to expire in 5 minutus, so wait a while and try to access the private endpoint again. Once the token has expired, a user will need to get a new token from login.
+The token is set to expire in 5 minutes, so wait a while and try to access the private endpoint again. Once the token has expired, a user will need to get a new token from login.
 Since tokens usually have a longer than 5 minutes expiration time, we can create a `/refresh` endpoint that takes an active token and returns a new token with a refreshed expiration time.
+
+Looking to extend this example? Here's a couple of ideas to get you started:
+- Create a frontend to host the login
+- Add a route for registering
+- Use a database to check login credentials
+
+---
+
+<Tip> If you want to explore other frameworks, we have more examples with popular ones like Tower and Warp. You can find them [right here](../examples/other). </Tip>
+
+<Tip> Be sure to check out the [examples repo](https://github.com/shuttle-hq/shuttle-examples) for many more examples! </Tip>

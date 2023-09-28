@@ -1,6 +1,9 @@
 ---
 title: "JWT Authentication"
+description: "Learn how you can secure your Axum web application by using JWT tokens."
 ---
+
+## Description
 
 This example shows how to use Axum authentication with [JSON Web Tokens](https://jwt.io/) (JWT for short).
 The idea is that all requests authenticate first at a login route to get a JWT.
@@ -8,17 +11,18 @@ Then the JWT is sent with all requests requiring authentication using the HTTP h
 
 This example uses the [`jsonwebtoken`](https://github.com/Keats/jsonwebtoken) which supports symmetric and asymmetric secret encoding, built-in validations, and most JWT algorithms.
 
+Three Axum routes are registered in this file:
+- `/public`: a route that can be called without needing any authentication.
+- `/login`: a route for posting a JSON object with a username and password to get a JWT.
+- `/private`: a route that can only be accessed with a valid JWT.
+
 You can clone the example below by running the following (you'll need `cargo-shuttle` installed):
-```bash:
+```bash 
 cargo shuttle init --from https://github.com/shuttle-hq/shuttle-examples.git \
  --subfolder axum/jwt-authentication
 ```
 
-### src/main.rs
-Three Rocket routes are registered in this file:
-1. `/public`: a route that can be called without needing any authentication.
-1. `/login`: a route for posting a JSON object with a username and password to get a JWT.
-1. `/private`: a route that can only be accessed with a valid JWT.
+## Code
 
 ```toml Cargo.toml
 [package]
@@ -213,43 +217,45 @@ enum AuthError {
 }
 ```
 
-### Deploy
-After logging into Shuttle, use the following command to deploy this example:
+## Usage
 
-Create a project, this will start an isolated deployer container for you under the hood:
-```bash
-cargo shuttle project start
-```
-
-```bash
-cargo shuttle deploy
-```
-
-### Seeing it in action
+Once you've cloned this example, launch it locally by using `cargo shuttle run`. Once you've verified that it's up, you'll now be able to go to `http://localhost:8000` and start trying the example out!
+ 
 First, we should be able to access the public endpoint without any authentication using:
 
 ```sh
-$ curl https://<host>/public
+$ curl http://localhost:8000/public
 ```
 
 But trying to access the private endpoint will fail with a 403 forbidden:
 
 ```sh
-$ curl https://<host>/private
+$ curl http://localhost:8000/private
 ```
 
 So let's get a JWT from the login route first:
 
 
 ```sh
-$ curl --request POST --data '{"client_id": "foo", "client_secret": "bar"}' https://<host>/login
+$ curl --request POST --data '{"client_id": "foo", "client_secret": "bar"}' \
+ http://localhost:8000/login
 ```
 
 Accessing the private endpoint with the token will now succeed:
 
 ```sh
-$ curl --header "Authorization: Bearer <token>" https://<host>/private
+$ curl --header "Authorization: Bearer <token>" http://localhost:8000/private
 ```
 
 The token is set to expire in 5 minutus, so wait a while and try to access the private endpoint again. Once the token has expired, a user will need to get a new token from login.
-Since tokens usually have a longer than 5 minutes expiration time, we can create a `/refresh` endpoint that takes an active token and returns a new token with a refreshed expiration time.
+
+Looking to extend this example? Here's a couple of ideas to get you started:
+- Create a frontend to host the login
+- Add a route for registering
+- Use a database to check login credentials
+
+---
+
+<Tip> If you want to explore other frameworks, we have more examples with popular ones like Tower and Warp. You can find them [right here](../examples/other). </Tip>
+
+<Tip> Be sure to check out the [examples repo](https://github.com/shuttle-hq/shuttle-examples) for many more examples! </Tip>

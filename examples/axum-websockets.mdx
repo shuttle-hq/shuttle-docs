@@ -1,14 +1,23 @@
 ---
 title: "WebSockets"
+description: "Learn how websockets can upgrade your web service by providing live update functionality, using Axum."
 ---
+
+## Description
 
 This example shows how to use a WebSocket to show the live status of the Shuttle API on a web page.
 
+There are a few routes available:
+- `/` - the homepage route where you can find the `index.html` page.
+- `/ws` - the route that handles websockets.
+ 
 You can clone the example below by running the following (you'll need `cargo-shuttle` installed):
 ```bash
 cargo shuttle init --from https://github.com/shuttle-hq/shuttle-examples.git \
  --subfolder axum/websocket
 ```
+
+## Code
 
 <CodeGroup>
 ```rust src/main.rs
@@ -278,3 +287,13 @@ tower-http = { version = "0.4.0", features = ["fs"] }
 assets = ["static/*"]
 ```
 </CodeGroup>
+
+## Usage
+
+Once you've cloned the example, launch it locally using `cargo shuttle run` and then go to `http://localhost:8000`. You should be able to see a status page and if you go to your Inspect/Chrome Devtools (depending on what browser you're using), if you go to the Network tab you'll see that your browser received a HTTP status code of 101. 
+
+---
+
+<Tip> If you want to explore other frameworks, we have more examples with popular ones like Tower and Warp. You can find them [right here](../examples/other). </Tip>
+
+<Tip> Be sure to check out the [examples repo](https://github.com/shuttle-hq/shuttle-examples) for many more examples! </Tip> 

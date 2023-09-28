@@ -1,6 +1,9 @@
 ---
 title: "Actix WebSocket Actorless"
+description: "Learn how websockets can upgrade your web service by providing live update functionality, using Actix Web."
 ---
+
+## Description
 
 This example shows how to use a WebSocket to show the live status of the Shuttle API on a web page. The app also provides an echo service and notifies when the number of connected users change.
 
@@ -9,6 +12,8 @@ You can clone the example below by running the following (you'll need `cargo-shu
 cargo shuttle init --from https://github.com/shuttle-hq/shuttle-examples.git \
  --subfolder actix-web/websocket-actorless
 ```
+
+## Code
 
 <CodeGroup>
 ```rust src/main.rs
@@ -412,3 +417,13 @@ tracing = "0.1"
 assets = ["static/*"]
 ```
 </CodeGroup>
+
+## Usage
+
+Once you've cloned the example, launch it locally using `cargo shuttle run` and then go to `http://localhost:8000`. You should be able to see a status page and if you go to your Inspect/Chrome Devtools (depending on what browser you're using), if you go to the Network tab you'll see that your browser received a HTTP status code of 101. 
+
+---
+
+<Tip> If you want to explore other frameworks, we have more examples with popular ones like Tower and Warp. You can find them [right here](../examples/other). </Tip>
+
+<Tip> Be sure to check out the [examples repo](https://github.com/shuttle-hq/shuttle-examples) for many more examples! </Tip> 
