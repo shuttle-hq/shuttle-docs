@@ -4,7 +4,7 @@ description: "This article walks you through how you can easily set up a simple 
 ---
 
 ## Description 
-This example shows how to make a simple TODO app using Axum and a shared Shuttle Postgres DB.
+This example shows how to make a simple TODO app using Actix Web and a shared Shuttle Postgres DB.
 
 The following routes are provided:
 - GET `/todos/<id>` - Get a to-do item by ID.
@@ -33,6 +33,8 @@ use sqlx::{Executor, FromRow, PgPool};
 
 #[get("/{id}")]
 async fn retrieve(path: web::Path<i32>, state: web::Data<AppState>) -> Result<Json<Todo>> {
+// query database to get data
+// if error, return Bad Request HTTP status code 
     let todo = sqlx::query_as("SELECT * FROM todos WHERE id = $1")
         .bind(*path)
         .fetch_one(&state.pool)
@@ -44,6 +46,8 @@ async fn retrieve(path: web::Path<i32>, state: web::Data<AppState>) -> Result<Js
 
 #[post("")]
 async fn add(todo: web::Json<TodoNew>, state: web::Data<AppState>) -> Result<Json<Todo>> {
+// query database to create a new record using the request body
+// if error, return Bad Request HTTP status code 
     let todo = sqlx::query_as("INSERT INTO todos(note) VALUES ($1) RETURNING id, note")
         .bind(&todo.note)
         .fetch_one(&state.pool)
@@ -62,12 +66,15 @@ struct AppState {
 async fn actix_web(
     #[shuttle_shared_db::Postgres] pool: PgPool,
 ) -> ShuttleActixWeb<impl FnOnce(&mut ServiceConfig) + Send + Clone + 'static> {
+// run migrations
     pool.execute(include_str!("../schema.sql"))
         .await
         .map_err(CustomError::new)?;
 
+// set up AppState
     let state = web::Data::new(AppState { pool });
 
+// set up our Actix web service and wrap it with logger and add the AppState as app data
     let config = move |cfg: &mut ServiceConfig| {
         cfg.service(
             web::scope("/todos")
