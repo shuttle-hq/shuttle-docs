@@ -19,11 +19,11 @@ fn index() -> &'static str {
     "Hello, world!"
 }
 
-#[shuttle_service::main]
-async fn rocket() -> shuttle_service::ShuttleRocket {
+#[shuttle_runtime::main]
+async fn rocket() -> shuttle_rocket::ShuttleRocket {
     let rocket = rocket::build().mount("/", routes![index]);
 
-    Ok(rocket)
+    Ok(rocket.into())
 }
 ```
 
@@ -58,9 +58,11 @@ impl tower::Service<hyper::Request<hyper::Body>> for HelloWorld {
     }
 }
 
-#[shuttle_service::main]
-async fn tower() -> Result<HelloWorld, shuttle_service::Error> {
-    Ok(HelloWorld)
+#[shuttle_runtime::main]
+async fn tower() -> shuttle_tower::ShuttleTower<HelloWorld> {
+    let service = HelloWorld;
+
+    Ok(service.into())
 }
 ```
 
@@ -68,10 +70,10 @@ async fn tower() -> Result<HelloWorld, shuttle_service::Error> {
 use warp::Filter;
 use warp::Reply;
 
-#[shuttle_service::main]
-async fn warp() -> shuttle_service::ShuttleWarp<(impl Reply,)> {
-    let route = warp::any().map(|| "Hello, World");
-    Ok(route.boxed())
+#[shuttle_runtime::main]
+async fn warp() -> shuttle_warp::ShuttleWarp<(impl Reply,)> {
+    let route = warp::any().map(|| "Hello, World!");
+    Ok(route.boxed().into())
 }
 ```
 
@@ -83,27 +85,28 @@ async fn hello_world(res: &mut Response) {
     res.render(Text::Plain("Hello, world!"));
 }
 
-#[shuttle_service::main]
-async fn salvo() -> shuttle_service::ShuttleSalvo {
-    let router = Router::with_path("hello").get(hello_world);
+#[shuttle_runtime::main]
+async fn salvo() -> shuttle_salvo::ShuttleSalvo {
+    let router = Router::new().get(hello_world);
 
-    Ok(router)
+    Ok(router.into())
 }
 ```
 
 ```rust Poem
 use poem::{get, handler, Route};
+use shuttle_poem::ShuttlePoem;
 
 #[handler]
 fn hello_world() -> &'static str {
     "Hello, world!"
 }
 
-#[shuttle_service::main]
-async fn main() -> shuttle_service::ShuttlePoem<impl poem::Endpoint> {
-    let app = Route::new().at("/hello", get(hello_world));
+#[shuttle_runtime::main]
+async fn poem() -> ShuttlePoem<impl poem::Endpoint> {
+    let app = Route::new().at("/", get(hello_world));
 
-    Ok(app)
+    Ok(app.into())
 }
 ```
 
@@ -119,27 +122,35 @@ async fn hello(mut context: Ctx, _next: MiddlewareNext<Ctx>) -> MiddlewareResult
     Ok(context)
 }
 
-#[shuttle_service::main]
-async fn thruster() -> shuttle_service::ShuttleThruster<HyperServer<Ctx, ()>> {
-    Ok(HyperServer::new(
-        App::<HyperRequest, Ctx, ()>::create(generate_context, ()).get("/hello", m![hello]),
-    ))
+#[shuttle_runtime::main]
+async fn thruster() -> shuttle_thruster::ShuttleThruster<HyperServer<Ctx, ()>> {
+    let server = HyperServer::new(
+        App::<HyperRequest, Ctx, ()>::create(generate_context, ()).get("/", m![hello]),
+    );
+
+    Ok(server.into())
 }
 ```
 
 ```rust Tide
-#[shuttle_service::main]
-async fn tide() -> shuttle_service::ShuttleTide<()> {
+#[shuttle_runtime::main]
+async fn tide() -> shuttle_tide::ShuttleTide<()> {
     let mut app = tide::new();
     app.with(tide::log::LogMiddleware::new());
 
-    app.at("/hello").get(|_| async { Ok("Hello, world!") });
+    app.at("/").get(|_| async { Ok("Hello, world!") });
 
-    Ok(app)
+    Ok(app.into())
 }
 ```
 
 </CodeGroup>
+
+Run the example locally with:
+
+```bash
+cargo shuttle run
+```
 
 In order to deploy the example, simply run:
 
