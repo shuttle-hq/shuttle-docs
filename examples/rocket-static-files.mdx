@@ -19,37 +19,30 @@ cargo shuttle init --from shuttle-hq/shuttle-examples \
  
 <CodeGroup>
 ```rust src/main.rs
+use rocket::fs::NamedFile;
+use rocket::fs::{relative};
+use std::path::{Path, PathBuf};
 
-use rocket::fs::{FileServer, relative};
-
-// If we wanted or needed to serve files manually, we'd use `NamedFile`. Always
-// prefer to use `FileServer`!
-mod manual {
-    use std::path::{PathBuf, Path};
-    use rocket::fs::NamedFile;
-
-    #[rocket::get("/second/<path..>")]
-    pub async fn second(path: PathBuf) -> Option<NamedFile> {
-        let mut path = Path::new(super::relative!("static")).join(path);
-        if path.is_dir() {
-            path.push("index.html");
-        }
-
-        NamedFile::open(path).await.ok()
+#[rocket::get("/<path..>")]
+pub async fn serve(mut path: PathBuf) -> Option<NamedFile> {
+    path.set_extension("html");
+    let mut path = Path::new(relative!("assets")).join(path);
+    if path.is_dir() {
+        path.push("index.html");
     }
+
+    NamedFile::open(path).await.ok()
 }
 
 #[shuttle_runtime::main]
-fn rocket() -> shuttle_rocket::ShuttleRocket {
-    let rocket = rocket::build()
-        .mount("/", rocket::routes![manual::second])
-        .mount("/", FileServer::from(relative!("static")));
+async fn rocket() -> shuttle_rocket::ShuttleRocket {
+    let rocket = rocket::build().mount("/", rocket::routes![serve]);
 
-	Ok(rocket.into())
+    Ok(rocket.into())
 }
 ```
 
-```html static/index.html
+```html assets/index.html
 <!DOCTYPE html>
 <html>
     <head>
@@ -57,6 +50,19 @@ fn rocket() -> shuttle_rocket::ShuttleRocket {
     </head>
     <body>
         <p>This is an example of serving static files with Rocket and Shuttle.</p>
+	<a href="/about">Click here to go to the About page</a>
+    </body>
+</html>
+```
+
+```html assets/about.html
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Static Files</title>
+    </head>
+    <body>
+        <p>This is the About page.</p>
     </body>
 </html>
 ```
@@ -76,7 +82,7 @@ tokio = "1.26.0"
 ```
 
 ```toml Shuttle.toml
-assets = ["static/*"]
+assets = ["assets/*"]
 ```
 </CodeGroup>
 
