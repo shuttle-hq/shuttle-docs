@@ -142,6 +142,7 @@
         "tutorials/discord-weather-forecast",
         "tutorials/url-shortener",
         "tutorials/authentication",
+	"tutorials/send-your-logs-to-datadog",
         "tutorials/serverless-calendar-app",
         "tutorials/websocket-chat-app-js",
         "tutorials/rest-http-service-with-axum",
