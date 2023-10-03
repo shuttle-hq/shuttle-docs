@@ -13,7 +13,10 @@ Combining all of the above, these are the recommended steps for upgrading a Shut
 
 <Info>Note: Please check the [release page](https://github.com/shuttle-hq/shuttle/releases) for any considerations regarding breaking changes in the new release.</Info>
 
-1. Upgrade your `cargo-shuttle` CLI with `cargo install cargo-shuttle`, or if you're using cargo-binstall, `cargo binstall cargo-shuttle`.
+1. Upgrade your `cargo-shuttle` CLI one of the options below:
+   - `curl -sSfL https://www.shuttle.rs/install | bash` (Linux and macOS)
+   - `cargo binstall cargo-shuttle`
+   - `cargo install cargo-shuttle`
 
 2. Update your project's `shuttle-...` dependencies in `Cargo.toml`:
    ```toml Cargo.toml
@@ -23,6 +26,6 @@ Combining all of the above, these are the recommended steps for upgrading a Shut
 
 3. Test that your project works with `cargo check` / `cargo build` / `cargo shuttle run`.
 
-4. Upgrade your project container with `cargo shuttle project restart`. (Remember to use `--idle-minutes` if relevant.) This will not delete any databases, and you will keep your project name.
+4. Upgrade your project container with `cargo shuttle project restart` (remember to use `--idle-minutes` if relevant). This will not delete any databases, and you will keep your project name.
 
 5. Finally, redeploy your Shuttle app: `cargo shuttle deploy`. *(if you want to, commit your changes first)*
