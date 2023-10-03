@@ -1,6 +1,9 @@
 ---
 title: "JWT Authentication"
+description: "Learn how you can secure your Rocket web application by using JWT tokens."
 ---
+
+## Description
 
 This example shows how to use [Rocket request guards](https://rocket.rs/v0.5-rc/guide/requests/#request-guards) for authentication with [JSON Web Tokens](https://jwt.io/) (JWT for short).
 The idea is that all requests authenticate first at https://authentication-rocket-app.shuttleapp.rs/login to get a JWT.
@@ -9,16 +12,18 @@ Then the JWT is sent with all requests requiring authentication using the HTTP h
 This example uses the [`jsonwebtoken`](https://github.com/Keats/jsonwebtoken) which supports symmetric and asymmetric secret encoding, built-in validations, and most JWT algorithms.
 However, this example only makes use of symmetric encoding and validation on the expiration claim.
 
-### src/main.rs
-Three Rocket routes are registered in this file:
-1. `/public`: a route that can be called without needing any authentication.
-1. `/login`: a route for posting a JSON object with a username and password to get a JWT.
-1. `/private`: a route that can only be accessed with a valid JWT.
+You can clone the example below by running the following (you'll need `cargo-shuttle` installed):
+```bash
+cargo shuttle init --from shuttle-hq/shuttle-examples \
+ --subfolder rocket/jwt-authentication
+```
 
-### src/claims.rs
-The bulk of this example is in this file. Most of the code can be transferred to other frameworks except for the `FromRequest` implementation, which is Rocket specific.
-This file contains a `Claims` object which can be expanded with more claims. A `Claims` can be created from a `Bearer <token>` string using `Claims::from_authorization()`.
-And a `Claims` object can also be converted to a token using `to_token()`.
+Three Rocket routes are registered in this file:
+- `/public`: a route that can be called without needing any authentication.
+- `/login`: a route for posting a JSON object with a username and password to get a JWT.
+- `/private`: a route that can only be accessed with a valid JWT.
+
+## Code
 
 ```toml Cargo.toml
 [package]
@@ -263,22 +268,10 @@ mod tests {
 }
 ```
 
-### Deploy
-After logging into Shuttle, use the following command to deploy this example:
+## Usage
 
-Create a project, this will start an isolated deployer container for you under the hood:
-```bash
-cargo shuttle project start
-```
+Once you've cloned this example, launch it locally by using `cargo shuttle run`. Once you've verified that it's up, you'll now be able to go to `http://localhost:8000` and start trying the example out!
 
-```bash
-cargo shuttle deploy
-```
-
-Notice how this deploy fails since one of the test fails. See the `TODO` at the top of `src/claims.rs` on how to fix the test. Once the code is fixed, try to deploy again.
-Now make a note of the `Host` for the deploy to use in the examples below. Or just use `authentication-rocket-app.shuttleapp.rs` as the host below.
-
-### Seeing it in action
 First, we should be able to access the public endpoint without any authentication using:
 
 ```sh
@@ -304,5 +297,5 @@ Accessing the private endpoint with the token will now succeed:
 $ curl --header "Authorization: Bearer <token>" https://<host>/private
 ```
 
-The token is set to expire in 5 minutus, so wait a while and try to access the private endpoint again. Once the token has expired, a user will need to get a new token from login.
+The token is set to expire in 5 minutes, so wait a while and try to access the private endpoint again. Once the token has expired, a user will need to get a new token from login.
 Since tokens usually have a longer than 5 minutes expiration time, we can create a `/refresh` endpoint that takes an active token and returns a new token with a refreshed expiration time.

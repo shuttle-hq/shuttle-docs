@@ -12,6 +12,11 @@ This section revolves around simple Axum examples you can get quickly started wi
 
 <Tip>If you are looking for step-by-step guides, check out our [How To](../tutorials) section.</Tip>
 
+You can clone the example below by running the following (you'll need `cargo-shuttle` installed):
+```bash
+cargo shuttle init --template axum
+```
+
 <CodeGroup>
 ```rust src/main.rs
 use axum::{routing::get, Router};
@@ -22,6 +27,7 @@ async fn hello_world() -> &'static str {
 
 #[shuttle_runtime::main]
 async fn axum() -> shuttle_axum::ShuttleAxum {
+
     let router = Router::new().route("/", get(hello_world));
 
     Ok(router.into())

@@ -1,0 +1,261 @@
+---
+title: "JWT Authentication"
+description: "Learn how you can secure your Axum web application by using JWT tokens."
+---
+
+## Description
+
+This example shows how to use Axum authentication with [JSON Web Tokens](https://jwt.io/) (JWT for short).
+The idea is that all requests authenticate first at a login route to get a JWT.
+Then the JWT is sent with all requests requiring authentication using the HTTP header `Authorization: Bearer <token>`.
+
+This example uses the [`jsonwebtoken`](https://github.com/Keats/jsonwebtoken) which supports symmetric and asymmetric secret encoding, built-in validations, and most JWT algorithms.
+
+Three Axum routes are registered in this file:
+- `/public`: a route that can be called without needing any authentication.
+- `/login`: a route for posting a JSON object with a username and password to get a JWT.
+- `/private`: a route that can only be accessed with a valid JWT.
+
+You can clone the example below by running the following (you'll need `cargo-shuttle` installed):
+```bash 
+cargo shuttle init --from shuttle-hq/shuttle-examples \
+ --subfolder axum/jwt-authentication
+```
+
+## Code
+
+```toml Cargo.toml
+[package]
+name = "authentication"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+axum = { version = "0.6.18", features = ["headers"] }
+jsonwebtoken = "8.3.0"
+once_cell = "1.18.0"
+serde = { version = "1.0.188", features = ["derive"] }
+serde_json = "1.0.107"
+shuttle-axum = "0.27.0"
+shuttle-runtime = "0.27.0"
+tokio = "1.28.2"
+tracing-subscriber = "0.3.17"
+```
+Your `main.rs` should look like this:
+
+```Rust main.rs
+use axum::{
+    async_trait,
+    extract::FromRequestParts,
+    headers::{authorization::Bearer, Authorization},
+    http::{request::Parts, StatusCode},
+    response::{IntoResponse, Response},
+    routing::{get, post},
+    Json, RequestPartsExt, Router, TypedHeader,
+};
+use jsonwebtoken::{decode, encode, DecodingKey, EncodingKey, Header, Validation};
+use once_cell::sync::Lazy;
+use serde::{Deserialize, Serialize};
+use serde_json::json;
+use std::fmt::Display;
+
+static KEYS: Lazy<Keys> = Lazy::new(|| {
+// note that in production, you will probably want to use a random SHA-256 hash or similar 
+    let secret = "JWT_SECRET".to_string();
+    Keys::new(secret.as_bytes())
+});
+
+#[shuttle_runtime::main]
+async fn main() -> shuttle_axum::ShuttleAxum {
+    let app = Router::new()
+        .route("/public", get(public))
+        .route("/private", get(private))
+        .route("/login", post(login));
+
+    Ok(app.into())
+}
+
+async fn public() -> &'static str {
+    // A public endpoint that anyone can access
+    "Welcome to the public area :)"
+}
+
+async fn private(claims: Claims) -> Result<String, AuthError> {
+    // Send the protected data to the user
+    Ok(format!(
+        "Welcome to the protected area :)\nYour data:\n{claims}",
+    ))
+}
+
+async fn login(Json(payload): Json<AuthPayload>) -> Result<Json<AuthBody>, AuthError> {
+    // Check if the user sent the credentials
+    if payload.client_id.is_empty() || payload.client_secret.is_empty() {
+        return Err(AuthError::MissingCredentials);
+    }
+    // Here you can check the user credentials from a database
+    if payload.client_id != "foo" || payload.client_secret != "bar" {
+        return Err(AuthError::WrongCredentials);
+    }
+
+    // add 5 minutes to current unix epoch time as expiry date/time
+    let exp = SystemTime::now().duration_since(SystemTime::UNIX_EPOCH).as_secs() + 300; 
+    
+    let claims = Claims {
+        sub: "b@b.com".to_owned(),
+        company: "ACME".to_owned(),
+        // Mandatory expiry time as UTC timestamp
+        exp: usize::try_from(exp).unwrap()
+    };
+    // Create the authorization token
+    let token = encode(&Header::default(), &claims, &KEYS.encoding)
+        .map_err(|_| AuthError::TokenCreation)?;
+
+    // Send the authorized token
+    Ok(Json(AuthBody::new(token)))
+}
+
+// allow us to print the claim details for the private route
+impl Display for Claims {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "Email: {}\nCompany: {}", self.sub, self.company)
+    }
+}
+
+// implement a method to create a response type containing the JWT
+impl AuthBody {
+    fn new(access_token: String) -> Self {
+        Self {
+            access_token,
+            token_type: "Bearer".to_string(),
+        }
+    }
+}
+
+// implement FromRequestParts for Claims (the JWT struct)
+// FromRequestParts allows us to use Claims without consuming the request
+#[async_trait]
+impl<S> FromRequestParts<S> for Claims
+where
+    S: Send + Sync,
+{
+    type Rejection = AuthError;
+
+    async fn from_request_parts(parts: &mut Parts, _state: &S) -> Result<Self, Self::Rejection> {
+        // Extract the token from the authorization header
+        let TypedHeader(Authorization(bearer)) = parts
+            .extract::<TypedHeader<Authorization<Bearer>>>()
+            .await
+            .map_err(|_| AuthError::InvalidToken)?;
+        // Decode the user data
+        let token_data = decode::<Claims>(bearer.token(), &KEYS.decoding, &Validation::default())
+            .map_err(|_| AuthError::InvalidToken)?;
+
+        Ok(token_data.claims)
+    }
+}
+
+// implement IntoResponse for AuthError so we can use it as an Axum response type
+impl IntoResponse for AuthError {
+    fn into_response(self) -> Response {
+        let (status, error_message) = match self {
+            AuthError::WrongCredentials => (StatusCode::UNAUTHORIZED, "Wrong credentials"),
+            AuthError::MissingCredentials => (StatusCode::BAD_REQUEST, "Missing credentials"),
+            AuthError::TokenCreation => (StatusCode::INTERNAL_SERVER_ERROR, "Token creation error"),
+            AuthError::InvalidToken => (StatusCode::BAD_REQUEST, "Invalid token"),
+        };
+        let body = Json(json!({
+            "error": error_message,
+        }));
+        (status, body).into_response()
+    }
+}
+
+// encoding/decoding keys - set in the static `once_cell` above 
+struct Keys {
+    encoding: EncodingKey,
+    decoding: DecodingKey,
+}
+
+impl Keys {
+    fn new(secret: &[u8]) -> Self {
+        Self {
+            encoding: EncodingKey::from_secret(secret),
+            decoding: DecodingKey::from_secret(secret),
+        }
+    }
+}
+
+// the JWT claim
+#[derive(Debug, Serialize, Deserialize)]
+struct Claims {
+    sub: String,
+    company: String,
+    exp: usize,
+}
+
+// the response that we pass back to HTTP client once successfully authorised
+#[derive(Debug, Serialize)]
+struct AuthBody {
+    access_token: String,
+    token_type: String,
+}
+
+// the request type - "client_id" is analogous to a username, client_secret can also be interpreted as a password
+#[derive(Debug, Deserialize)]
+struct AuthPayload {
+    client_id: String,
+    client_secret: String,
+}
+
+// error types for auth errors 
+#[derive(Debug)]
+enum AuthError {
+    WrongCredentials,
+    MissingCredentials,
+    TokenCreation,
+    InvalidToken,
+}
+```
+
+## Usage
+
+Once you've cloned this example, launch it locally by using `cargo shuttle run`. Once you've verified that it's up, you'll now be able to go to `http://localhost:8000` and start trying the example out!
+ 
+First, we should be able to access the public endpoint without any authentication using:
+
+```sh
+$ curl http://localhost:8000/public
+```
+
+But trying to access the private endpoint will fail with a 403 forbidden:
+
+```sh
+$ curl http://localhost:8000/private
+```
+
+So let's get a JWT from the login route first:
+
+
+```sh
+$ curl --request POST --data '{"client_id": "foo", "client_secret": "bar"}' \
+ http://localhost:8000/login
+```
+
+Accessing the private endpoint with the token will now succeed:
+
+```sh
+$ curl --header "Authorization: Bearer <token>" http://localhost:8000/private
+```
+
+The token is set to expire in 5 minutus, so wait a while and try to access the private endpoint again. Once the token has expired, a user will need to get a new token from login.
+
+Looking to extend this example? Here's a couple of ideas to get you started:
+- Create a frontend to host the login
+- Add a route for registering
+- Use a database to check login credentials
+
+---
+
+<Tip> If you want to explore other frameworks, we have more examples with popular ones like Tower and Warp. You can find them [right here](../examples/other). </Tip>
+
+<Tip> Be sure to check out the [examples repo](https://github.com/shuttle-hq/shuttle-examples) for many more examples! </Tip>

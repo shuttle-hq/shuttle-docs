@@ -1,9 +1,21 @@
 ---
 title: "Static Files"
+description: "This article walks you through setting up static files with Axum, a powerful Rust framework maintained by the Tokio-rs team."
 ---
 
-This example shows how to serve files from a folder with static assets.
-Running this example and going to `/assets` will serve you the `assets/index.html` file.
+## Description
+
+This example has one route at `/` where the homepage is served and shows you how you can serve HTML or other types of files with Actix Web.
+
+Note that we declare what files we allow our app to serve in the `Shuttle.toml` config file which is should be placed in the project root and only allows files that are within the project folder.
+
+You can clone the example below by running the following (you'll need `cargo-shuttle` installed):
+```bash
+cargo shuttle init --from shuttle-hq/shuttle-examples \
+ --subfolder axum/static-files
+```
+
+## Code
 
 <CodeGroup>
 ```rust src/main.rs
@@ -52,4 +64,20 @@ shuttle-runtime = "0.27.0"
 tokio = "1.28.2"
 tower-http = { version = "0.4.0", features = ["fs"] }
 ```
+
+```toml Shuttle.toml
+assets = ["assets/*"]
+```
 </CodeGroup>
+
+## Usage
+
+After you clone the example, launch it locally by using `cargo shuttle run` then visit the home route at `http://localhost:8000` - you should see a homepage that shows our included HTML file. 
+
+You can extend this example by adding more routes that serve other files.
+
+---
+
+<Tip> If you want to explore other frameworks, we have more examples with popular ones like Tower and Warp. You can find them [right here](../examples/other). </Tip>
+
+<Tip> Be sure to check out the [examples repo](https://github.com/shuttle-hq/shuttle-examples) for many more examples! </Tip>

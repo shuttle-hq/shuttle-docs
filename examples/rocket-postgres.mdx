@@ -1,10 +1,11 @@
 ---
 title: "Postgres Todo App"
-description: "This article walks you through how you can easily set up a simple to-do app using Actix Web and SQLx with PostgresQL."
+description: "This article walks you through how you can easily set up a simple to-do app using Rocket and SQLx with PostgresQL."
 ---
 
-## Description 
-This example shows how to make a simple TODO app using Actix Web and a shared Shuttle Postgres DB.
+## Description
+
+This example shows how to make a simple TODO app using Rocket and a shared Shuttle Postgres DB.
 
 The following routes are provided:
 - GET `/todos/<id>` - Get a to-do item by ID.
@@ -13,79 +14,64 @@ The following routes are provided:
 You can clone the example below by running the following (you'll need `cargo-shuttle` installed):
 ```bash
 cargo shuttle init --from shuttle-hq/shuttle-examples \
- --subfolder actix-web/postgres
+ --subfolder rocket/postgres
 ```
 
 ## Code
 
 <CodeGroup>
 ```rust src/main.rs
-use actix_web::middleware::Logger;
-use actix_web::{
-    error, get, post,
-    web::{self, Json, ServiceConfig},
-    Result,
-};
+#[macro_use]
+extern crate rocket;
+
+use rocket::response::status::BadRequest;
+use rocket::serde::json::Json;
+use rocket::State;
 use serde::{Deserialize, Serialize};
-use shuttle_actix_web::ShuttleActixWeb;
-use shuttle_runtime::{CustomError};
+use shuttle_runtime::CustomError;
 use sqlx::{Executor, FromRow, PgPool};
 
-#[get("/{id}")]
-async fn retrieve(path: web::Path<i32>, state: web::Data<AppState>) -> Result<Json<Todo>> {
-// query database to get data
-// if error, return Bad Request HTTP status code 
+#[get("/<id>")]
+async fn retrieve(id: i32, state: &State<MyState>) -> Result<Json<Todo>, BadRequest<String>> {
     let todo = sqlx::query_as("SELECT * FROM todos WHERE id = $1")
-        .bind(*path)
+        .bind(id)
         .fetch_one(&state.pool)
         .await
-        .map_err(|e| error::ErrorBadRequest(e.to_string()))?;
+        .map_err(|e| BadRequest(Some(e.to_string())))?;
 
     Ok(Json(todo))
 }
 
-#[post("")]
-async fn add(todo: web::Json<TodoNew>, state: web::Data<AppState>) -> Result<Json<Todo>> {
-// query database to create a new record using the request body
-// if error, return Bad Request HTTP status code 
+#[post("/", data = "<data>")]
+async fn add(
+    data: Json<TodoNew>,
+    state: &State<MyState>,
+) -> Result<Json<Todo>, BadRequest<String>> {
     let todo = sqlx::query_as("INSERT INTO todos(note) VALUES ($1) RETURNING id, note")
-        .bind(&todo.note)
+        .bind(&data.note)
         .fetch_one(&state.pool)
         .await
-        .map_err(|e| error::ErrorBadRequest(e.to_string()))?;
+        .map_err(|e| BadRequest(Some(e.to_string())))?;
 
     Ok(Json(todo))
 }
 
-#[derive(Clone)]
-struct AppState {
+struct MyState {
     pool: PgPool,
 }
 
 #[shuttle_runtime::main]
-async fn actix_web(
-    #[shuttle_shared_db::Postgres] pool: PgPool,
-) -> ShuttleActixWeb<impl FnOnce(&mut ServiceConfig) + Send + Clone + 'static> {
-// run migrations
+async fn rocket(#[shuttle_shared_db::Postgres] pool: PgPool) -> shuttle_rocket::ShuttleRocket {
     pool.execute(include_str!("../schema.sql"))
         .await
         .map_err(CustomError::new)?;
 
-// set up AppState
-    let state = web::Data::new(AppState { pool });
+    let state = MyState { pool };
+    let rocket = rocket::build()
+        .mount("/todos", routes![retrieve, add])
+        .manage(state);
 
-// set up our Actix web service and wrap it with logger and add the AppState as app data
-    let config = move |cfg: &mut ServiceConfig| {
-        cfg.service(
-            web::scope("/todos")
-                .wrap(Logger::default())
-                .service(retrieve)
-                .service(add)
-                .app_data(state),
-        );
-    };
-
-    Ok(config.into())
+    Ok(rocket.into())
 }
 
 #[derive(Deserialize)]
@@ -93,7 +79,7 @@ struct TodoNew {
     pub note: String,
 }
 
-#[derive(Serialize, Deserialize, FromRow)]
+#[derive(Serialize, FromRow)]
 struct Todo {
     pub id: i32,
     pub note: String,
@@ -116,12 +102,12 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
-actix-web = "4.3.1"
-shuttle-actix-web = "0.27.0"
-shuttle-runtime = "0.27.0"
+rocket = { version = "0.5.0-rc.2", features = ["json"] }
 serde = "1.0.148"
 shuttle-shared-db = { version = "0.27.0", features = ["postgres"] }
-sqlx = { version = "0.6.2", features = ["runtime-tokio-native-tls", "postgres"] }
+shuttle-rocket = "0.27.0"
+shuttle-runtime = "0.27.0"
+sqlx = { version = "0.7.1", features = ["runtime-tokio-native-tls", "postgres"] }
 tokio = "1.26.0"
 ```
 </CodeGroup>
@@ -132,13 +118,13 @@ Once you've cloned the example, try launching it locally using `cargo shuttle ru
 
 ```bash
 curl -X POST -d '{"note":"Hello world!"}' -H 'Content-Type: application/json' \
- http://localhost:8000/todo
+ http://localhost:8000/todos
 ```
 
 Assuming the request was successful, you'll get back a JSON response with the ID and Note of the record you just created. If you try the following cURL command, you should be able to then retrieve the message you stored:
 
 ```bash
-curl http://localhost:8000/todo/<id>
+curl http://localhost:8000/todos/<id>
 ```
 
 Interested in extending this example? Here's as couple of ideas:
