@@ -62,10 +62,11 @@
       "group": "Configuration",
       "pages": [
         "configuration/project-name",
-        "configuration/shuttle-versions",
         "configuration/files",
+        "configuration/environment",
         "configuration/logs",
-        "configuration/ci-cd"
+        "configuration/ci-cd",
+        "configuration/shuttle-versions"
       ]
     },
     {
@@ -84,7 +85,7 @@
         "resources/shuttle-secrets",
         "resources/shuttle-metadata",
         "resources/shuttle-static-folder",
-	"resources/custom-resources" 
+        "resources/custom-resources"
       ]
     },
     {
@@ -97,7 +98,7 @@
             "examples/axum-postgres",
             "examples/axum-static-files",
             "examples/axum-websockets",
-	    "examples/axum-jwt-authentication"
+            "examples/axum-jwt-authentication"
           ]
         },
         {
@@ -105,19 +106,19 @@
           "pages": [
             "examples/actix",
             "examples/actix-postgres",
-	    "examples/actix-static-files",
+            "examples/actix-static-files",
             "examples/actix-websocket-actorless",
-	    "examples/actix-cookie-authentication"
+            "examples/actix-cookie-authentication"
           ]
         },
         {
           "group": "Rocket",
           "pages": [
-		"examples/rocket", 
-		"examples/rocket-postgres",
-		"examples/rocket-static-files",
-		"examples/rocket-jwt-authentication"
-		]
+            "examples/rocket",
+            "examples/rocket-postgres",
+            "examples/rocket-static-files",
+            "examples/rocket-jwt-authentication"
+          ]
         },
         {
           "group": "Serenity",
@@ -133,7 +134,9 @@
     },
     {
       "group": "Migration",
-      "pages": ["migration/migrating-to-shuttle"]
+      "pages": [
+        "migration/migrating-to-shuttle"
+      ]
     },
     {
       "group": "How To",
@@ -142,7 +145,7 @@
         "tutorials/discord-weather-forecast",
         "tutorials/url-shortener",
         "tutorials/authentication",
-	"tutorials/send-your-logs-to-datadog",
+        "tutorials/send-your-logs-to-datadog",
         "tutorials/serverless-calendar-app",
         "tutorials/websocket-chat-app-js",
         "tutorials/rest-http-service-with-axum",
@@ -151,15 +154,24 @@
     },
     {
       "group": "Fullstack Templates",
-      "pages": ["fullstack/rust-next", "fullstack/saas-template"]
+      "pages": [
+        "fullstack/rust-next",
+        "fullstack/saas-template"
+      ]
     },
     {
       "group": "Shuttle Next (Framework) 🧪",
-      "pages": ["shuttle-next/overview", "shuttle-next/getting-started"]
+      "pages": [
+        "shuttle-next/overview",
+        "shuttle-next/getting-started"
+      ]
     },
     {
       "group": "Support",
-      "pages": ["support/faq", "support/troubleshooting"]
+      "pages": [
+        "support/faq",
+        "support/troubleshooting"
+      ]
     },
     {
       "group": "Community",

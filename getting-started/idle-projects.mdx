@@ -2,12 +2,8 @@
 title: "Idle Projects"
 ---
 
-Shuttle imposes no restrictions on how many projects a user can 
-create. While we are in beta this is a win-win, users creating many and
-varied projects is great for testing both our code and how we handle 
-load. However, this leads to a sizable amount of idle projects. To 
-remedy this, we put these idle projects to sleep, by default after **30 minutes** 
-of very low activity.
+To help handle the load of our users, and to help them save on compute costs (Pro tier),
+we currently default to putting idle projects to sleep, by default after **30 minutes** of very low activity.
 
 By activity we mean both:
 
@@ -16,7 +12,7 @@ increased when a project receives traffic (for example, traffic to an
 API endpoint for an axum server, or calling the commands of a Discord bot).
 An HTTP server (eg. axum or rocket), will need about 2 requests per minute over the idle-time period to be considered
 active, a Discord bot will need about 6 calls per minute.
-- User interaction, for example running `cargo shuttle status` or any other CLI commands except for `cargo shuttle project <cmd>` commands.
+- User interaction, for example running `cargo shuttle status` or any other CLI commands that interact with the deployed service.
 
 If the project is sleeping, traffic to the project or user 
 interaction will wake it, and this usually takes around one
@@ -31,7 +27,7 @@ interaction through the CLI will (but traffic will keep it from going to
 
 Since we don't really want to restrict active users yet, this limit 
 can be freely modified. You can change it by passing in a flag when 
-creating a project:
+creating or restarting a project:
 
 ```bash
 cargo shuttle project start --idle-minutes 40
@@ -42,3 +38,11 @@ the idle timeout will be disabled and your project will never sleep.
 This is especially useful for Discord bots, since they will not be 
 awoken by traffic (people using the bot commands in a Discord channel), 
 only by developer interaction through the Shuttle CLI.
+
+### Checking the timeout
+
+You can check the current idle timeout of a project with:
+
+```bash
+cargo shuttle project status
+```
