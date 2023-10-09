@@ -11,30 +11,31 @@ This section is aimed at collecting common questions users have to provide docum
     and also across all the projects that are owned by your account.
   </Accordion>
   <Accordion title="What happens when I create a project?">
-    The `cargo shuttle project start` command starts a Docker container, which will
-    stay up indefinitely as long as it [is active](/getting-started/idle-projects). Your project container
-    has a limit of 6 GiB memory (4 GiB during high contention, which is very rare) and 4 vCPUs.
+    The `cargo shuttle project start` command starts a Docker container.
+    Read more about the deployment environment [here](/configuration/environment).
   </Accordion>
   <Accordion title="What happens when I deploy to Shuttle?">
     Your code is analyzed and built on our servers. The first time you introduce additional resources in your code, like the first time you use a database, we will add that resource to your project and wire it automatically to your deployment.
+    Read about what happens to deployment files [here](/configuration/files).
   </Accordion>
   <Accordion title="Which version of Rust will my project be compiled with?">
-    Currently all your projects are built in a container that is pinned to rustc 1.72. It's not currently possible
-    for you to change this, but being able to choose which toolchain your project will be compiled with is a planned
-    feature.
+    See [Deployment environment](/configuration/environment).
   </Accordion>
   <Accordion title="Can I use frontend frameworks with Shuttle?">
-    Of course! When you deploy a project on Shuttle, your API becomes available at a URL of the form `${project_name}.shuttleapp.rs`. And since Shuttle is compatible with any of the common frontend hosting solutions (Vercel, Netlify, etc), you just have to make your API calls to the URL of your project, and you're up.
+    Of course! When you deploy a project on Shuttle, your app becomes available at a URL of the form `${project_name}.shuttleapp.rs`.
 
+    With this, you can build a server that serves pretty much any frontend project.
     For details on how to serve static files with Shuttle, check out our [Deployment files docs](/configuration/files).
 
-    For a tutorial on how to build & deploy a simple full-stack app using Next.js & Rust, check out this tutorial: [Deploying a NextJS frontend with Rust, in one go](https://joshmo.hashnode.dev/deploying-a-nextjs-front-end-with-a-rust-api-in-one-go)
+    You can also just use it for an API, and host your frontend on any of the common frontend hosting solutions (Vercel, Netlify, etc), you just have to make your API calls to the URL of your project, and you're up.
+
+    For a tutorial on how to build and deploy a simple full-stack app using Next.js & Rust, check out this tutorial: [Deploying a NextJS frontend with Rust, in one go](https://joshmo.hashnode.dev/deploying-a-nextjs-front-end-with-a-rust-api-in-one-go)
   </Accordion>
   <Accordion title="How does this differ from using serverless framework with Rust Lambda and provided runtime?">
     You can bring your lambda code to Shuttle as is. And we run it on dedicated infrastructure that keeps the state of your services across requests, has no cold-start and can even have long-running threads, all of which is not possible on AWS Lambda.
   </Accordion>
   <Accordion title="Can I implement my own custom service for Shuttle?">
-    Absolutely! And it's quite easy. Check out this section of our docs for the steps to do so: [Custom Services](https://docs.shuttle.rs/tutorials/custom-service)
+    Absolutely! And it's quite easy. Check out this section of our docs for the steps to do so: [Custom Services](/tutorials/custom-service)
   </Accordion>
   <Accordion title="Can I use SeaORM with Shuttle?">
     Yes, you can create a SeaORM connection from the sqlx pool Shuttle passes to you when you provision a SQL database. You can take a look at the example [here](https://github.com/shuttle-hq/shuttle/issues/179#issuecomment-1203536025).
@@ -46,5 +47,17 @@ This section is aimed at collecting common questions users have to provide docum
     Currently, all deployments are in the eu-west2 region (London).
     We do plan to support multiple regions, but we can't give a precise ETA yet.
   </Accordion>
-</AccordionGroup>
+  <Accordion title="Can I self-host Shuttle?">
+    There are different ways to interpret "self hosting Shuttle".
 
+    Items (2) and (3) below are not officially supported yet. Item (3) is on the roadmap.
+
+    1. **Single project local run**.
+       If you are mainly using Shuttle for the automation of secrets and database containers,
+       using `cargo shuttle run --release` on your own server might be sufficient.
+    2. **Running the Shuttle stack on your own server**.
+       A similar setup which can give you an experience more similar to the full Shuttle experience.
+    3. **[Advanced] Hosting Shuttle in your own cloud environment**.
+       This option lets you run a replica of the Shuttle production environment, under a custom domain.
+  </Accordion>
+</AccordionGroup>

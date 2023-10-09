@@ -14,13 +14,13 @@ They are listed below in the same order as `cargo-shuttle` will prioritize them.
 
 ## via the `--name` option
 
-When running commands, the project name can always be overridden with the `--name` option:
+When running commands, the project name can always be overridden with the `--name` option, regardless of which directory you are in.
 
 ```bash
-# This will create a project called `my-project-name`.
+# Create a project called `my-project-name`
 cargo shuttle start --name my-project-name
 
-# This will check the deployment list of `my-project-name` regardless of which directory you are in.
+# Check the deployment list of `my-project-name`
 cargo shuttle deployment list --name my-project-name
 ```
 
@@ -37,7 +37,7 @@ name = "my-project-name"
 
 In the absence of either of the previous two options, the project will be named based on the content of the `name = ` field of the `[package]` section in the `Cargo.toml` configuration file.
 
-A new Shuttle project can be named by passing in a project name with the `--name` option.
+A new Shuttle project can be named by passing in a project name with the `--name` option, for example:
 
 ```bash
 cargo shuttle init --template axum --name my-project-name some-directory
