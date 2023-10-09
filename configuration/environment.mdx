@@ -78,6 +78,6 @@ Currently we limit a project container's memory usage to 4 GB during high conten
 
 CPU usage per project is currently limited to 4 threads. However, because of how this limit is implemented through Docker, popular crates like `num_cpus` may think it has access to all of the host's threads.
 
-In terms of database resources, the only restriction we have is that an RDS database has a max storage of `10GB`.
+In terms of database resources, the only restriction we have is that an RDS database has a max storage of `20GB`.
 
 Other than that any reasonable usage is acceptable during our beta, but we will intervene when we detect applications that use excessively large amounts of storage (after attempting to contact the owner).
