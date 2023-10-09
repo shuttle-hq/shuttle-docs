@@ -12,7 +12,7 @@ Now, you can simply use the path relative to the workspace root.
 #[shuttle_runtime::main]
 async fn axum() -> shuttle_axum::ShuttleAxum {
     let router = Router::new()
-        .nest_service("/assets", ServeDir::new(PathBuf::from("assets")));
+        .nest_service("/assets", ServeDir::new("assets"));
     // ...
 }
 ```
