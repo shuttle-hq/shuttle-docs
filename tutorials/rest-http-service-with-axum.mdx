@@ -74,7 +74,7 @@ We can also utilise dynamic routing by using the Path type, allowing us to use t
 async fn hello_world(
     Path(id): Path<i32>
 ) -> impl IntoResponse {
-    let string = format!("Hello world {}!");
+    let string = format!("Hello world {}!", id);
 
     (StatusCode::OK, string)
 }
