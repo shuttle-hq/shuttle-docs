@@ -54,13 +54,13 @@
         "getting-started/quick-start",
         "getting-started/local-run",
         "getting-started/shuttle-commands",
-        "getting-started/idle-projects",
-        "getting-started/workspaces"
+        "getting-started/idle-projects"
       ]
     },
     {
       "group": "Configuration",
       "pages": [
+        "configuration/project-structure",
         "configuration/project-name",
         "configuration/files",
         "configuration/environment",

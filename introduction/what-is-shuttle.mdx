@@ -11,7 +11,7 @@ As a platform designed with a focus on providing an exceptional developer experi
 
 ```rust
 #[shuttle_runtime::main]
-async fn rocket(
+async fn main(
     // automatic db provisioning + hands you back an authenticated connection pool
     #[shuttle_shared_db::Postgres] pool: PgPool,
 ) -> ShuttleRocket<...> {
