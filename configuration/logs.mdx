@@ -7,7 +7,9 @@ Shuttle will record anything your application writes to `stdout`, e.g. a `tracin
 or simply `println!`. By default, Shuttle will set up a global tracing subscriber behind the scenes. If you'd rather set up
 your own tracing or logging, you can opt-out of the default subscriber by disabling the default features on `shuttle-runtime`:
 
-`shuttle-runtime = { version = "*", default-features = false }`
+```toml Cargo.toml
+shuttle-runtime = { version = "*", default-features = false }
+```
 
 For `shuttle-next` projects the default global subscriber is installed by default and it can not be opted out of.
 

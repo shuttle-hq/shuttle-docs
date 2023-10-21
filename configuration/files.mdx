@@ -64,4 +64,6 @@ Your app is executed inside the project directory, in the same way that cargo wo
 When you deploy again, the project directory is cleared, and the new deployment's files are placed there.
 This means that files saved to this directory are deleted at the time of a new deployment.
 
-To persist data across deploys, use a [database](/resources/shuttle-shared-db) or [shuttle-persist](/resources/shuttle-persist).
+Files saved in other parts of the filesystem, such as `/tmp`, will be cleared when the container restarts, which is done when you run `cargo shuttle project restart`.
+
+To persist data across deploys and container restarts, use a [database](/resources/shuttle-shared-db) or [shuttle-persist](/resources/shuttle-persist).
