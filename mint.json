@@ -66,6 +66,7 @@
         "configuration/environment",
         "configuration/logs",
         "configuration/ci-cd",
+        "configuration/domain-names",
         "configuration/shuttle-versions"
       ]
     },

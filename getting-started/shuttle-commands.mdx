@@ -2,24 +2,23 @@
 title: "Command Line Interface"
 ---
 
-Interaction with the Shuttle services is through the `cargo-shuttle` Command Line Interface (CLI).
-Tasks are performed with a combination of commands, sub-commands, and options.
+Interaction with the Shuttle services is mainly done with through the `cargo-shuttle` Command Line Interface (CLI).
 
-Commands are issued in the format: `cargo shuttle [OPTIONS] <COMMAND>`
+Some tasks, such as viewing logs, can also be done in the [Shuttle Console](https://console.shuttle.rs/).
 
-To get an overview of available commands and options, run:
+Commands are issued in the format: `cargo shuttle [OPTIONS] <COMMAND>`.
+
+To get an overview of available commands, subcommands, and options, run:
 
 ```bash
 cargo shuttle help
+# or
+cargo shuttle <COMMAND> --help
 ```
 
 ## Commands
 
-<Tip>Run a command with the `--help` flag to see available subcommands</Tip>
-
-The Shuttle commands are:
-
-| Command    | Explanation |
+| Command    | Description |
 | ---------- | ----------- |
 | init       | Create a new Shuttle project |
 | run        | Run a Shuttle service locally |
@@ -38,28 +37,60 @@ The Shuttle commands are:
 | feedback   | Open an issue on GitHub and provide feedback |
 | help       | Print this message or the help of the given subcommand(s) |
 
-## Sub-commands
+## Cookbook / Cheat Sheet
 
-Several commands have sub-commands which allow more fine grained management tasks.
-For example, the `project` command has the following sub-commands:
+These are some useful sequences of commands that are handy to keep in your back pocket.
+For full documentation, use `--help` on the respective command.
 
-| Sub-command | Explanation |
-| ----------- | ----------- |
-| start       | Create an environment for this project on Shuttle |
-| status      | Check the status of this project's environment on Shuttle |
-| stop        | Destroy this project's environment (container) on Shuttle |
-| restart     | Destroy and create an environment for this project on Shuttle |
-| list        | List all projects belonging to the calling account |
+### Get started
 
-Sub-commands may also have options which can be set if desired.
+- `cargo install cargo-shuttle`: For more alternatives, see [Installation](./installation).
+- `cargo shuttle login`: Open the Shuttle Console and paste the API key to log in.
+- `cargo shuttle init`: Log in and initialize a project.
 
-# Cookbook
+### Local run
 
-These are some useful commands that are handy to keep in your back pocket:
+- `cargo shuttle run`: Run the project locally so you can test your changes. For more tips, see [Local Run](./local-run).
+- `cargo shuttle run --port 8080`: Change the local port.
+- `cargo shuttle run --port 8080 --external`: Expose to local network by listening on `0.0.0.0`.
 
-- `cargo shuttle run`: Run the project locally so you can test your changes.
-- `cargo shuttle project start`: Initialize an environment for this project on shuttle.
-- `cargo shuttle deploy`: Deploy the current state of the project to the public internet though shuttle.
-- `cargo shuttle deploy --allow-dirty`: Deploy the project to shuttle (including files not committed to git).
-- `cargo shuttle deployment`: Either list existing deployments or get the status of a particular deployment.
-- `cargo shuttle logs --follow`: Fetch the logs of the deployed service and stream them to your terminal.
+### Start and deploy a project
+
+- `cargo shuttle project start`: Start the container for this project on Shuttle.
+- `cargo shuttle deploy`: Deploy the project to Shuttle.
+- `cargo shuttle deploy --allow-dirty`: Deploy regardless whether there are pending git changes. Alias: `--ad`.
+- `cargo shuttle deploy --no-test`: Don't run unit tests before starting the deployment. Alias: `--nt`.
+
+### Manage projects
+
+<Tip>
+All project-related commands can use:
+- `--working-directory <path>` or `--wd <path>` to execute the command in a different folder.
+- `--name <name>` to specify project name explicitly (see [Project name](/configuration/project-name)).
+</Tip>
+
+- `cargo shuttle project list`: List your projects.
+- `cargo shuttle project status`: Check the state of this project.
+- `cargo shuttle project restart`: Restart your project's container and upgrade to the latest deployer. See [Upgrading](/configuration/shuttle-versions#upgrading-shuttle-version).
+- `cargo shuttle project delete`: Delete a project. The project might need to be restarted first, and all resources need to be deleted first.
+
+### Manage deployments and logs
+
+- `cargo shuttle deployment list`: List deployments in this project.
+- `cargo shuttle status`: Show status of the currently running deployment.
+- `cargo shuttle stop`: Stop the currently running deployment.
+- `cargo shuttle logs`: Get all logs from the currently running deployment.
+- `cargo shuttle logs --latest`: Get all logs from the currently running deployment.
+- `cargo shuttle logs <id>`: Get all logs from a specific deployment.
+- `cargo shuttle logs --follow`: Stream logs of the deployed service and stream them to your terminal.
+
+### Manage resources
+
+- `cargo shuttle resource list`: List resources linked to this project.
+- `cargo shuttle resource delete <type>`: Delete a resource. Thus far, only databases can be deleted with this command.
+
+### Shell completions
+
+Use `cargo shuttle generate -s <shell>` with one of: bash, elvish, fish, powershell, zsh.
+
+Example configuration for Zsh on Linux: add `eval "$(cargo shuttle generate -s zsh)"` to `~/.zshrc`.
