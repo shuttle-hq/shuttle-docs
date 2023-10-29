@@ -2,8 +2,12 @@
 title: "Shuttle Shared Databases"
 ---
 
-This plugin manages databases that are shared with other services on [Shuttle](https://www.shuttle.rs). Your database
-will share a postgres server with other users, but it will not be accessible by other users.
+This plugin manages databases on [Shuttle](https://www.shuttle.rs) and connects them to your app. A shared database
+will be on the same cluster as other user's databases, but it will not be accessible by other users.
+
+If you want a high performing and isolated database, consider [Shuttle AWS RDS](./shuttle-aws-rds).
+
+<Tip>You can connect to any type of database you want from your code, so do not let our database offerings limit your creativity!</Tip>
 
 ## Usage
 Add `shuttle-shared-db` to the dependencies for your service. Every type of shareable database
@@ -16,9 +20,9 @@ otherwise some flavour of `native-tls` is used.
 | MongoDB  | `mongodb`                     | `shuttle_shared_db::MongoDb`  |
 
 ### Parameters
-| Parameter | Type | Default  | Description                                                                                             |
-|-----------|------|----------|---------------------------------------------------------------------------------------------------------|
-| local_uri | str  | `None`   | Rather connect `cargo shuttle run` to this database and don't spin up a Docker instance of the database |
+| Parameter | Type | Default | Description |
+|-----------|------|---------|-------------|
+| local_uri | str  | `None`  | On local runs, connect to this database instead of starting a Docker container for it. |
 
 When setting the `local_uri` you can also insert secrets from `Secrets.toml` using string interpolation. To insert the
 `PASSWORD` secret, pass it in like this:
@@ -35,6 +39,7 @@ async fn poem(
 <Note>If you are interpolating a secret from `Secrets.dev.toml`, you need to set the same secret in `Secrets.toml` to a empty string so that this step does not crash in deployment.</Note>
 
 ## Example
+
 The Shuttle poem main function below uses the `[shuttle_shared_db::Postgres]` attribute macro to provision a shared postgres database,
 which can be accessed using a pre-configured, authenticated [sqlx Pool](https://docs.rs/sqlx/latest/sqlx/pool/index.html).
 
@@ -56,10 +61,4 @@ async fn poem(
 }
 ```
 
-The full example can be found on [GitHub.](https://github.com/shuttle-hq/shuttle-examples/tree/main/poem/postgres)
-
-## Deletion
-
-Currently you can't safely delete your own shared database at the moment - we're working on implementing functionality for self-service database deletion. In the meantime, feel free to [reach out to us](https://www.shuttle.rs/contact) or open a help thread on our Discord if you need any assistance with this.
-
-Note that if you do accidentally drop your provisioned database, you will need to [contact us](https://www.shuttle.rs/contact) to assist you with your issue or you can open a help thread on our Discord server.
+The full example can be found on [GitHub](https://github.com/shuttle-hq/shuttle-examples/tree/main/poem/postgres).

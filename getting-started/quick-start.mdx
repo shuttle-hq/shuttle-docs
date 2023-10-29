@@ -24,10 +24,10 @@ cargo shuttle project start
 And to deploy it:
 
 ```sh
-cargo shuttle deploy
+cargo shuttle deploy --allow-dirty
 ```
 
-<Info> In case you haven't committed the changes to your repo, you'll have to add a `--allow-dirty` flag. </Info>
+<Info>`--allow-dirty` allows deploying without your changes being commited to git.</Info>
 
 You can also run your project locally for development, check out our [local run](./local-run) section.
 
