@@ -1,0 +1,178 @@
+{
+  "$schema": "https://mintlify.com/schema.json",
+  "name": "Shuttle",
+  "analytics": {
+    "posthog": {
+      "apiKey": "YOUR_POSTHOG_API_KEY"
+    }
+  },
+  "logo": {
+    "light": "/images/logo/light.png",
+    "dark": "/images/logo/dark.png",
+    "href": "https://www.shuttle.rs"
+  },
+  "favicon": "/favicon.png",
+  "colors": {
+    "primary": "#F25100",
+    "light": "#F09050",
+    "dark": "#C34100"
+  },
+  "topbarCtaButton": {
+    "name": "Log In",
+    "url": "https://console.shuttle.rs/"
+  },
+  "anchors": [
+    {
+      "name": "Crate Docs",
+      "icon": "rectangle-terminal",
+      "url": "https://docs.rs/shuttle-runtime/latest/shuttle_runtime/"
+    },
+    {
+      "name": "Blog",
+      "icon": "pen-nib",
+      "url": "https://shuttle.rs/blog"
+    },
+    {
+      "name": "Community",
+      "icon": "discord",
+      "url": "https://discord.gg/shuttle"
+    },
+    {
+      "name": "GitHub",
+      "icon": "github",
+      "url": "https://github.com/shuttle-hq/shuttle"
+    }
+  ],
+  "navigation": [
+    {
+      "group": "Introduction",
+      "pages": ["introduction/welcome", "introduction/what-is-shuttle", "introduction/how-shuttle-works"]
+    },
+    {
+      "group": "Getting Started",
+      "pages": [
+        "getting-started/installation",
+        "getting-started/quick-start",
+        "getting-started/local-run",
+        "getting-started/shuttle-commands",
+        "getting-started/idle-projects"
+      ]
+    },
+    {
+      "group": "Configuration",
+      "pages": [
+        "configuration/project-structure",
+        "configuration/project-name",
+        "configuration/files",
+        "configuration/environment",
+        "configuration/logs",
+        "configuration/ci-cd",
+        "configuration/domain-names",
+        "configuration/shuttle-versions"
+      ]
+    },
+    {
+      "group": "Resources",
+      "pages": [
+        "resources/overview",
+        {
+          "group": "Databases",
+          "pages": [
+            "resources/shuttle-aws-rds",
+            "resources/shuttle-shared-db",
+            "resources/shuttle-persist",
+            "resources/shuttle-turso"
+          ]
+        },
+        "resources/shuttle-secrets",
+        "resources/shuttle-metadata",
+        "resources/shuttle-static-folder",
+        "resources/custom-resources"
+      ]
+    },
+    {
+      "group": "Examples",
+      "pages": [
+        {
+          "group": "Axum",
+          "pages": [
+            "examples/axum",
+            "examples/axum-postgres",
+            "examples/axum-static-files",
+            "examples/axum-websockets",
+            "examples/axum-jwt-authentication"
+          ]
+        },
+        {
+          "group": "Actix Web",
+          "pages": [
+            "examples/actix",
+            "examples/actix-postgres",
+            "examples/actix-static-files",
+            "examples/actix-websocket-actorless",
+            "examples/actix-cookie-authentication"
+          ]
+        },
+        {
+          "group": "Rocket",
+          "pages": [
+            "examples/rocket",
+            "examples/rocket-postgres",
+            "examples/rocket-static-files",
+            "examples/rocket-jwt-authentication"
+          ]
+        },
+        {
+          "group": "Serenity",
+          "pages": ["examples/serenity", "examples/serenity-todo", "examples/poise"]
+        },
+        "examples/other",
+        "examples/examples-repo-link"
+      ]
+    },
+    {
+      "group": "Migration",
+      "pages": ["migration/migrating-to-shuttle"]
+    },
+    {
+      "group": "How To",
+      "pages": [
+        "tutorials/custom-service",
+        "tutorials/discord-weather-forecast",
+        "tutorials/url-shortener",
+        "tutorials/authentication",
+        "tutorials/send-your-logs-to-datadog",
+        "tutorials/serverless-calendar-app",
+        "tutorials/websocket-chat-app-js",
+        "tutorials/rest-http-service-with-axum",
+        "tutorials/databases-with-rust"
+      ]
+    },
+    {
+      "group": "Fullstack Templates",
+      "pages": ["fullstack/rust-next", "fullstack/saas-template"]
+    },
+    {
+      "group": "Shuttle Next (Framework) 🧪",
+      "pages": ["shuttle-next/overview", "shuttle-next/getting-started"]
+    },
+    {
+      "group": "Support",
+      "pages": ["support/faq", "support/troubleshooting"]
+    },
+    {
+      "group": "Community",
+      "pages": ["community/get-involved", "community/contribute", "community/open-source"]
+    }
+  ],
+  "footerSocials": {
+    "twitter": "https://twitter.com/shuttle_dev",
+    "discord": "https://discord.com/invite/shuttle",
+    "github": "https://github.com/shuttle-hq/shuttle"
+  },
+  "feedback": {
+    "raiseIssue": true,
+    "suggestEdit": true,
+    "thumbsRating": true
+  }
+}
