@@ -1,6 +1,9 @@
 {
   "$schema": "https://mintlify.com/schema.json",
   "name": "Shuttle",
+  "analytics": {
+    "posthog": "YOUR_POSTHOG_KEY"
+  },
   "logo": {
     "light": "/images/logo/light.png",
     "dark": "/images/logo/dark.png",
@@ -41,11 +44,7 @@
   "navigation": [
     {
       "group": "Introduction",
-      "pages": [
-        "introduction/welcome",
-        "introduction/what-is-shuttle",
-        "introduction/how-shuttle-works"
-      ]
+      "pages": ["introduction/welcome", "introduction/what-is-shuttle", "introduction/how-shuttle-works"]
     },
     {
       "group": "Getting Started",
@@ -123,11 +122,7 @@
         },
         {
           "group": "Serenity",
-          "pages": [
-            "examples/serenity",
-            "examples/serenity-todo",
-            "examples/poise"
-          ]
+          "pages": ["examples/serenity", "examples/serenity-todo", "examples/poise"]
         },
         "examples/other",
         "examples/examples-repo-link"
@@ -135,9 +130,7 @@
     },
     {
       "group": "Migration",
-      "pages": [
-        "migration/migrating-to-shuttle"
-      ]
+      "pages": ["migration/migrating-to-shuttle"]
     },
     {
       "group": "How To",
@@ -155,32 +148,19 @@
     },
     {
       "group": "Fullstack Templates",
-      "pages": [
-        "fullstack/rust-next",
-        "fullstack/saas-template"
-      ]
+      "pages": ["fullstack/rust-next", "fullstack/saas-template"]
     },
     {
       "group": "Shuttle Next (Framework) 🧪",
-      "pages": [
-        "shuttle-next/overview",
-        "shuttle-next/getting-started"
-      ]
+      "pages": ["shuttle-next/overview", "shuttle-next/getting-started"]
     },
     {
       "group": "Support",
-      "pages": [
-        "support/faq",
-        "support/troubleshooting"
-      ]
+      "pages": ["support/faq", "support/troubleshooting"]
     },
     {
       "group": "Community",
-      "pages": [
-        "community/get-involved",
-        "community/contribute",
-        "community/open-source"
-      ]
+      "pages": ["community/get-involved", "community/contribute", "community/open-source"]
     }
   ],
   "footerSocials": {

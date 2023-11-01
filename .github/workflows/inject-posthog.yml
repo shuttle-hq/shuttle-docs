@@ -1,0 +1,35 @@
+name: Inject PostHog
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  replace:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      # This step ensures that for pull_request events, the latest commit of the PR is checked out
+      - name: Checkout PR HEAD
+        if: github.event_name == 'pull_request'
+        run: git checkout ${GITHUB_HEAD_REF}
+
+      - name: Replace placeholder with actual value
+        run: |
+          # Using jq to replace the placeholder in JSON file
+          jq '.analytics.posthog = env.POSTHOG_API_KEY' mint.json > temp.json && mv temp.json mint.json
+        env:
+          POSTHOG_API_KEY: ${{ secrets.POSTHOG_API_KEY }}
+
+      - name: Commit and push changes
+        run: |
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          git add mint.json
+          git commit -m "Update Posthog Key" && git push || echo "No changes to commit"
