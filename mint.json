@@ -2,8 +2,11 @@
   "$schema": "https://mintlify.com/schema.json",
   "name": "Shuttle",
   "analytics": {
-    "posthog": "YOUR_POSTHOG_KEY"
+    "posthog": {
+      "apiKey": "phc_xbSdR723Tg2w0tf3O5I9nSYKBpXZJZnqKF8rYqn7SrF"
+    }
   },
+
   "logo": {
     "light": "/images/logo/light.png",
     "dark": "/images/logo/dark.png",
