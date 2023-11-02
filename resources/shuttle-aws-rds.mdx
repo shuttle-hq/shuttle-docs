@@ -4,7 +4,7 @@ title: "Shuttle AWS RDS"
 
 <Snippet file="pro-feature.mdx" />
 
-This plugin provisions databases on AWS RDS using [Shuttle](https://www.shuttle.rs). The following three engines are supported:
+This plugin provisions databases on AWS RDS using [Shuttle](https://www.shuttle.rs). The following engines are supported:
 - Postgres
 - MySql
 - MariaDB
@@ -14,19 +14,19 @@ This plugin provisions databases on AWS RDS using [Shuttle](https://www.shuttle.
 Shuttle makes sure that any data stored in your provisioned database is stored permanently and will persist if you redeploy your server via `cargo shuttle deploy`, as well as if you restart your service via `cargo shuttle project restart`.
 
 ## Usage
-Each engine is behind a feature flag, and can be installed with the following commands and
-used with the following attribute paths:
+Add `shuttle-aws-rds` to the dependencies for your service.
+Each type of database is behind the following feature flag and attribute path. `*-rustls` feature enables `rustls`-based implementation, otherwise some flavour of `native-tls` is used.
 
-| Engine   | Command                                         | Attribute path            |
-|----------|-------------------------------------------------|---------------------------|
-| Postgres | `cargo add shuttle-aws-rds --features postgres` | shuttle_aws_rds::Postgres |
-| MySql    | `cargo add shuttle-aws-rds --features mysql`    | shuttle_aws_rds::MySql    |
-| MariaDB  | `cargo add shuttle-aws-rds --features mariadb`  | shuttle_aws_rds::MariaDB  |
+| Engine   | Feature flags | Attribute path | Return type |
+|----------|---------------|----------------|-------------|
+| Postgres | `postgres` or `postgres-rustls` | shuttle_aws_rds::Postgres | `sqlx::PgPool` |
+| MySql    | `mysql` or `mysql-rustls` | shuttle_aws_rds::MySql | `sqlx::MySqlPool` |
+| MariaDB  | `mariadb` or `mariadb-rustls` | shuttle_aws_rds::MariaDB | `sqlx::MySqlPool` |
 
 ### Parameters
 | Parameter | Type | Default | Description |
 |-----------|------|---------|-------------|
-| local_uri | str  | `None`  | On local runs, connect to this database instead of starting a Docker container for it. |
+| local_uri | str  | `None`  | If specified, on local runs, connect to this database instead of starting a Docker container for it. |
 
 When setting the `local_uri` you can also insert secrets from `Secrets.toml` using string interpolation. To insert the
 `PASSWORD` secret, pass it in like this:
@@ -40,6 +40,8 @@ async fn tide(
 ) -> ShuttleTide<MyState> { ... }
 ```
 
+<Note>If you are interpolating a secret from `Secrets.dev.toml`, you need to set the same secret in `Secrets.toml` to a empty string so that this step does not crash in deployment.</Note>
+
 The URI should be formatted according to the
 [Postgres](https://www.postgresql.org/docs/current/libpq-connect.html#LIBPQ-CONNSTRING) or
 [MySql and MariaDB](https://dev.mysql.com/doc/refman/8.0/en/connecting-using-uri-or-key-value-pairs.html#connecting-using-uri)
@@ -49,6 +51,8 @@ If you do not specify a `local_uri`, then cargo-shuttle will attempt to spin up 
 For this to succeed, you must have Docker installed and you must also have started the Docker engine. If you have not used Docker
 before, the easiest way is to [install the desktop app](https://docs.docker.com/get-docker/) and then launch it in order to start
 the Docker engine.
+
+<Snippet file="connection-string.mdx" />
 
 ## Example
 

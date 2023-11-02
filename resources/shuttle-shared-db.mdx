@@ -7,22 +7,21 @@ will be on the same cluster as other user's databases, but it will not be access
 
 If you want a high performing and isolated database, consider [Shuttle AWS RDS](./shuttle-aws-rds).
 
-<Tip>You can connect to any type of database you want from your code, so do not let our database offerings limit your creativity!</Tip>
+<Tip>You can connect to any type of remotely hosted database you want from your code, so do not let our current database offerings limit your creativity! Got other databases you want to see on Shuttle? Let us know!</Tip>
 
 ## Usage
-Add `shuttle-shared-db` to the dependencies for your service. Every type of shareable database
-is behind the following feature flag and attribute path. `*-rustls` feature enables `rustls`-based implementation,
-otherwise some flavour of `native-tls` is used.
+Add `shuttle-shared-db` to the dependencies for your service.
+Each type of database is behind the following feature flag and attribute path. `*-rustls` feature enables `rustls`-based implementation, otherwise some flavour of `native-tls` is used.
 
-| Engine   | Feature flags                 | Attribute path                |
-|----------|-------------------------------|-------------------------------|
-| Postgres | `postgres`, `postgres-rustls` | `shuttle_shared_db::Postgres` |
-| MongoDB  | `mongodb`                     | `shuttle_shared_db::MongoDb`  |
+| Engine   | Feature flags | Attribute path | Return type |
+|----------|---------------|----------------|-------------|
+| Postgres | `postgres` or `postgres-rustls` | `shuttle_shared_db::Postgres` | `sqlx::PgPool` |
+| MongoDB  | `mongodb` (uses rustls) | `shuttle_shared_db::MongoDb` | `mongodb::Database` |
 
 ### Parameters
 | Parameter | Type | Default | Description |
 |-----------|------|---------|-------------|
-| local_uri | str  | `None`  | On local runs, connect to this database instead of starting a Docker container for it. |
+| local_uri | str  | `None`  | If specified, on local runs, connect to this database instead of starting a Docker container for it. |
 
 When setting the `local_uri` you can also insert secrets from `Secrets.toml` using string interpolation. To insert the
 `PASSWORD` secret, pass it in like this:
@@ -37,6 +36,18 @@ async fn poem(
 ```
 
 <Note>If you are interpolating a secret from `Secrets.dev.toml`, you need to set the same secret in `Secrets.toml` to a empty string so that this step does not crash in deployment.</Note>
+
+The URI should be formatted according to the
+[Postgres](https://www.postgresql.org/docs/current/libpq-connect.html#LIBPQ-CONNSTRING) or
+[MongoDB](https://www.mongodb.com/docs/manual/reference/connection-string/)
+documentation, depending on which one you're using.
+
+If you do not specify a `local_uri`, then cargo-shuttle will attempt to spin up a Docker container and launch the database inside of it.
+For this to succeed, you must have Docker installed and you must also have started the Docker engine. If you have not used Docker
+before, the easiest way is to [install the desktop app](https://docs.docker.com/get-docker/) and then launch it in order to start
+the Docker engine.
+
+<Snippet file="connection-string.mdx" />
 
 ## Example
 
