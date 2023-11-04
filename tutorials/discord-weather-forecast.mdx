@@ -386,7 +386,7 @@ pub async fn get_forecast(
         .json::<Forecast>()
         .await?;
 
-    // Combine the location with the foreact
+    // Combine the location with the forecast
     Ok((first_location, forecast))
 }
 ```
