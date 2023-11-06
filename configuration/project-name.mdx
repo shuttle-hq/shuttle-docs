@@ -14,7 +14,7 @@ You might also want to use a name that is short and easy to remember.
 The name of your Shuttle project can be set up in three different ways.
 They are listed below in the same order as `cargo-shuttle` will prioritize them.
 
-## via the `--name` option
+### via the `--name` option
 
 When running commands, the project name can always be overridden with the `--name` option, regardless of which directory you are in.
 
@@ -26,7 +26,7 @@ cargo shuttle start --name my-project-name
 cargo shuttle deployment list --name my-project-name
 ```
 
-## via Shuttle.toml
+### via Shuttle.toml
 
 The next method to specify a project name is by creating a `Shuttle.toml` file at the root level of the project's workspace.
 In this file, place a key-value pair like so:
@@ -35,7 +35,7 @@ In this file, place a key-value pair like so:
 name = "my-project-name"
 ```
 
-## via Cargo.toml
+### via Cargo.toml
 
 In the absence of either of the previous two options, the project will be named based on the content of the `name = ` field of the `[package]` section in the `Cargo.toml` configuration file.
 

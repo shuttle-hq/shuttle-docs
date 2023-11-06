@@ -6,7 +6,6 @@
       "apiKey": "phc_xbSdR723Tg2w0tf3O5I9nSYKBpXZJZnqKF8rYqn7SrF"
     }
   },
-
   "logo": {
     "light": "/images/logo/light.png",
     "dark": "/images/logo/dark.png",
@@ -159,7 +158,11 @@
     },
     {
       "group": "Support",
-      "pages": ["support/faq", "support/troubleshooting"]
+      "pages": [
+        "support/faq",
+        "support/troubleshooting",
+        "support/delete-project"
+      ]
     },
     {
       "group": "Community",
