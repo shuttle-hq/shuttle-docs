@@ -37,7 +37,7 @@ async fn retrieve(id: i32, state: &State<MyState>) -> Result<Json<Todo>, BadRequ
         .bind(id)
         .fetch_one(&state.pool)
         .await
-        .map_err(|e| BadRequest(Some(e.to_string())))?;
+        .map_err(|e| BadRequest(e.to_string()))?;
 
     Ok(Json(todo))
 }
@@ -51,7 +51,7 @@ async fn add(
         .bind(&data.note)
         .fetch_one(&state.pool)
         .await
-        .map_err(|e| BadRequest(Some(e.to_string())))?;
+        .map_err(|e| BadRequest(e.to_string()))?;
 
     Ok(Json(todo))
 }
@@ -102,11 +102,11 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
-rocket = { version = "0.5.0-rc.2", features = ["json"] }
+rocket = { version = "0.5.0-rc.4", features = ["json"] }
 serde = "1.0.148"
-shuttle-shared-db = { version = "0.27.0", features = ["postgres"] }
-shuttle-rocket = "0.27.0"
-shuttle-runtime = "0.27.0"
+shuttle-shared-db = { version = "0.32.0", features = ["postgres"] }
+shuttle-rocket = "0.32.0"
+shuttle-runtime = "0.32.0"
 sqlx = { version = "0.7.1", features = ["runtime-tokio-native-tls", "postgres"] }
 tokio = "1.26.0"
 ```
