@@ -112,7 +112,7 @@ fn index() -> &'static str {
 
 #[shuttle_runtime::main]
 async fn rocket() -> shuttle_rocket::ShuttleRocket {
-    let rocket = rocket::build().mount("/hello", routes![index]);
+    let rocket = rocket::build().mount("/", routes![index]);
 
     Ok(rocket.into())
 }
@@ -167,7 +167,7 @@ $ cargo shuttle deploy
 Ok... this seemed a little too easy, let's see if it works.
 
 ```sh
-$ curl -X https://url-shortener.shuttleapp.rs/hello
+$ curl https://url-shortener.shuttleapp.rs/
 Hello, world!
 ```
 
