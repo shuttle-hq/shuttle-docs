@@ -10,6 +10,12 @@ This plugin provisions databases on AWS RDS using [Shuttle](https://www.shuttle.
 - MariaDB
 
 {/* TODO: Write more about the advantages of RDS vs shared */}
+## RDS vs Shared DB
+- More Flavours: On AWS RDS we offer MySQL and MariaDB in addition to Postgres, while shared DB only offers Postgres or MongoDB.
+- Dedicated Instance: Each instance of AWS RDS is it's own dedicated instance.
+- Stability and Security: AWS RDS has greater stability due to it being a service directly offered by AWS, and also greater security due to being a dedicated instance.
+- Flexible: AWS RDS instances on the Shuttle platform can be customised to suit your needs. Instance size can be increased from the default and AWS RDS features can be enabled or disabled.
+
 The RDS instance created by Shuttle has the following specifications and features by default:
 - 2 vCPU
 - 1 GB Memory
