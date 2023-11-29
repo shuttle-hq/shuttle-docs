@@ -1,5 +1,5 @@
 ---
-title: "Migrating from Shuttle RDS PostgreSQL to Shuttle Shared PostgreSQL"
+title: "Migrating from RDS Postgres to Shared Postgres"
 ---
 
 Since the Shuttle AWS RDS resource is only available on the pro tier, if you cancel your
@@ -7,8 +7,8 @@ subscription you will lose access. Below are the steps you can take to migrate f
 AWS RDS PostgreSQL resource to the Shuttle shared database resource.
 
 1. Without removing the Shuttle AWS RDS pool from your application, follow the steps in
-[Shuttle shared DB](./shuttle-shared-db) to provision a shared PostgreSQL database for
-your project. You will now have two `pool`s in your main function, you can ignore the
+[Shuttle shared DB](./shuttle-shared-db) to provision add a shared Postgrse database to
+your project. You will now have two databases in your main function. You can ignore the
 new shared database pool for now.
 
 ```rust
@@ -21,18 +21,23 @@ async fn main(
 
 2. Run `cargo shuttle deploy`, this will create the shared database.
 
-3. We want to dump the RDS database, for which we'll need the `psql` CLI installed:
+3. We want to dump the RDS database, for which we'll need the `psql` CLI installed.
 
 ```bash
 sudo apt-get install postgresql-client-15
 ```
 
 4. Run `cargo shuttle resource list --show-secrets` to get the connection strings of both
-databases, we'll need these to dump the RDS and restore it in the shared database.
+databases, we'll need these to dump the RDS database and restore it as a shared database.
 
-5. You can use the `psql` CLI to run some queries against the RDS database before dumping,
-so you can run the same queries against the shared database after completing the migration.
-You can use this comparison to verify the migration was complete.
+5. We can use the `psql` CLI we installed in step 3 to run some queries against the RDS
+database before dumping. We can run the same queries against the shared database after
+completing the migration. We can compare the results of these queries to verify the
+migration was complete.
+
+> Note: this is a very simple way to verify that the migration was successful. Instructions
+> on how to do a more complete verification is out of scope for this guide, but there are
+> many resources that expand on this subject available elsewhere.
 
 ```bash
 # Replace <rds url> with the full RDS connection string from step 4.
@@ -51,7 +56,7 @@ pg_dump -Fc <RDS url> > db.dump
 ```
 
 7. The next step is to restore the dumped database to the new shared database. This step also replaces
-the RDS user as the owner of your tables with the username from your shared database connection string.
+the RDS user as the owner of your tables with the user from your shared database connection string.
 
 ```bash
 # Replace <shared pg url> with the full shared postgres connection string from step 4.
@@ -66,7 +71,7 @@ pg_restore -d 'postgres://user-postgres-axum-app:password@db.unstable.shuttle.rs
 
 8. We can now remove the RDS database from our main function, and we can remove the `shuttle_aws_rds`
 dependency from our `Cargo.toml`. We will also remove the underscore in front of the shared database
-pool, so our app will use that going forward. 
+pool. The pool is the same type, so you should be able to seamlessly switch to using it in your app.
 
 ```rust
 #[shuttle_runtime::main]
