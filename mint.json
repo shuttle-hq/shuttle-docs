@@ -161,7 +161,8 @@
       "pages": [
         "support/faq",
         "support/troubleshooting",
-        "support/delete-project"
+        "support/delete-project",
+        "support/migrating-postgres"
       ]
     },
     {
