@@ -123,13 +123,13 @@ Once you've cloned the example, try launching it locally using `cargo shuttle ru
 
 ```bash
 curl -X POST -d '{"note":"Hello world!"}' -H 'Content-Type: application/json' \
- http://localhost:8000/todo
+ http://localhost:8000/todos
 ```
 
 Assuming the request was successful, you'll get back a JSON response with the ID and Note of the record you just created. If you try the following cURL command, you should be able to then retrieve the message you stored:
 
 ```bash
-curl http://localhost:8000/todo/<id>
+curl http://localhost:8000/todos/<id>
 ```
 
 Interested in extending this example? Here's as couple of ideas:
