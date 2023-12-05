@@ -3,7 +3,8 @@
   "name": "Shuttle",
   "analytics": {
     "posthog": {
-      "apiKey": "phc_xbSdR723Tg2w0tf3O5I9nSYKBpXZJZnqKF8rYqn7SrF"
+      "apiKey": "phc_cQMQqF5QmcEzXEaVlrhv3yBSNRyaabXYAyiCV7xKHUH",
+      "apiHost": "https://eu.posthog.com"
     }
   },
   "logo": {
@@ -157,11 +158,7 @@
     },
     {
       "group": "Support",
-      "pages": [
-        "support/faq",
-        "support/troubleshooting",
-        "support/delete-project"
-      ]
+      "pages": ["support/faq", "support/troubleshooting", "support/delete-project"]
     },
     {
       "group": "Community",
