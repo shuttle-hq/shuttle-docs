@@ -59,9 +59,9 @@ implements `shuttle_service::Service`, which we can declare like so:
 ```rust main.rs
 pub struct CustomService {
     discord_bot:
-        FrameworkBuilder<Data, Box<(dyn std::error::Error +
+        poise::FrameworkBuilder<Data, Box<(dyn std::error::Error +
          std::marker::Send + Sync + 'static)>>,
-    router: Router,
+    router: axum::Router,
 }
 ```
 
