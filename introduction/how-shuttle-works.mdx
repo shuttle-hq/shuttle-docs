@@ -66,7 +66,7 @@ For more info on resources, head on over to our [Resources](/resources/overview)
 
 ## Deploying your Project
 
-When you run `cargo shuttle deploy`, your project code is archived and sent to our servers where it is compiled. Our codegen in `shuttle_runtime::main` will embed a gRPC server in the binary that we will be used to start and stop your service, as well as a `Loader` struct that will provision the resources you request in the arguments to your main function. Your service will then be started on Shuttle's infrastructure in the `eu-west2` region of AWS.
+When you run `cargo shuttle deploy`, your project code is archived and sent to our servers where it is compiled. Our codegen in `shuttle_runtime::main` will embed a gRPC server in the binary that will be used to start and stop your service, as well as a `Loader` struct that will provision the resources you request in the arguments to your main function. Your service will then be started on Shuttle's infrastructure in the `eu-west2` region of AWS.
 
 ## More reading
 
