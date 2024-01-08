@@ -83,6 +83,14 @@ the Docker engine.
 
 <Snippet file="connection-string.mdx" />
 
+### Database version
+Check out the table below for the default Docker images that are used when creating database resources, both locally and in production:
+| Database | Version | 
+|-----------|------|
+| Postgres | 13.4  |
+| MariaDB | 10.6.7  |
+| MySQL | 8.0.28  |
+
 ## Example
 
 This snippet shows the main function of a tide app that uses the `shuttle_aws_rds::Postgres` attribute to provision an RDS Postgres database.

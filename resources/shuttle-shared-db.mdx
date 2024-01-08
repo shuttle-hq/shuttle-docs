@@ -49,6 +49,13 @@ the Docker engine.
 
 <Snippet file="connection-string.mdx" />
 
+### Database version
+Check out the table below for the default Docker images that are used when creating database resources, both locally and in production:
+| Database | Version | 
+|-----------|------|
+| Postgres | 14  |
+| MongoDB | 5.0.10  |
+
 ## Example
 
 The Shuttle poem main function below uses the `[shuttle_shared_db::Postgres]` attribute macro to provision a shared postgres database,
