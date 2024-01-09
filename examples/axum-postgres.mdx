@@ -3,7 +3,7 @@ title: "Postgres Todo App"
 description: "This article walks you through how you can easily set up a simple to-do app using Axum and SQLx with PostgresQL."
 ---
 
-## Description 
+## Description
 This example shows how to make a simple TODO app using Axum and a shared Shuttle Postgres DB.
 
 The following routes are provided:
@@ -11,50 +11,53 @@ The following routes are provided:
 - POST `/todos` - Create a to-do item. Takes "note" as a JSON body parameter.
 
 You can clone the example below by running the following (you'll need `cargo-shuttle` installed):
-```bash 
+
+```bash
 cargo shuttle init --from shuttle-hq/shuttle-examples \
- --subfolder axum/postgres
+  --subfolder axum/postgres
 ```
 
 ## Code
 
 <CodeGroup>
 ```rust src/main.rs
-use axum::{Json, 
-	extract::{Path, State}, 
-	http::StatusCode, 
-	response::IntoResponse, 
-	Router, 
-	routing::{post, get}};
+use axum::{
+    extract::{Path, State},
+    http::StatusCode,
+    response::IntoResponse,
+    routing::{get, post},
+    Json, Router,
+};
 use serde::{Deserialize, Serialize};
 use shuttle_runtime::CustomError;
 use sqlx::{FromRow, PgPool};
 
 async fn retrieve(
-	Path(id): Path<i32>, 
-	State(state): State<MyState>
-	) -> Result<impl IntoResponse, impl IntoResponse> {
+    Path(id): Path<i32>,
+    State(state): State<MyState>,
+) -> Result<impl IntoResponse, impl IntoResponse> {
     match sqlx::query_as::<_, Todo>("SELECT * FROM todos WHERE id = $1")
         .bind(id)
         .fetch_one(&state.pool)
-        .await {
-		Ok(todo) => Ok((StatusCode::OK, Json(todo))),
-		Err(e) => Err((StatusCode::BAD_REQUEST, e.to_string()))
-	}
+        .await
+    {
+        Ok(todo) => Ok((StatusCode::OK, Json(todo))),
+        Err(e) => Err((StatusCode::BAD_REQUEST, e.to_string())),
+    }
 }
 
 async fn add(
     State(state): State<MyState>,
     Json(data): Json<TodoNew>,
 ) -> Result<impl IntoResponse, impl IntoResponse> {
-    match sqlx::query_as::<_, Todo>(
-	"INSERT INTO todos (note) VALUES ($1) RETURNING id, note"
-	).bind(&data.note)
+    match sqlx::query_as::<_, Todo>("INSERT INTO todos (note) VALUES ($1) RETURNING id, note")
+        .bind(&data.note)
         .fetch_one(&state.pool)
-        .await {
-		Ok(todo) => Ok((StatusCode::CREATED, Json(todo))),
-		Err(e) => Err((StatusCode::BAD_REQUEST, e.to_string()))
-	}
+        .await
+    {
+        Ok(todo) => Ok((StatusCode::CREATED, Json(todo))),
+        Err(e) => Err((StatusCode::BAD_REQUEST, e.to_string())),
+    }
 }
 
 #[derive(Clone)]
@@ -63,17 +66,16 @@ struct MyState {
 }
 
 #[shuttle_runtime::main]
-async fn axum(
-	#[shuttle_shared_db::Postgres] pool: PgPool
-	) -> shuttle_axum::ShuttleAxum {
-    sqlx::migrate!().run(&pool)
+async fn axum(#[shuttle_shared_db::Postgres] pool: PgPool) -> shuttle_axum::ShuttleAxum {
+    sqlx::migrate!()
+        .run(&pool)
         .await
         .map_err(CustomError::new)?;
 
     let state = MyState { pool };
     let router = Router::new()
         .route("/todos", post(add))
-	.route("/todos/:id", get(retrieve))
+        .route("/todos/:id", get(retrieve))
         .with_state(state);
 
     Ok(router.into())
@@ -91,15 +93,6 @@ struct Todo {
 }
 ```
 
-```sql migrations/1_schema.sql
-DROP TABLE IF EXISTS todos;
-
-CREATE TABLE todos (
-  id serial PRIMARY KEY,
-  note TEXT NOT NULL
-);
-```
-
 ```toml Cargo.toml
 [package]
 name = "postgres"
@@ -107,13 +100,13 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
-axum = "0.6.18"
-serde = { version = "1.0.148", features = ["derive"] }
-shuttle-shared-db = { version = "0.27.0", features = ["postgres"] }
-shuttle-axum = "0.27.0"
-shuttle-runtime = "0.27.0"
+axum = "0.7.3"
+serde = { version = "1.0.188", features = ["derive"] }
+shuttle-axum = "0.35.0"
+shuttle-runtime = "0.35.0"
+shuttle-shared-db = { version = "0.35.0", features = ["postgres"] }
 sqlx = { version = "0.7.1", features = ["runtime-tokio-native-tls", "postgres"] }
-tokio = "1.26.0"
+tokio = "1.28.2"
 ```
 </CodeGroup>
 
@@ -137,6 +130,6 @@ Interested in extending this example? Here's as couple of ideas:
 - Add static files to show your records
 ---
 
-<Tip> If you want to explore other frameworks, we have more examples with popular ones like Tower and Warp. You can find them [right here](../examples/other). </Tip>
+<Snippet file="other-frameworks.mdx" />
 
-<Tip> Be sure to check out the [examples repo](https://github.com/shuttle-hq/shuttle-examples) for many more examples! </Tip>
+<Snippet file="check-examples.mdx" />
