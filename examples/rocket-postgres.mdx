@@ -8,8 +8,8 @@ description: "This article walks you through how you can easily set up a simple 
 This example shows how to make a simple TODO app using Rocket and a shared Shuttle Postgres DB.
 
 The following routes are provided:
-- GET `/todos/<id>` - Get a to-do item by ID.
-- POST `/todos` - Create a to-do item. Takes "note" as a JSON body parameter.
+- GET `/todo/<id>` - Get a to-do item by ID.
+- POST `/todo` - Create a to-do item. Takes "note" as a JSON body parameter.
 
 You can clone the example below by running the following (you'll need `cargo-shuttle` installed):
 ```bash
@@ -68,7 +68,7 @@ async fn rocket(#[shuttle_shared_db::Postgres] pool: PgPool) -> shuttle_rocket::
 
     let state = MyState { pool };
     let rocket = rocket::build()
-        .mount("/todos", routes![retrieve, add])
+        .mount("/todo", routes![retrieve, add])
         .manage(state);
 
     Ok(rocket.into())
@@ -118,13 +118,13 @@ Once you've cloned the example, try launching it locally using `cargo shuttle ru
 
 ```bash
 curl -X POST -d '{"note":"Hello world!"}' -H 'Content-Type: application/json' \
- http://localhost:8000/todos
+ http://localhost:8000/todo
 ```
 
 Assuming the request was successful, you'll get back a JSON response with the ID and Note of the record you just created. If you try the following cURL command, you should be able to then retrieve the message you stored:
 
 ```bash
-curl http://localhost:8000/todos/<id>
+curl http://localhost:8000/todo/<id>
 ```
 
 Interested in extending this example? Here's as couple of ideas:
