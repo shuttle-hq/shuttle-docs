@@ -43,6 +43,9 @@ If you require a different configuration, please contact us on [Discord](https:/
 Shuttle makes sure that any data stored in your provisioned database is stored permanently and will persist if you redeploy your server via `cargo shuttle deploy`, as well as if you restart your service via `cargo shuttle project restart`.
 
 ## Usage
+
+<Snippet file="subscription-increase.mdx" />
+
 Add `shuttle-aws-rds` to the dependencies for your service.
 Each type of database is behind the following feature flag and attribute path. `*-rustls` feature enables `rustls`-based implementation, otherwise some flavour of `native-tls` is used.
 
