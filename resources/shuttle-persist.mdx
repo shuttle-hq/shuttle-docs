@@ -1,5 +1,6 @@
 ---
 title: "Shuttle Persist"
+icon: "key"
 ---
 
 The persist plugin allows data to be persisted in a key-value store, which is backed by a struct type. The struct implements `serde::Serialize` for serialization (prepare data for saving or transmission) and `serde::Deserialize` for deserialization (load data to memory, either from storage or fetched via the network). The persist plugin is useful for saving and retrieving data when it is not desired to hard code that data into the app. An example is saved settings for a Discord bot that need to remain the same between updates. State data, used in web frameworks such as Axum and Rocket, is also a good candidate for use of the persist plugin.
