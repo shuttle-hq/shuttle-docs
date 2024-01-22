@@ -3,40 +3,70 @@ title: "Shuttle Shared Databases"
 icon: "share"
 ---
 
-This plugin manages databases on [Shuttle](https://www.shuttle.rs) and connects them to your app. A shared database
-will be on the same cluster as other user's databases, but it will not be accessible by other users.
+This plugin manages databases on [Shuttle](https://www.shuttle.rs) and connects them to your app.
+A shared database is in the same cluster as other user's databases, but it is not be accessible by other users.
 
 If you want a high performing and isolated database, consider [Shuttle AWS RDS](./shuttle-aws-rds).
 
-<Tip>You can connect to any type of remotely hosted database you want from your code, so do not let our current database offerings limit your creativity! Got other databases you want to see on Shuttle? Let us know!</Tip>
+<Tip>You can connect to any type of remotely hosted database from your code, so do not let our current database offerings limit your creativity! Got other databases you want to see on Shuttle? Let us know!</Tip>
 
 ## Usage
-Add `shuttle-shared-db` to the dependencies for your service.
-Each type of database is behind the following feature flag and attribute path. `*-rustls` feature enables `rustls`-based implementation, otherwise some flavour of `native-tls` is used.
 
-| Engine   | Feature flags | Attribute path | Return type |
-|----------|---------------|----------------|-------------|
-| Postgres | `postgres` or `postgres-rustls` | `shuttle_shared_db::Postgres` | `sqlx::PgPool` |
-| MongoDB  | `mongodb` (uses rustls) | `shuttle_shared_db::MongoDb` | `mongodb::Database` |
+Start by adding `shuttle-shared-db` to the dependencies for your service.
+Each type of shareable database is behind its own feature flag and macro attribute path.
+
+| Engine   | Feature flag | Attribute path |
+|----------|--------------|----------------|
+| Postgres | `postgres`   | `shuttle_shared_db::Postgres` |
+| MongoDB  | `mongodb`    | `shuttle_shared_db::MongoDb`  |
+
+### Output type
+
+By default, you can get the connection string to the database and connect to it the way you want to.
+You can also specify other return types to get rid of common boilerplate.
+
+Depending on which type declaration is used as the output type in the macro, you might need to activate additional feature flags:
+
+| Engine   | Feature flag | Type declaration | Description |
+|----------|--------------|------------------|-------------|
+| Postgres | | `String` | The connection string including username and password |
+| Postgres | `sqlx` (with rustls) or `sqlx-native-tls` | `sqlx::PgPool` | An sqlx connection pool with reasonable defaults |
+| MongoDB  | | `String` | The connection string including username and password |
+| MongoDB  | | `mongodb::Database` | A client pool connected to the database |
+
+Lastly, add a macro annotaion to the Shuttle main function. Here are examples for Postgres:
+
+```rust
+// Use the connection string
+#[shuttle_runtime::main]
+async fn main(#[shuttle_shared_db::Postgres] conn_str: String) -> ... { ... }
+
+// With sqlx feature flag, get a PgPool connected automatically
+#[shuttle_runtime::main]
+async fn main(#[shuttle_shared_db::Postgres] pool: sqlx::PgPool) -> ... { ... }
+```
 
 ### Parameters
-| Parameter | Type | Default | Description |
-|-----------|------|---------|-------------|
-| local_uri | str  | `None`  | If specified, on local runs, connect to this database instead of starting a Docker container for it. |
 
-When setting the `local_uri` you can also insert secrets from `Secrets.toml` using string interpolation. To insert the
-`PASSWORD` secret, pass it in like this:
+Both the Postgres and MongoDB macros take the same optional parameter:
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| local_uri | &str | If specified, on local runs, use this database instead of starting a Docker container for it |
+
+When passing in strings, you can also insert secrets from `Secrets.toml` using string interpolation.
+To insert the `PASSWORD` secret, pass it in like this:
 
 ```rust
 #[shuttle_runtime::main]
-async fn poem(
+async fn main(
     #[shuttle_shared_db::Postgres(
         local_uri = "postgres://postgres:{secrets.PASSWORD}@localhost:16695/postgres"
-    )] pool: PgPool,
-) -> ShuttlePoem<impl poem::Endpoint> { ... }
+    )] conn_str: String,
+) -> ... { ... }
 ```
 
-<Note>If you are interpolating a secret from `Secrets.dev.toml`, you need to set the same secret in `Secrets.toml` to a empty string so that this step does not crash in deployment.</Note>
+<Note>Caveat: If you are interpolating a secret from `Secrets.dev.toml`, you need to set the same secret in `Secrets.toml` to a empty string so that this step does not crash in deployment.</Note>
 
 The URI should be formatted according to the
 [Postgres](https://www.postgresql.org/docs/current/libpq-connect.html#LIBPQ-CONNSTRING) or
