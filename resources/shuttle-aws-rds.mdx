@@ -5,15 +5,13 @@ icon: "aws"
 
 <Snippet file="pro-feature.mdx" />
 
-This plugin provisions databases on AWS RDS using [Shuttle](https://www.shuttle.rs). The following engines are supported:
+This plugin provisions AWS RDS databases on [Shuttle](https://www.shuttle.rs). The following engines are supported:
 - Postgres
 - MySql
 - MariaDB
 
-{/* TODO: Write more about the advantages of RDS vs shared */}
-
-
 ## RDS vs Shared DB
+
 - Dedicated Instance: Each instance of AWS RDS is it's own dedicated instance.
 - Stability and Security: AWS RDS has greater stability due to it being a service directly offered by AWS, and also greater security due to being a dedicated instance.
 - Flexible: AWS RDS instances on the Shuttle platform can be customised to suit your needs. Instance size can be increased from the default and AWS RDS features can be enabled or disabled.
@@ -44,49 +42,16 @@ If you require a different configuration, please contact us on [Discord](https:/
 Shuttle makes sure that any data stored in your provisioned database is stored permanently and will persist if you redeploy your server via `cargo shuttle deploy`, as well as if you restart your service via `cargo shuttle project restart`.
 
 ## Usage
-Add `shuttle-aws-rds` to the dependencies for your service.
-Each type of database is behind the following feature flag and attribute path. `*-rustls` feature enables `rustls`-based implementation, otherwise some flavour of `native-tls` is used.
 
-| Engine   | Feature flags | Attribute path | Return type |
-|----------|---------------|----------------|-------------|
-| Postgres | `postgres` or `postgres-rustls` | shuttle_aws_rds::Postgres | `sqlx::PgPool` |
-| MySql    | `mysql` or `mysql-rustls` | shuttle_aws_rds::MySql | `sqlx::MySqlPool` |
-| MariaDB  | `mariadb` or `mariadb-rustls` | shuttle_aws_rds::MariaDB | `sqlx::MySqlPool` |
+This plugin is used identically to [Shuttle Shared DB](./shuttle-shared-db) with the following differences:
 
-### Parameters
-| Parameter | Type | Default | Description |
-|-----------|------|---------|-------------|
-| local_uri | str  | `None`  | If specified, on local runs, connect to this database instead of starting a Docker container for it. |
-
-When setting the `local_uri` you can also insert secrets from `Secrets.toml` using string interpolation. To insert the
-`PASSWORD` secret, pass it in like this:
-
-```rust
-#[shuttle_runtime::main]
-async fn tide(
-    #[shuttle_aws_rds::Postgres(
-        local_uri = "postgres://postgres:{secrets.PASSWORD}@localhost:16695/postgres"
-    )] pool: PgPool,
-) -> ShuttleTide<MyState> { ... }
-```
-
-<Note>If you are interpolating a secret from `Secrets.dev.toml`, you need to set the same secret in `Secrets.toml` to a empty string so that this step does not crash in deployment.</Note>
-
-The URI should be formatted according to the
-[Postgres](https://www.postgresql.org/docs/current/libpq-connect.html#LIBPQ-CONNSTRING) or
-[MySql and MariaDB](https://dev.mysql.com/doc/refman/8.0/en/connecting-using-uri-or-key-value-pairs.html#connecting-using-uri)
-documentation, depending on which one you're using.
-
-If you do not specify a `local_uri`, then cargo-shuttle will attempt to spin up a Docker container and launch the database inside of it.
-For this to succeed, you must have Docker installed and you must also have started the Docker engine. If you have not used Docker
-before, the easiest way is to [install the desktop app](https://docs.docker.com/get-docker/) and then launch it in order to start
-the Docker engine.
-
-<Snippet file="connection-string.mdx" />
+- Use the crate `shuttle-aws-rds` instead of `shuttle-shared-db`.
+- The feature flags for each engine are `postgres`, `mysql`, and `mariadb`.
+- If you add the `sqlx` flag for MySQL or MariaDB, the output type is `sqlx::MySqlPool`.
 
 ## Example
 
-This snippet shows the main function of a tide app that uses the `shuttle_aws_rds::Postgres` attribute to provision an RDS Postgres database.
+This snippet shows the main function of a tide app that uses the `#[shuttle_aws_rds::Postgres]` attribute macro to provision an RDS Postgres database.
 It gives you an authenticated [sqlx Pool](https://docs.rs/sqlx/latest/sqlx/pool/index.html), which you can use to interact with the database.
 
 ```rust main.rs

@@ -1,6 +1,6 @@
 ---
 title: "Shuttle Shared Databases"
-icon: "share"
+icon: "database"
 ---
 
 This plugin manages databases on [Shuttle](https://www.shuttle.rs) and connects them to your app.
@@ -82,7 +82,7 @@ the Docker engine.
 
 ## Example
 
-The Shuttle poem main function below uses the `[shuttle_shared_db::Postgres]` attribute macro to provision a shared postgres database,
+The Shuttle poem main function below uses the `#[shuttle_shared_db::Postgres]` attribute macro to provision a shared Postgres database,
 which can be accessed using a pre-configured, authenticated [sqlx Pool](https://docs.rs/sqlx/latest/sqlx/pool/index.html).
 
 ```rust main.rs
