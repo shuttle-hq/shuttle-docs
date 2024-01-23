@@ -4,7 +4,7 @@ icon: "database"
 ---
 
 This plugin manages databases on [Shuttle](https://www.shuttle.rs) and connects them to your app.
-A shared database is in the same cluster as other user's databases, but it is not be accessible by other users.
+A shared database is in the same cluster as other user's databases, but it is not accessible by other users.
 
 If you want a high performing and isolated database, consider [Shuttle AWS RDS](./shuttle-aws-rds).
 
@@ -22,7 +22,7 @@ Each type of shareable database is behind its own feature flag and macro attribu
 
 ### Output type
 
-By default, you can get the connection string to the database and connect to it the way you want to.
+By default, you can get the connection string to the database and connect to it with your preferred library.
 You can also specify other return types to get rid of common boilerplate.
 
 Depending on which type declaration is used as the output type in the macro, you might need to activate additional feature flags:
