@@ -12,7 +12,7 @@ Relational databases are the classical way to store data in the backend of web a
 To get started with SQLx (and using our new database), we'll want to add the `sqlx` crate to an initialised Rust program. We will also want to add the `shuttle-shared-db` crate which allows us to use the macro that provisions the database instance to us.
 
 ```bash
-cargo add sqlx shuttle-shared-db --features sqlx/macros,shuttle-shared-db/postgres
+cargo add sqlx shuttle-shared-db --features sqlx/macros,shuttle-shared-db/postgres,shuttle-shared-db/sqlx
 cargo install sqlx-cli
 ```
 
@@ -24,9 +24,9 @@ id SERIAL PRIMARY KEY NOT NULL,
 name VARCHAR NOT NULL,
 email VARCHAR NOT NULL,
 password VARCHAR NOT NULL,
-created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP 
+created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
-``` 
+```
 
 When we run our migrations, this folder will be the default that will be used - when we're ready to run our migrations, we can run `sqlx migrate run --database-url <database-url>`. We can also just run the migrate macro programmatically after connecting to the database:
 
