@@ -41,6 +41,8 @@ If you are adding a subdomain, add a `CNAME` record from your subdomain to your 
 
 ![cloudflare subdomain cname](/images/cloudflare_sub_cname.png)
 
+In the example above, the subdomain `thing` (as in `thing.my-domain.com`) is being directed to `example.shuttleapp.rs`.
+
 ### Other DNS providers
 
 If you are adding a root-level domain, add an `A` record that points to the same IP address that is returned by `dig A example.shuttleapp.rs`, which is currently `18.132.234.15`.
