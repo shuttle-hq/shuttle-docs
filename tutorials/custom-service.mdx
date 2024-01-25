@@ -59,9 +59,9 @@ implements `shuttle_service::Service`, which we can declare like so:
 ```rust main.rs
 pub struct CustomService {
     discord_bot:
-        FrameworkBuilder<Data, Box<(dyn std::error::Error +
+        poise::FrameworkBuilder<Data, Box<(dyn std::error::Error +
          std::marker::Send + Sync + 'static)>>,
-    router: Router,
+    router: axum::Router,
 }
 ```
 
@@ -78,7 +78,7 @@ impl shuttle_runtime::Service for CustomService {
         addr: std::net::SocketAddr,
     ) -> Result<(), shuttle_runtime::Error> {
         
-        let router = self.router.into_inner();
+        let router = self.router;
 
         let serve_router = axum::Server::bind(&addr).serve(router.into_make_service());
 
@@ -137,20 +137,39 @@ for setting up each of our services for the struct, like so:
 ```rust main.rs
 use poise::serenity_prelude as serenity;
 use shuttle_secrets::SecretStore;
-use std::sync::Arc;
 
 mod commands;
 use commands::age;
 
 mod router;
-use router::router;
+use router::build_router;
 
 pub struct Data {}
 pub struct CustomService {
     discord_bot:
-        FrameworkBuilder<Data, Box<(dyn std::error::Error +
+        poise::FrameworkBuilder<Data, Box<(dyn std::error::Error +
          std::marker::Send + Sync + 'static)>>,
-    router: Router,
+    router: axum::Router,
+}
+
+#[shuttle_runtime::async_trait]
+impl shuttle_runtime::Service for CustomService {
+    async fn bind(
+        mut self,
+        addr: std::net::SocketAddr,
+    ) -> Result<(), shuttle_runtime::Error> {
+        
+        let router = self.router;
+
+        let serve_router = axum::Server::bind(&addr).serve(router.into_make_service());
+
+        tokio::select!(
+            _ = self.discord_bot.run() => {},
+            _ = serve_router => {}
+        );
+
+        Ok(())
+    }
 }
 
 #[shuttle_runtime::main]
