@@ -26,8 +26,8 @@ If you want to connect to a remote database when running locally, you can specif
 | Parameter  | Type   | Required? | Description |
 | ---------- | ------ | --------- | ----------- |
 | cloud_url  | &str   | In deployment | URL of the database to connect to. NOTE: It should use the gRPC port. |
-| api_key    | &str   | If the database requires it | API key for authenticating against the database. |
-| local_addr | &str   | No | If secified, connect to this URL on local runs instead of using a Docker container. |
+| api_key    | &str   | No | Required if the database requires an API key. |
+| local_addr | &str   | No | If specified, connect to this URL on local runs instead of using a Docker container. |
 
 <Warning>Make sure the `cloud_url` parameter is specifying the gRPC port of the database. This is typically done by adding `:6334` at the end.</Warning>
 
