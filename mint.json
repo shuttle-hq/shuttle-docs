@@ -162,7 +162,7 @@
         "support/faq",
         "support/troubleshooting",
         "support/delete-project",
-        "support/migrating-postgres"
+        "support/migrating-rds-postgres"
       ]
     },
     {
