@@ -1,0 +1,50 @@
+---
+title: "Shuttle Qdrant"
+icon: "database"
+---
+
+This plugin allows services to connect to a [Qdrant](https://qdrant.tech/) database. Qdrant is a vector database & vector similarity search engine.
+
+You can get started in seconds by cloning our Axum + Qdrant example with
+
+```bash
+cargo shuttle init --from shuttle-hq/shuttle-examples --subfolder axum/qdrant
+```
+
+## Usage
+
+<Note>**IMPORTANT:** Currently Shuttle isn't able to provision a Qdrant Cloud cluster for you (yet). This means you will have to create an account on their [website](https://qdrant.tech/) and follow the few steps required to create a cluster and an API key to access it.</Note>
+
+Add `shuttle-qdrant` and `qdrant-client` to the dependencies for your service by running `cargo add shuttle-qdrant qdrant-client@1.7.0`. This resource will be provided by adding the `shuttle_qdrant::Qdrant` attribute to your Shuttle main function.
+
+It returns a `qdrant_client::QdrantClient`. When running locally it will by default spin up a Qdrant Docker container for your project.
+
+If you want to connect to a remote database when running locally, you can specify the `local_url` parameter.
+
+### Parameters
+
+| Parameter  | Type   | Required? | Description |
+| ---------- | ------ | --------- | ----------- |
+| cloud_url  | &str   | In deployment | URL of the database to connect to. NOTE: It should use the gRPC port. |
+| api_key    | &str   | If the database requires it | API key for authenticating against the database. |
+| local_addr | &str   | No | If secified, connect to this URL on local runs instead of using a Docker container. |
+
+<Warning>Make sure the `cloud_url` parameter is specifying the gRPC port of the database. This is typically done by adding `:6334` at the end.</Warning>
+
+You can use secrets interpolation to set the URL and API key. See below for an example.
+
+### Example
+
+In the case of an Axum server, your main function can look like this:
+
+```rust
+use qdrant_client::prelude::*;
+
+#[shuttle_runtime::main]
+async fn axum(
+    #[shuttle_qdrant::Qdrant(cloud_url = "{secrets.CLOUD_URL}", api_key = "{secrets.API_KEY}")]
+    qdrant: QdrantClient,
+) -> shuttle_axum::ShuttleAxum {
+    // set up state and router...
+}
+```
