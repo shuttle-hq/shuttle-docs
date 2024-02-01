@@ -82,7 +82,8 @@
             "resources/shuttle-aws-rds",
             "resources/shuttle-shared-db",
             "resources/shuttle-persist",
-            "resources/shuttle-turso"
+            "resources/shuttle-turso",
+            "resources/shuttle-qdrant"
           ]
         },
         "resources/shuttle-secrets",
