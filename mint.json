@@ -158,7 +158,12 @@
     },
     {
       "group": "Support",
-      "pages": ["support/faq", "support/troubleshooting", "support/delete-project"]
+      "pages": [
+        "support/faq",
+        "support/troubleshooting",
+        "support/delete-project",
+        "support/migrating-rds-postgres"
+      ]
     },
     {
       "group": "Community",
