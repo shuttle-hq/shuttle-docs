@@ -17,50 +17,37 @@ Three Axum routes are registered in this file:
 - `/private`: a route that can only be accessed with a valid JWT.
 
 You can clone the example below by running the following (you'll need `cargo-shuttle` installed):
-```bash 
+
+```bash
 cargo shuttle init --from shuttle-hq/shuttle-examples \
- --subfolder axum/jwt-authentication
+  --subfolder axum/jwt-authentication
 ```
 
 ## Code
 
-```toml Cargo.toml
-[package]
-name = "authentication"
-version = "0.1.0"
-edition = "2021"
-
-[dependencies]
-axum = { version = "0.6.18", features = ["headers"] }
-jsonwebtoken = "8.3.0"
-once_cell = "1.18.0"
-serde = { version = "1.0.188", features = ["derive"] }
-serde_json = "1.0.107"
-shuttle-axum = "0.27.0"
-shuttle-runtime = "0.27.0"
-tokio = "1.28.2"
-tracing-subscriber = "0.3.17"
-```
-Your `main.rs` should look like this:
-
-```Rust main.rs
+<CodeGroup>
+```rust main.rs
 use axum::{
     async_trait,
     extract::FromRequestParts,
-    headers::{authorization::Bearer, Authorization},
     http::{request::Parts, StatusCode},
     response::{IntoResponse, Response},
     routing::{get, post},
-    Json, RequestPartsExt, Router, TypedHeader,
+    Json, RequestPartsExt, Router,
+};
+use axum_extra::{
+    headers::{authorization::Bearer, Authorization},
+    TypedHeader,
 };
 use jsonwebtoken::{decode, encode, DecodingKey, EncodingKey, Header, Validation};
 use once_cell::sync::Lazy;
 use serde::{Deserialize, Serialize};
 use serde_json::json;
 use std::fmt::Display;
+use std::time::SystemTime;
 
 static KEYS: Lazy<Keys> = Lazy::new(|| {
-// note that in production, you will probably want to use a random SHA-256 hash or similar 
+    // note that in production, you will probably want to use a random SHA-256 hash or similar
     let secret = "JWT_SECRET".to_string();
     Keys::new(secret.as_bytes())
 });
@@ -98,13 +85,17 @@ async fn login(Json(payload): Json<AuthPayload>) -> Result<Json<AuthBody>, AuthE
     }
 
     // add 5 minutes to current unix epoch time as expiry date/time
-    let exp = SystemTime::now().duration_since(SystemTime::UNIX_EPOCH).as_secs() + 300; 
-    
+    let exp = SystemTime::now()
+        .duration_since(SystemTime::UNIX_EPOCH)
+        .unwrap()
+        .as_secs()
+        + 300;
+
     let claims = Claims {
         sub: "b@b.com".to_owned(),
         company: "ACME".to_owned(),
-        // Mandatory expiry time as UTC timestamp
-        exp: usize::try_from(exp).unwrap()
+        // Mandatory expiry time as UTC timestamp - takes unix epoch
+        exp: usize::try_from(exp).unwrap(),
     };
     // Create the authorization token
     let token = encode(&Header::default(), &claims, &KEYS.encoding)
@@ -170,7 +161,7 @@ impl IntoResponse for AuthError {
     }
 }
 
-// encoding/decoding keys - set in the static `once_cell` above 
+// encoding/decoding keys - set in the static `once_cell` above
 struct Keys {
     encoding: EncodingKey,
     decoding: DecodingKey,
@@ -207,7 +198,7 @@ struct AuthPayload {
     client_secret: String,
 }
 
-// error types for auth errors 
+// error types for auth errors
 #[derive(Debug)]
 enum AuthError {
     WrongCredentials,
@@ -216,6 +207,26 @@ enum AuthError {
     InvalidToken,
 }
 ```
+
+```toml Cargo.toml
+[package]
+name = "authentication"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+axum = "0.7.3"
+axum-extra = { version = "0.9.1", features = ["typed-header"] }
+jsonwebtoken = "8.3.0"
+once_cell = "1.18.0"
+serde = { version = "1.0.188", features = ["derive"] }
+serde_json = "1.0.107"
+shuttle-axum = "0.37.0"
+shuttle-runtime = "0.37.0"
+tokio = "1.28.2"
+tracing-subscriber = "0.3.17"
+```
+</CodeGroup>
 
 ## Usage
 
@@ -256,6 +267,6 @@ Looking to extend this example? Here's a couple of ideas to get you started:
 
 ---
 
-<Tip> If you want to explore other frameworks, we have more examples with popular ones like Tower and Warp. You can find them [right here](../examples/other). </Tip>
+<Snippet file="other-frameworks.mdx" />
 
-<Tip> Be sure to check out the [examples repo](https://github.com/shuttle-hq/shuttle-examples) for many more examples! </Tip>
+<Snippet file="check-examples.mdx" />

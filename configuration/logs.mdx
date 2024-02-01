@@ -1,6 +1,7 @@
 ---
 title: "Logs"
 description: "Tracing or logging in Shuttle apps."
+icon: "list"
 ---
 
 Shuttle will record anything your application writes to `stdout`, e.g. a `tracing` or `log` crate configured to write to `stdout`,
@@ -50,7 +51,7 @@ If you opt-out of the default subscriber, you can set up logging or tracing the 
 The only thing you need to ensure is that your setup writes to `stdout`, as this is what Shuttle will record and return from
 the `cargo shuttle logs` commands.
 
-We've created an example Axum app with a simple `tracing`: [custom tracing example](https://github.com/shuttle-hq/shuttle-examples/tree/main/tracing/custom-tracing-subscriber).
+We've created an example Actix Web app with a simple `tracing`: [custom tracing example](https://github.com/shuttle-hq/shuttle-examples/tree/main/tracing/custom-tracing-subscriber).
 
 ## Viewing Logs
 

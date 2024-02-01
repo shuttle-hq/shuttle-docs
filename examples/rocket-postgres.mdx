@@ -8,8 +8,8 @@ description: "This article walks you through how you can easily set up a simple 
 This example shows how to make a simple TODO app using Rocket and a shared Shuttle Postgres DB.
 
 The following routes are provided:
-- GET `/todos/<id>` - Get a to-do item by ID.
-- POST `/todos` - Create a to-do item. Takes "note" as a JSON body parameter.
+- GET `/todo/<id>` - Get a to-do item by ID.
+- POST `/todo` - Create a to-do item. Takes "note" as a JSON body parameter.
 
 You can clone the example below by running the following (you'll need `cargo-shuttle` installed):
 ```bash
@@ -68,7 +68,7 @@ async fn rocket(#[shuttle_shared_db::Postgres] pool: PgPool) -> shuttle_rocket::
 
     let state = MyState { pool };
     let rocket = rocket::build()
-        .mount("/todos", routes![retrieve, add])
+        .mount("/todo", routes![retrieve, add])
         .manage(state);
 
     Ok(rocket.into())
@@ -104,10 +104,10 @@ edition = "2021"
 [dependencies]
 rocket = { version = "0.5.0", features = ["json"] }
 serde = "1.0.148"
-shuttle-shared-db = { version = "0.34.0", features = ["postgres"] }
-shuttle-rocket = "0.34.0"
-shuttle-runtime = "0.34.0"
-sqlx = { version = "0.7.1", features = ["runtime-tokio-native-tls", "postgres"] }
+shuttle-rocket = "0.37.0"
+shuttle-runtime = "0.37.0"
+shuttle-shared-db = { version = "0.37.0", features = ["postgres", "sqlx"] }
+sqlx = "0.7.1"
 tokio = "1.26.0"
 ```
 </CodeGroup>
@@ -118,13 +118,13 @@ Once you've cloned the example, try launching it locally using `cargo shuttle ru
 
 ```bash
 curl -X POST -d '{"note":"Hello world!"}' -H 'Content-Type: application/json' \
- http://localhost:8000/todos
+ http://localhost:8000/todo
 ```
 
 Assuming the request was successful, you'll get back a JSON response with the ID and Note of the record you just created. If you try the following cURL command, you should be able to then retrieve the message you stored:
 
 ```bash
-curl http://localhost:8000/todos/<id>
+curl http://localhost:8000/todo/<id>
 ```
 
 Interested in extending this example? Here's as couple of ideas:
@@ -132,6 +132,6 @@ Interested in extending this example? Here's as couple of ideas:
 - Add static files to show your records
 ---
 
-<Tip> If you want to explore other frameworks, we have more examples with popular ones like Tower and Warp. You can find them [right here](../examples/other). </Tip>
+<Snippet file="other-frameworks.mdx" />
 
-<Tip> Be sure to check out the [examples repo](https://github.com/shuttle-hq/shuttle-examples) for many more examples! </Tip>
+<Snippet file="check-examples.mdx" />

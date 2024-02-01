@@ -1,6 +1,7 @@
 ---
 title: "Deployment environment"
 description: "Details about the environment your app runs in."
+icon: "box"
 ---
 
 This page answers:
@@ -13,7 +14,7 @@ This page answers:
 
 Deployments are currently built and run in our `shuttle-deployer` container, which is based on a Rust Bookworm docker image (Debian 12).
 
-The current Rust version is `1.72.0`, toolchain `stable-x86_64-unknown-linux-gnu`.
+The current Rust version is `1.75.0`, toolchain `stable-x86_64-unknown-linux-gnu`.
 It's not currently possible for you to change this, but being able to choose which toolchain your project will be compiled with is a planned feature.
 
 The targets `wasm32-wasi` and `wasm32-unknown-unknown` are installed, which enables compiling `shuttle-next` apps and WASM frontends.
@@ -44,8 +45,8 @@ Check for `SHUTTLE=true` for custom behavior when running on Shuttle.
 
 ```bash
 SHUTTLE=true
-RUST_VERSION="1.72.0"
-RUSTUP_TOOLCHAIN="1.72.0"
+RUST_VERSION="1.75.0"
+RUSTUP_TOOLCHAIN="1.75.0"
 ```
 
 ### Build environment

@@ -3,7 +3,8 @@
   "name": "Shuttle",
   "analytics": {
     "posthog": {
-      "apiKey": "phc_xbSdR723Tg2w0tf3O5I9nSYKBpXZJZnqKF8rYqn7SrF"
+      "apiKey": "phc_cQMQqF5QmcEzXEaVlrhv3yBSNRyaabXYAyiCV7xKHUH",
+      "apiHost": "https://eu.posthog.com"
     }
   },
   "logo": {
@@ -86,7 +87,6 @@
         },
         "resources/shuttle-secrets",
         "resources/shuttle-metadata",
-        "resources/shuttle-static-folder",
         "resources/custom-resources"
       ]
     },

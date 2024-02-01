@@ -1,17 +1,19 @@
 ---
 title: "Custom Resources"
+icon: "toolbox"
 ---
 
 This example shows how you can make a custom resource.
 
-The example resource we'll be making will be a Plain Data Object (which we will refer to as `pdo`), and outputs the value that you pass into the "name" attribute for the resource. 
+The example resource we'll be making will be a Plain Data Object (which we will refer to as `pdo`), and outputs the value that you pass into the "name" attribute for the resource.
 
 We are using the Axum framework in `main.rs` so we can showcase the resource in action, but the implementation is entirely separate from what web framework you use so you can add your custom resource to any Shuttle-hosted resource.
 
 You can clone the example below by running the following (you'll need `cargo-shuttle` installed):
-```bash:
-cargo shuttle init --from https://github.com/shuttle-hq/shuttle-examples.git \
- --subfolder custom-resource/pdo
+
+```bash
+cargo shuttle init --from https://github.com/shuttle-hq/shuttle-examples \
+  --subfolder custom-resource/pdo
 ```
 
 <CodeGroup>
@@ -21,13 +23,11 @@ use pdo::{Builder, Pdo};
 use std::sync::Arc;
 
 async fn hello_world(State(pdo): State<Arc<Pdo>>) -> String {
-// this should output "John"
     pdo.name.clone()
 }
 
 #[shuttle_runtime::main]
 async fn axum(#[Builder(name = "John")] pdo: Pdo) -> shuttle_axum::ShuttleAxum {
-// add the pdo object to app-wide state variables
     let state = Arc::new(pdo);
     let router = Router::new().route("/", get(hello_world)).with_state(state);
 
@@ -38,16 +38,13 @@ async fn axum(#[Builder(name = "John")] pdo: Pdo) -> shuttle_axum::ShuttleAxum {
 ```rust src/lib.rs
 use async_trait::async_trait;
 use serde::Serialize;
-use shuttle_service::Factory;
-use shuttle_service::ResourceBuilder;
-use shuttle_service::Type;
+use shuttle_service::{resource::Type, Error, Factory, IntoResource, ResourceBuilder};
 
-#[derive(Serialize)]
+#[derive(Default, Serialize)]
 pub struct Builder {
     name: String,
 }
 
-#[derive(Clone)]
 pub struct Pdo {
     pub name: String,
 }
@@ -61,38 +58,25 @@ impl Builder {
 }
 
 #[async_trait]
-impl ResourceBuilder<Pdo> for Builder {
-// denotes our resource as a custom resource
+impl ResourceBuilder for Builder {
     const TYPE: Type = Type::Custom;
-
     type Config = Self;
-// output a string
     type Output = String;
-
-    fn new() -> Self {
-// if no attribute, create an empty string
-        Self {
-            name: String::new(),
-        }
-    }
 
     fn config(&self) -> &Self::Config {
         self
     }
 
-    async fn output(
-        self,
-        _factory: &mut dyn Factory,
-    ) -> Result<Self::Output, shuttle_service::Error> {
-// for the output, output name
+    async fn output(self, _factory: &mut dyn Factory) -> Result<Self::Output, Error> {
+        // factory can be used to get resources from Shuttle
         Ok(self.name)
     }
+}
 
-    async fn build(build_data: &Self::Output) -> Result<Pdo, shuttle_service::Error> {
-// pipe the result from the output function to the build
-        Ok(Pdo {
-            name: build_data.clone(),
-        })
+#[async_trait]
+impl IntoResource<Pdo> for String {
+    async fn into_resource(self) -> Result<Pdo, Error> {
+        Ok(Pdo { name: self })
     }
 }
 ```
@@ -105,11 +89,11 @@ edition = "2021"
 
 [dependencies]
 async-trait = "0.1.56"
-axum = "0.6.18"
+axum = "0.7.3"
 serde = { version = "1.0.148", default-features = false, features = ["derive"] }
-shuttle-service = "0.27.0"
-shuttle-axum = "0.27.0"
-shuttle-runtime = "0.27.0"
+shuttle-service = "0.37.0"
+shuttle-axum = "0.37.0"
+shuttle-runtime = "0.37.0"
 tokio = "1.28.2"
 ```
 </CodeGroup>

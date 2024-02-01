@@ -1,5 +1,6 @@
 ---
 title: "Command Line Interface"
+icon: "terminal"
 ---
 
 Interaction with the Shuttle services is mainly done with through the `cargo-shuttle` Command Line Interface (CLI).
@@ -91,6 +92,6 @@ All project-related commands can use:
 
 ### Shell completions
 
-Use `cargo shuttle generate -s <shell>` with one of: bash, elvish, fish, powershell, zsh.
+Use `cargo shuttle generate shell <shell>` with one of: bash, elvish, fish, powershell, zsh.
 
-Example configuration for Zsh on Linux: add `eval "$(cargo shuttle generate -s zsh)"` to `~/.zshrc`.
+Example configuration for Zsh on Linux: add `eval "$(cargo shuttle generate shell zsh)"` to `~/.zshrc`.
