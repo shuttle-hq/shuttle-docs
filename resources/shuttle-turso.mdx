@@ -9,9 +9,9 @@ This plugin allows services to connect to a [Turso](https://turso.tech) database
 
 <Note>**IMPORTANT:** Currently Shuttle isn't able to provision a Turso database for you (yet). This means you will have to create an account on their [website](https://turso.tech/) and follow the few steps required to create a database and create a token to access it.</Note>
 
-Add `shuttle-turso` and `libsql-client` to the dependencies for your service by running `cargo add shuttle-turso libsql-client`. This resource will be provided by adding the `shuttle_turso::Turso` attribute to your Shuttle main decorated function.
+Add `shuttle-turso` and `libsql` to the dependencies for your service by running `cargo add shuttle-turso libsql`. This resource will be provided by adding the `shuttle_turso::Turso` attribute to your Shuttle main decorated function.
 
-It returns a `libsql_client::Client`. When running locally it will instantiate a local SQLite database of the name of your service instead of connecting to your edge database.
+It returns a `libsql::Connection`. When running locally it will instantiate a local SQLite database of the name of your service instead of connecting to your edge database.
 
 If you want to connect to a remote database when running locally, you can specify the `local_addr` parameter. In that case, the token will be read from your `Secrets.dev.toml` file.
 
@@ -19,7 +19,7 @@ If you want to connect to a remote database when running locally, you can specif
 
 | Parameter  | Type   | Default | Description                                                                                                                                      |
 | ---------- | ------ | ------- | ------------------------------------------------------------------------------------------------------------------------------------------------ |
-| addr       | str    | `""`    | URL of the database to connect to. If `libsql://`` is missing at the beginning, it will be automatically added.                                  |
+| addr       | str    | `""`    | URL of the database to connect to. Should begin with either `libsql://` or `https://`.                                                           |
 | token      | str    | `""`    | The value of the token to authenticate against the Turso database. You can use string interpolation to read a secret from your Secret.toml file. |
 | local_addr | Option | `None`  | The URL to use when running your service locally. If not provided, this will default to a local file named `<service-name>.db`                   |
 
@@ -28,14 +28,14 @@ If you want to connect to a remote database when running locally, you can specif
 In the case of an Axum server, your main function will look like this:
 
 ```rust
-use libsql_client::client::Client;
+use libsql::Connection;
 use shuttle_axum::ShuttleAxum;
 
 #[shuttle_runtime::main]
 async fn app(
 #[shuttle_turso::Turso(
     addr="libsql://my-turso-db-name.turso.io",
-	token="{secrets.DB_TURSO_TOKEN}")] client: Client,
+	token="{secrets.DB_TURSO_TOKEN}")] client: Connection,
 // use secrets if you are not hardcoding your token/addr
 #[shuttle_secrets::Secrets] secrets: SecretStore
 ) -> ShuttleAxum {
