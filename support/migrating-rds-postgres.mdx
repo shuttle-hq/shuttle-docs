@@ -2,7 +2,7 @@
 title: "Migrating from RDS Postgres to Shared Postgres"
 ---
 
-Since the Shuttle AWS RDS resource is only available on the pro tier, if you cancel your
+Since the Shuttle AWS RDS resource is only available as a paid add-on, if you cancel your
 subscription you will lose access. Below are the steps you can take to migrate from the
 AWS RDS PostgreSQL resource to the Shuttle shared database resource.
 
@@ -61,15 +61,23 @@ the RDS user as the owner of your tables with the user from your shared database
 ```bash
 # Replace <shared pg url> with the full shared postgres connection string from step 4.
 # Replace <shared db user name> with the username from the shared postgres connection string.
-pg_restore -d '<shared pg url>' --no-owner db.sql --role=<shared db user name> db.dump
+pg_restore -d '<shared pg url>' --no-owner --role=<shared db user name> db.dump
 
 # With the example connection string: postgres://user-postgres-axum-app:password@db.unstable.shuttle.rs:5432/db-postgres-axum-app,
 # the command would look like this.
 pg_restore -d 'postgres://user-postgres-axum-app:password@db.unstable.shuttle.rs:5432/db-postgres-axum-app' \ 
-    --no-owner db.sql --role=user-postgres-axum-app db.dump
+    --no-owner --role=user-postgres-axum-app db.dump
 ```
 
-8. We can now remove the RDS database from our main function, and we can remove the `shuttle_aws_rds`
+8. We should verify that our application works after the switch to the database. We can use the `psql` CLI to
+run queries against the connection string, and compare them with the results from step 5.
+
+```bash
+# Replace <shared db url> with the full shared postgres connection string from step 4.
+psql <shared db url> -c "SELECT count(*) FROM your_table;"
+```
+
+9. We can now remove the RDS database from our main function, and we can remove the `shuttle_aws_rds`
 dependency from our `Cargo.toml`. We will also remove the underscore in front of the shared database
 pool. The pool is the same type, so you should be able to seamlessly switch to using it in your app.
 
@@ -78,14 +86,6 @@ pool. The pool is the same type, so you should be able to seamlessly switch to u
 async fn main(
     #[shuttle_shared_db::Postgres] pool: PgPool,
 ) -> ShuttleAxum { ... }
-```
-
-9. We should verify that our application works after the switch to the database. We can use the `psql` CLI to
-run queries against the connection string, and compare them with the results from step 5.
-
-```bash
-# Replace <shared db url> with the full shared postgres connection string from step 4.
-psql <shared db url> -c "SELECT count(*) FROM your_table;"
 ```
 
 10. When you are satisfied with the migration, you can delete your RDS instance.
