@@ -24,14 +24,9 @@
   },
   "anchors": [
     {
-      "name": "Crate Docs",
-      "icon": "rectangle-terminal",
-      "url": "https://docs.rs/shuttle-runtime/latest/shuttle_runtime/"
-    },
-    {
-      "name": "Blog",
-      "icon": "pen-nib",
-      "url": "https://shuttle.rs/blog"
+      "name": "GitHub",
+      "icon": "github",
+      "url": "https://github.com/shuttle-hq/shuttle"
     },
     {
       "name": "Community",
@@ -39,9 +34,23 @@
       "url": "https://discord.gg/shuttle"
     },
     {
-      "name": "GitHub",
-      "icon": "github",
-      "url": "https://github.com/shuttle-hq/shuttle"
+      "name": "Crate Docs",
+      "icon": "rectangle-terminal",
+      "url": "https://docs.rs/shuttle-runtime/latest/shuttle_runtime/"
+    }
+  ],
+  "tabs": [
+    {
+      "name": "Examples",
+      "url": "examples"
+    },
+    {
+      "name": "Templates and Tutorials",
+      "url": "templates"
+    },
+    {
+      "name": "Blog",
+      "url": "https://www.shuttle.rs/blog/"
     }
   ],
   "navigation": [
@@ -92,8 +101,26 @@
       ]
     },
     {
+      "group": "Migration",
+      "pages": ["migration/migrating-to-shuttle"]
+    },
+    {
+      "group": "Support",
+      "pages": [
+        "support/faq",
+        "support/troubleshooting",
+        "support/delete-project",
+        "support/migrating-rds-postgres"
+      ]
+    },
+    {
+      "group": "Community",
+      "pages": ["community/get-involved", "community/contribute", "community/open-source"]
+    },
+    {
       "group": "Examples",
       "pages": [
+        "examples/overview",
         {
           "group": "Axum",
           "pages": [
@@ -132,43 +159,30 @@
       ]
     },
     {
-      "group": "Migration",
-      "pages": ["migration/migrating-to-shuttle"]
+      "group": "Shuttle Next (Experimental)",
+      "pages": ["examples/shuttle-next"]
     },
     {
-      "group": "How To",
-      "pages": [
-        "tutorials/custom-service",
-        "tutorials/discord-weather-forecast",
-        "tutorials/url-shortener",
-        "tutorials/authentication",
-        "tutorials/send-your-logs-to-datadog",
-        "tutorials/serverless-calendar-app",
-        "tutorials/websocket-chat-app-js",
-        "tutorials/rest-http-service-with-axum",
-        "tutorials/databases-with-rust"
-      ]
+      "group": "Templates and Tutorials",
+      "pages": ["templates/overview"]
     },
     {
       "group": "Fullstack Templates",
-      "pages": ["fullstack/rust-next", "fullstack/saas-template"]
+      "pages": ["templates/fullstack/rust-next", "templates/fullstack/saas-template"]
     },
     {
-      "group": "Shuttle Next (Framework) 🧪",
-      "pages": ["shuttle-next/overview", "shuttle-next/getting-started"]
-    },
-    {
-      "group": "Support",
+      "group": "Tutorials",
       "pages": [
-        "support/faq",
-        "support/troubleshooting",
-        "support/delete-project",
-        "support/migrating-rds-postgres"
+        "templates/tutorials/rest-http-service-with-axum",
+        "templates/tutorials/discord-weather-forecast",
+        "templates/tutorials/databases-with-rust",
+        "templates/tutorials/serverless-calendar-app",
+        "templates/tutorials/url-shortener",
+        "templates/tutorials/authentication",
+        "templates/tutorials/send-your-logs-to-datadog",
+        "templates/tutorials/websocket-chat-app-js",
+        "templates/tutorials/custom-service"
       ]
-    },
-    {
-      "group": "Community",
-      "pages": ["community/get-involved", "community/contribute", "community/open-source"]
     }
   ],
   "footerSocials": {

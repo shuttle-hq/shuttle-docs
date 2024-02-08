@@ -16,20 +16,26 @@ cargo shuttle init
 
 ![Shuttle Scaffolding](/images/actix-scaffold-demo.gif)
 
-If you didn't create the project environment in the init command, run:
+You can then `cd` into the folder and try the app locally:
+
+```sh
+cargo shuttle run
+```
+
+In case you didn't create the project environment in the `init` command, run:
 
 ```sh
 cargo shuttle project start
 ```
 
-And to deploy it:
+Then, the app can be deployed with:
 
 ```sh
 cargo shuttle deploy --allow-dirty
 ```
 
-<Info>`--allow-dirty` allows deploying without your changes being committed to git.</Info>
+<Info>`--allow-dirty` or `--ad` allows deploying with uncommitted git changes.</Info>
 
 You can also run your project locally for development, check out our [local run](./local-run) section.
 
-Feel free to build on top of the generated "Hello, World!" project or check out one of our [examples](../examples/axum).
+Feel free to build on top of the generated "Hello, World!" project or check out one of our [examples](/examples) or [templates](/templates).
