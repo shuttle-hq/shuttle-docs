@@ -53,6 +53,7 @@ For full documentation, use `--help` on the respective command.
 - `cargo shuttle run`: Run the project locally so you can test your changes. For more tips, see [Local Run](./local-run).
 - `cargo shuttle run --port 8080`: Change the local port.
 - `cargo shuttle run --port 8080 --external`: Expose to local network by listening on `0.0.0.0`.
+- `cargo shuttle run --secrets <file>`: Use a non-default secrets file for this run.
 
 ### Start and deploy a project
 
@@ -60,6 +61,7 @@ For full documentation, use `--help` on the respective command.
 - `cargo shuttle deploy`: Deploy the project to Shuttle.
 - `cargo shuttle deploy --allow-dirty`: Deploy regardless whether there are pending git changes. Alias: `--ad`.
 - `cargo shuttle deploy --no-test`: Don't run unit tests before starting the deployment. Alias: `--nt`.
+- `cargo shuttle deploy --secrets <file>`: Use a non-default secrets file for this deployment. It must be located in the same folder that Secrets.toml should be in.
 
 ### Manage projects
 
