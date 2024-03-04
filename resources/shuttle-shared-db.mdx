@@ -46,6 +46,8 @@ async fn main(#[shuttle_shared_db::Postgres] conn_str: String) -> ... { ... }
 async fn main(#[shuttle_shared_db::Postgres] pool: sqlx::PgPool) -> ... { ... }
 ```
 
+<Snippet file="sqlx-macros.mdx" />
+
 ### Parameters
 
 Both the Postgres and MongoDB macros take the same optional parameter:

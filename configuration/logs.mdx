@@ -40,10 +40,10 @@ in your project is add it to your `Cargo.toml`.
 
 ### Configuring the default subscriber
 
-The global subscriber has an `env_filter` which defaults to the `INFO` log level if no `RUST_LOG` variable is set. You can change the
-log level for local runs with `RUST_LOG="<crate-name>=trace" cargo shuttle run`.
+The global subscriber has an `env_filter` which defaults to the `INFO` log level if no `RUST_LOG` variable is set.
+You can change the log level for local runs with `RUST_LOG="..." cargo shuttle run`.
 
-We do not currently allow changing the log level for deployments. Deployments use `RUST_LOG=debug,shuttle=trace,h2=warn` at the moment.
+Deployments use `RUST_LOG="shuttle=debug,info"`, and this is not configurable at the moment. A custom subscriber can be set up instead.
 
 ## Custom logging setup
 

@@ -77,6 +77,8 @@ async fn main(#[shuttle_aws_rds::Postgres] conn_str: String) -> ... { ... }
 async fn main(#[shuttle_aws_rds::Postgres] pool: sqlx::PgPool) -> ... { ... }
 ```
 
+<Snippet file="sqlx-macros.mdx" />
+
 ### Parameters
 
 All of the AWS RDS macros take the same optional parameter:
