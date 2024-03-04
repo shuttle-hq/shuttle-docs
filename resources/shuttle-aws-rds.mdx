@@ -81,9 +81,10 @@ async fn main(#[shuttle_aws_rds::Postgres] pool: sqlx::PgPool) -> ... { ... }
 
 All of the AWS RDS macros take the same optional parameter:
 
-| Parameter | Type | Description |
-|-----------|------|-------------|
-| local_uri | &str | If specified, on local runs, use this database instead of starting a Docker container for it |
+| Parameter     | Type | Description                                                                                  |
+|---------------|------|----------------------------------------------------------------------------------------------|
+| local_uri     | &str | If specified, on local runs, use this database instead of starting a Docker container for it |
+| database_name | &str | Name to give the default database. Defaults to project name if none is given                 |
 
 When passing in strings, you can also insert secrets from `Secrets.toml` using string interpolation.
 To insert the `PASSWORD` secret, pass it in like this:
