@@ -159,10 +159,6 @@
       ]
     },
     {
-      "group": "Shuttle Next (Experimental)",
-      "pages": ["examples/shuttle-next"]
-    },
-    {
       "group": "Templates and Tutorials",
       "pages": ["templates/overview"]
     },
