@@ -38,14 +38,10 @@ Here are the examples on how to use them, once you add the required annotations 
 ```rust
 #[shuttle_runtime::main]
 async fn axum(
-    #[shuttle_secrets::Secrets] secret_store: SecretStore,
+    #[shuttle_runtime::Secrets] secrets: SecretStore,
 ) -> shuttle_axum::ShuttleAxum {
     // Get secret defined in `Secrets.toml` file.
-    let secret = if let Some(secret) = secret_store.get("MY_API_KEY") {
-        secret
-    } else {
-        return Err(anyhow!("secret was not found").into());
-    };
+    let secret = secrets.get("MY_API_KEY").expect("secret was not found");
 }
 ```
 
