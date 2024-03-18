@@ -7,21 +7,17 @@ The metadata plugin allows applications to obtain certain information about thei
 
 ## Usage
 
-To use the metadata plugin, add `shuttle-metadata` to the dependencies of your project by manually editing the project's `Cargo.toml` file or by invoking `cargo add shuttle-metadata` from the command line.
-
-Once the metadata plugin dependency is available to your project, use the resource by annotating your main function with the `shuttle_metadata::ShuttleMetadata` attribute.
+Use the resource by annotating your main function with the `shuttle_runtime::ShuttleMetadata` attribute.
 
 ## Example
 
-This snippet shows an Axum main function, annotated with the `shuttle_metadata::ShuttleMetadata` attribute.
-
 ```rust main.rs
 use axum::{routing::get, Router};
-use shuttle_metadata::Metadata;
+use shuttle_runtime::DeploymentMetadata;
 
 #[shuttle_runtime::main]
 async fn axum(
-    #[shuttle_metadata::ShuttleMetadata] metadata: Metadata,
+    #[shuttle_runtime::Metadata] metadata: DeploymentMetadata,
 ) -> shuttle_axum::ShuttleAxum {
     let router = Router::new().route("/", get(format!("{:?}", metadata)));
 
@@ -29,10 +25,10 @@ async fn axum(
 }
 ```
 
-This example has one route which returns the debug print of the `Metadata` struct:
+This example has one route which returns the debug print of the `DeploymentMetadata` struct:
 
 ```text
-DeploymentMetadata { env: Local, project_name: ProjectName("metadata-axum-app"), service_name: "metadata-axum-app", storage_path: ".shuttle-storage" }
+DeploymentMetadata { env: Local, project_name: "metadata-axum-app", storage_path: ".shuttle-storage" }
 ```
 
 The full example can also be found on [GitHub](https://github.com/shuttle-hq/shuttle-examples/tree/main/axum/metadata).

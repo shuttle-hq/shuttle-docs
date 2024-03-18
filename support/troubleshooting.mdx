@@ -7,8 +7,7 @@ This section is aimed at collecting common issues users have to provide quick de
 
 <AccordionGroup>
   <Accordion title="I've updated Shuttle and my project isn't working anymore.">
-    If you've recently updated Shuttle, in order to get your project back up, you need to run:
-    `cargo shuttle project restart` and everything should be back in working order.
+    Make sure to follow all of the [upgrading steps](/configuration/shuttle-versions#upgrading-shuttle-version).
   </Accordion>
   <Accordion title="How can I return custom errors with Shuttle?">
     CustomError is an alias for `anyhow::Error`, the simplest way to output a relevant message here is by using `anyhow::Context` like this:
@@ -21,15 +20,8 @@ This section is aimed at collecting common issues users have to provide quick de
         .context("failed to run migrations")?;
     ```
   </Accordion>
-  <Accordion title="How can I handle environment variables?">
-    Add `shuttle-secrets` to the dependencies for your service, and add a `Secrets.toml` to the root of your project with the secrets you'd like to store. Make sure to add `Secrets*.toml` to your `.gitignore` to omit your secrets from version control.
-
-    Next, pass `#[shuttle_secrets::Secrets] secret_store: SecretStore` as an argument to your `shuttle_runtime::main` function. `SecretStore::get` can now be called to retrieve your API keys and other secrets at runtime.
-
-    For more details, and an explanation on how to use local secrets, head on over here: [Shuttle secrets](../resources/shuttle-secrets).
-  </Accordion>
 </AccordionGroup>
 
 ### Other issues?
 
-Hop on over to [our Discord server](https://github.com/shuttle-hq/shuttle), we are very responsive!
+Hop on over to [our Discord server](https://discord.gg/shuttle), we are very responsive!

@@ -76,12 +76,12 @@ cargo shuttle init --template serenity
 After running it you, should see the following generated in `src/main.rs`:
 
 ```rust src/main.rs
-use anyhow::anyhow;
+use anyhow::Context as _;
 use serenity::async_trait;
 use serenity::model::channel::Message;
 use serenity::model::gateway::Ready;
 use serenity::prelude::*;
-use shuttle_secrets::SecretStore;
+use shuttle_runtime::SecretStore;
 use tracing::{error, info};
 
 struct Bot;
@@ -103,14 +103,10 @@ impl EventHandler for Bot {
 
 #[shuttle_runtime::main]
 async fn serenity(
-    #[shuttle_secrets::Secrets] secret_store: SecretStore,
+    #[shuttle_runtime::Secrets] secrets: SecretStore,
 ) -> shuttle_serenity::ShuttleSerenity {
     // Get the discord token set in `Secrets.toml`
-    let token = if let Some(token) = secret_store.get("DISCORD_TOKEN") {
-        token
-    } else {
-        return Err(anyhow!("'DISCORD_TOKEN' was not found").into());
-    };
+    let token = secrets.get("DISCORD_TOKEN").context("'DISCORD_TOKEN' was not found")?;
 
     // Set gateway intents, which decides what events the bot will be notified about
     let intents = GatewayIntents::GUILD_MESSAGES | GatewayIntents::MESSAGE_CONTENT;
@@ -146,7 +142,7 @@ Now that we have the information for setup, we can start writing our bot and its
 commands.
 
 We will first get rid of the `async fn message` hook  as we won't be using it in
-this example, and then configure the gateway intents to not use any, as we won't be needing them. 
+this example, and then configure the gateway intents to not use any, as we won't be needing them.
 
 ```rust src/main.rs
     // Set gateway intents, which decides what events the bot will be notified about.
@@ -167,7 +163,7 @@ impl EventHandler for Bot {
         // We are going to move the guild ID to the Secrets.toml file later.
         let guild_id = GuildId::new(*your guild id*);
 
-        // We are creating a vector with commands 
+        // We are creating a vector with commands
         // and registering them on the server with the guild ID we have set.
         let commands = vec![CreateCommand::new("hello").description("Say hello")];
         let commands = guild_id.set_commands(&ctx.http, commands).await.unwrap();
@@ -218,25 +214,12 @@ Shuttle we create a `Secrets.toml` file with a key value pair:
 ```toml Secrets.toml
 DISCORD_TOKEN="your discord token"
 ```
-This pair is read by the `secret_store.get("DISCORD_TOKEN")` call in the `serenity` function:
-
-```rust src/main.rs
-
-#[shuttle_runtime::main]
-async fn serenity(
-    // ...
-    let token = if let Some(token) = secret_store.get("DISCORD_TOKEN") {
-        token
-    } else {
-        return Err(anyhow!("'DISCORD_TOKEN' was not found").into());
-    };
-    // ...
-}
-```
 
 Now we can run our bot and test the hello command:
 
-`cargo shuttle run`
+```bash
+cargo shuttle run
+```
 
 We should see that our bot now displays as online:
 
@@ -417,7 +400,7 @@ struct Bot {
 
 #[shuttle_runtime::main]
 async fn serenity(
-    #[shuttle_secrets::Secrets] secret_store: SecretStore,
+    #[shuttle_runtime::Secrets] secret_store: SecretStore,
 ) -> shuttle_serenity::ShuttleSerenity {
     // Get the discord token set in `Secrets.toml`
     let discord_token = secret_store
@@ -467,31 +450,30 @@ We will add our new command with a place option/parameter. Back in the `ready`
 hook, we can add an additional command alongside the existing `hello` command:
 
 ```rust src/main.rs
-// ready() should look like this:
 async fn ready(&self, ctx: Context, ready: Ready) {
-        info!("{} is connected!", ready.user.name);
+    info!("{} is connected!", ready.user.name);
 
-        let commands = vec![
-            CreateCommand::new("hello").description("Say hello"),
-            CreateCommand::new("weather")
-                .description("Display the weather")
-                .add_option(
-                    CreateCommandOption::new(
-                        serenity::all::CommandOptionType::String,
-                        "place",
-                        "City to lookup forecast",
-                    )
-                    .required(true)
-                ),
-        ];
-        
-        let commands = &self
-            .discord_guild_id
-            .set_commands(&ctx.http, commands)
-            .await
-            .unwrap();
+    let commands = vec![
+        CreateCommand::new("hello").description("Say hello"),
+        CreateCommand::new("weather")
+            .description("Display the weather")
+            .add_option(
+                CreateCommandOption::new(
+                    serenity::all::CommandOptionType::String,
+                    "place",
+                    "City to lookup forecast",
+                )
+                .required(true)
+            ),
+    ];
 
-        info!("Registered commands: {:#?}", commands);
+    let commands = &self
+        .discord_guild_id
+        .set_commands(&ctx.http, commands)
+        .await
+        .unwrap();
+
+    info!("Registered commands: {:#?}", commands);
 }
 ```
 
@@ -545,7 +527,7 @@ DISCORD_GUILD_ID = "***"
 WEATHER_API_KEY = "***"
 ```
 
-With the secrets added, we can run the server:
+With the secrets added, we can run the bot:
 
 ```bash
 cargo shuttle run

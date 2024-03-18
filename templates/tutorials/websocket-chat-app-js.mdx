@@ -149,7 +149,7 @@ Now that the main design of the app is done, let's think about how we can implem
 
 ```js
 // App.tsx
-const websocket = new WebSocket(ws://localhost:8000/ws);
+const websocket = new WebSocket("ws://localhost:8000/ws");
 ```
 
 This opens a WebSocket connection at `localhost:8000/ws`. Not particularly useful at the moment because we currently don't have anything we can connect it to, but we'll need this for testing later on.
@@ -257,10 +257,8 @@ hyper = { version = "0.14", features = ["client", "http2"] }
 hyper-tls = "0.5"
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
-shuttle-axum = { version = "0.41.0" }
-shuttle-runtime = { version = "0.41.0" }
-shuttle-secrets = "0.41.0"
-shuttle-static-folder = "0.41.0"
+shuttle-axum = "0.42.0"
+shuttle-runtime = "0.42.0"
 sync_wrapper = "0.1"
 tokio = { version = "1", features = ["full"] }
 tower-http = { version = "0.3.5", features = ["fs", "auth"]}
@@ -425,8 +423,7 @@ Before we get started however, let's quickly update our main function so that we
 ```rust
 #[shuttle_runtime::main]
 async fn axum(
-    #[shuttle_secrets::Secrets] secrets: SecretStore,
-    #[shuttle_static_folder::StaticFolder] static_folder: PathBuf
+    #[shuttle_runtime::Secrets] secrets: SecretStore,
 ) -> ShuttleAxum {
     // We use Secrets.toml to set the BEARER key, just like in a .env file and call it here
     let secret = secrets.get("BEARER").unwrap_or("Bear".to_string());
@@ -438,7 +435,7 @@ async fn axum(
 }
 ```
 
-Let's dissect our new additions quickly. `shuttle_secrets::Secrets` allows us to set environmental variables using a Secrets.toml file, much like how you'd typically use a .env file to be able to use environment variables locally and in production. `shuttle_static_folder::StaticFolder` provides a path to our static assets folder so that when we deploy to Shuttle, the deployment will know where to find our static assets (although we won't implement that just yet).
+Let's dissect our new additions quickly. `shuttle_runtime::Secrets` allows us to set environmental variables using a Secrets.toml file, much like how you'd typically use a .env file to be able to use environment variables locally and in production.
 
 Now that our setup for this section is out of the way, let's cover the admin route first as that'll mean we can make sure our WebSocket service is complete before we compile any assets. Let's make a function that will take a user ID and manually disconnect them using the disconnect function we already have:
 
@@ -471,7 +468,7 @@ Now that we have this route, we can actually embed it into our main router using
         .layer(Extension(users))
 ```
 
-As you can see here, our admin route should actually be `<base-url>/ws/admin`, as dictated by the nest function. Now if we want to disconnect a user with the user ID of 5 manually for example, we would have to make a post request to `<base-url>/ws/admin/disconnect/5` with a Bearer authentication header - as an example, if you've set your secret as "keyboard cat", you need to enter an authentication header of `Bearer keyboard cat`).
+As you can see here, our admin route should actually be `<base-url>/ws/admin`, as dictated by the nest function. Now if we want to disconnect a user with the user ID of 5 manually for example, we would have to make a post request to `<base-url>/ws/admin/disconnect/5` with a Bearer authentication header - as an example, if you've set your secret as "keyboard cat", you need to enter an authentication header of `Bearer keyboard cat`.
 
 At this point, your router function should look like this (if not, you have likely missed a step somewhere):
 
@@ -488,7 +485,7 @@ At this point, your router function should look like this (if not, you have like
      Router::new()
         .route("/ws", get(ws_handler))
         .nest("/admin", admin)
-        .fallback_service("/", ServeDir::new(static_folder).not_found_service(ServeFile::new(static_folder.join("/index.html"))))
+        .fallback_service("/", ServeDir::new("assets").not_found_service(ServeFile::new("assets/index.html")))
         .layer(Extension(users))
 }
 ```
@@ -542,19 +539,18 @@ Now we can update our main function and router together so that the router will 
 ```rust
 #[shuttle_runtime::main]
 async fn axum(
-    #[shuttle_secrets::Secrets] secrets: SecretStore,
-    #[shuttle_static_folder::StaticFolder] static_folder: PathBuf
+    #[shuttle_runtime::Secrets] secrets: SecretStore,
 ) -> ShuttleAxum {
     // We use Secrets.toml to set the BEARER key, just like in a .env file and call it here
     let secret = secrets.get("BEARER").unwrap_or("Bear".to_string());
 
     // set up router with Secrets
-    let router = router(secret, static_folder);
+    let router = router(secret);
 
     Ok(router.into())
 }
 
-fn router(secret: String, static_folder: PathBuf) -> Router {
+fn router(secret: String) -> Router {
     // initialise the Users k/v store and allow the static files to be served
     let users = Users::default();
 
@@ -567,7 +563,7 @@ fn router(secret: String, static_folder: PathBuf) -> Router {
      Router::new()
         .route("/ws", get(ws_handler))
         .nest("/admin", admin)
-        .fallback_service("/", ServeDir::new(static_folder).not_found_service(ServeFile::new(static_folder.join("/index.html"))))
+        .fallback_service("/", ServeDir::new("assets").not_found_service(ServeFile::new("assets/index.html")))
         .layer(Extension(users))
 }
 ```
@@ -578,7 +574,7 @@ Now we're pretty much done and ready to deploy! We can call our deploy script at
 ```rust
   "scripts": {
   // ...your other scripts
-    "dev": "concurrently new \"vite\" \"cargo shuttle run --working-directory .API\"",
+    "dev": "concurrently new \"vite\" \"cargo shuttle run --working-directory ./API\"",
     "build": "tsc && vite build --emptyOutDir",
     "deploy": "npm run build && cargo shuttle deploy --working-directory ./API"
   // ...your other scripts

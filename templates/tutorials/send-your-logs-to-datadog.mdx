@@ -76,7 +76,7 @@ So, the basic idea is to add a new [tracing layer](https://docs.rs/tracing-subsc
 But for that, we'll need to get **access to the subscriber instance prior to its initialization**, and it turns out that [Shuttle](https://www.shuttle.rs/) provides a way to do that just by disabling the default features on `shuttle-runtime` crate.
 
 ```toml
-shuttle-runtime = { version = "*" default-features = false }
+shuttle-runtime = { version = "*", default-features = false }
 ```
 
 ## Creating our project
@@ -115,8 +115,6 @@ tokio = "1"
 tracing = "0.1"
 tracing-subscriber = { version = "0.3", features = ["env-filter", "json", "time"] }
 dd-tracing-layer = "0.1"
-# secrets
-shuttle-secrets = "0.27.0"
 ```
 
 ### Instrumenting a little bit the default project
@@ -166,7 +164,7 @@ Let's do it! Make sure your `axum` function looks like this:
 ```rust
 use axum::{routing::get, Router};
 use dd_tracing_layer::{DatadogOptions, Region};
-use shuttle_secrets::SecretStore;
+use shuttle_runtime::SecretStore;
 use tracing::instrument;
 use tracing_subscriber::prelude::*;
 
@@ -176,7 +174,7 @@ const VERSION: &'static str = "version:0.1.0";
 // [...]
 
 #[shuttle_runtime::main]
-async fn axum(#[shuttle_secrets::Secrets] secret_store: SecretStore) -> shuttle_axum::ShuttleAxum {
+async fn axum(#[shuttle_runtime::Secrets] secret_store: SecretStore) -> shuttle_axum::ShuttleAxum {
     // getting the Datadog Key from the secrets
     let dd_api_key = secret_store
         .get("DD_API_KEY")
@@ -244,18 +242,14 @@ As you can see in the code above, we are using the [Shuttle Secrets](https://doc
 
 So, let's create two files in the root of our project:
 
-`Secrets.dev.toml` 
-
-```toml
+```toml Secrets.dev.toml
 DD_API_KEY = "your-datadog-api-key"
 DD_TAGS = "env:dev,service:shuttle-datadog-logs"
 # setting info as the default log level, but debug for our project
 LOG_LEVEL = "INFO,shuttle_datadog_logs=DEBUG"
 ```
 
-and `Secrets.toml`
-
-```toml
+```toml Secrets.toml
 DD_API_KEY = "your-datadog-api-key"
 DD_TAGS = "env:prod,service:shuttle-datadog-logs"
 LOG_LEVEL = "INFO"

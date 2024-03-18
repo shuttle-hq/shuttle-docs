@@ -15,7 +15,7 @@ This example shows how to build a Poise bot with Shuttle that responds to the `/
 ```rust src/main.rs
 use anyhow::Context as _;
 use poise::serenity_prelude::{ClientBuilder, GatewayIntents};
-use shuttle_secrets::SecretStore;
+use shuttle_runtime::SecretStore;
 use shuttle_serenity::ShuttleSerenity;
 
 struct Data {} // User data, which is stored and accessible in all command invocations
@@ -30,7 +30,7 @@ async fn hello(ctx: Context<'_>) -> Result<(), Error> {
 }
 
 #[shuttle_runtime::main]
-async fn main(#[shuttle_secrets::Secrets] secret_store: SecretStore) -> ShuttleSerenity {
+async fn main(#[shuttle_runtime::Secrets] secret_store: SecretStore) -> ShuttleSerenity {
     // Get the discord token set in `Secrets.toml`
     let discord_token = secret_store
         .get("DISCORD_TOKEN")
@@ -72,10 +72,9 @@ publish = false
 [dependencies]
 anyhow = "1.0.68"
 poise = "0.6.1"
-shuttle-runtime = "0.41.0"
-shuttle-secrets = "0.41.0"
+shuttle-runtime = "0.42.0"
 # Since poise is a serenity command framework, it can run on Shuttle with shuttle-serenity
-shuttle-serenity = "0.41.0"
+shuttle-serenity = "0.42.0"
 tracing = "0.1.37"
 tokio = "1.26.0"
 ```

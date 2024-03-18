@@ -26,12 +26,13 @@ To add the bot to a server, we need to create an invite link:
 
 
 ### Initial Setup
+
 Start by running the following command:
 ```bash
 cargo shuttle init --template none
 ```
 
-This will simply initialize a new cargo crate with a dependency on `shuttle-service`.
+This will simply initialize a new cargo crate with a dependency on `shuttle-runtime`.
 
 We also want to add several dependencies for this - make sure your Cargo.toml looks like below:
 
@@ -47,14 +48,12 @@ axum = "0.6.4"
 hyper = "0.14.24"
 poise = "0.5.2"
 serde = "1.0"
-shuttle-runtime = "0.41.0"
-shuttle-secrets = "0.41.0"
+shuttle-runtime = "0.42.0"
 tokio = "1.26.0"
 ```
 
 ### Getting Started
-To get started, we need to return a wrapper struct from our `shuttle_runtime::main` function that 
-implements `shuttle_service::Service`, which we can declare like so:
+To get started, we need to return a wrapper struct from our `shuttle_runtime::main`.
 
 ```rust main.rs
 pub struct CustomService {
@@ -77,7 +76,7 @@ impl shuttle_runtime::Service for CustomService {
         mut self,
         addr: std::net::SocketAddr,
     ) -> Result<(), shuttle_runtime::Error> {
-        
+
         let router = self.router.into_inner();
 
         let serve_router = axum::Server::bind(&addr).serve(router.into_make_service());
@@ -135,9 +134,10 @@ To finish up, we return the wrapper struct from our `shuttle_runtime::main` func
 for setting up each of our services for the struct, like so:
 
 ```rust main.rs
-use poise::serenity_prelude as serenity;
-use shuttle_secrets::SecretStore;
 use std::sync::Arc;
+
+use poise::serenity_prelude as serenity;
+use shuttle_runtime::SecretStore;
 
 mod commands;
 use commands::age;
@@ -155,7 +155,7 @@ pub struct CustomService {
 
 #[shuttle_runtime::main]
 async fn init(
-    #[shuttle_secrets::Secrets] secrets: SecretStore,
+    #[shuttle_runtime::Secrets] secrets: SecretStore,
 ) -> Result<CustomService, shuttle_runtime::Error> {
    let discord_api_key = secrets.get("DISCORD_API_KEY").unwrap();
 
