@@ -164,7 +164,7 @@
     },
     {
       "group": "Fullstack Templates",
-      "pages": ["templates/fullstack/rust-next", "templates/fullstack/saas-template"]
+      "pages": ["templates/fullstack/saas-template"]
     },
     {
       "group": "Tutorials",
