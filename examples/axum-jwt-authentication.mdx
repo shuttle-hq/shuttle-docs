@@ -248,7 +248,8 @@ So let's get a JWT from the login route first:
 
 
 ```sh
-$ curl --request POST --data '{"client_id": "foo", "client_secret": "bar"}' \
+$ curl --header "Content-Type: application/json" --request POST \
+ --data '{"client_id": "foo", "client_secret": "bar"}' \
  http://localhost:8000/login
 ```
 
