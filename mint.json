@@ -87,6 +87,7 @@
         "resources/overview",
         {
           "group": "Databases",
+          "icon": "database",
           "pages": [
             "resources/shuttle-aws-rds",
             "resources/shuttle-shared-db",
