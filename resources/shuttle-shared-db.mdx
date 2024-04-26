@@ -88,12 +88,12 @@ the Docker engine.
 ## Example
 
 The Shuttle main function below uses the `#[shuttle_shared_db::Postgres]` attribute macro to provision a shared Postgres database,
-which can be accessed using a pre-configured, authenticated [sqlx Pool](https://docs.rs/sqlx/latest/sqlx/pool/index.html).
+which can be accessed with an [sqlx Pool](https://docs.rs/sqlx/latest/sqlx/pool/index.html).
 
 ```rust main.rs
 #[shuttle_runtime::main]
 async fn main(
-    #[shuttle_shared_db::Postgres] pool: PgPool
+    #[shuttle_shared_db::Postgres] pool: PgPool,
 ) -> shuttle_axum::ShuttleAxum {
     sqlx::migrate!()
         .run(&pool)
