@@ -1,4 +1,4 @@
 .direnv/
 node_modules/
-
+.envrc
 .vscode

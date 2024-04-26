@@ -116,12 +116,14 @@ the Docker engine.
 
 ## Example
 
-This snippet shows the main function of a tide app that uses the `#[shuttle_aws_rds::Postgres]` attribute macro to provision an RDS Postgres database.
-It gives you an authenticated [sqlx Pool](https://docs.rs/sqlx/latest/sqlx/pool/index.html), which you can use to interact with the database.
+This snippet shows the main function of a tide app that uses the `#[shuttle_aws_rds::Postgres]` attribute macro to provision an RDS Postgres database,
+which can be accessed with an [sqlx Pool](https://docs.rs/sqlx/latest/sqlx/pool/index.html).
 
 ```rust main.rs
 #[shuttle_runtime::main]
-async fn tide(#[shuttle_aws_rds::Postgres] pool: PgPool) -> ShuttleTide<MyState> {
+async fn tide(
+    #[shuttle_aws_rds::Postgres] pool: PgPool,
+) -> ShuttleTide<MyState> {
     pool.execute(include_str!("../schema.sql"))
         .await
         .map_err(CustomError::new)?;
@@ -136,5 +138,3 @@ async fn tide(#[shuttle_aws_rds::Postgres] pool: PgPool) -> ShuttleTide<MyState>
     Ok(app.into())
 }
 ```
-
-The full example can be found on [GitHub](https://github.com/shuttle-hq/shuttle-examples/tree/main/tide/postgres).
