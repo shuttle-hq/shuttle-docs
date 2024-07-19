@@ -56,7 +56,11 @@
   "navigation": [
     {
       "group": "Introduction",
-      "pages": ["introduction/welcome", "introduction/what-is-shuttle", "introduction/how-shuttle-works"]
+      "pages": [
+        "introduction/welcome",
+        "introduction/what-is-shuttle",
+        "introduction/how-shuttle-works"
+      ]
     },
     {
       "group": "Getting Started",
@@ -93,7 +97,8 @@
             "resources/shuttle-shared-db",
             "resources/shuttle-persist",
             "resources/shuttle-turso",
-            "resources/shuttle-qdrant"
+            "resources/shuttle-qdrant",
+            "resources/shuttle-opendal"
           ]
         },
         "resources/shuttle-secrets",
@@ -116,7 +121,11 @@
     },
     {
       "group": "Community",
-      "pages": ["community/get-involved", "community/contribute", "community/open-source"]
+      "pages": [
+        "community/get-involved",
+        "community/contribute",
+        "community/open-source"
+      ]
     },
     {
       "group": "Examples",
@@ -153,7 +162,11 @@
         },
         {
           "group": "Serenity",
-          "pages": ["examples/serenity", "examples/serenity-todo", "examples/poise"]
+          "pages": [
+            "examples/serenity",
+            "examples/serenity-todo",
+            "examples/poise"
+          ]
         },
         "examples/other",
         "examples/examples-repo-link"
