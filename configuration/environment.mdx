@@ -69,6 +69,12 @@ rustflags = ["-C", "link-arg=-fuse-ld=/usr/bin/ld.lld"]
 
 See [Shuttle Secrets](/resources/shuttle-secrets)
 
+## Multiple environments
+
+Multiple environments (such as development, staging and production) within a project is a planned feature.
+Until that feature is ready, you can use a workflow of using one Shuttle project for each environment (for example `project` and `project-dev`).
+To deploy to the non-default project name, you can use the `deploy` command with `--name` for targetting a different project, and `--secrets` to use a different secrets file.
+
 ## Limitations
 
 <Warning>
