@@ -14,7 +14,7 @@ This page answers:
 
 Deployments are currently built and run in our `shuttle-deployer` container, which is based on a Rust Bookworm docker image (Debian 12).
 
-The current Rust version is `1.75.0`, toolchain `stable-x86_64-unknown-linux-gnu`.
+The current Rust version is `1.79.0`, toolchain `stable-x86_64-unknown-linux-gnu`.
 It's not currently possible for you to change this, but being able to choose which toolchain your project will be compiled with is a planned feature.
 
 The target `wasm32-unknown-unknown` is installed, which enables compiling WASM frontends.
@@ -41,12 +41,12 @@ Additionally, these tools are installed:
 ## Environment variables
 
 There are some environment variables set in the Shuttle container.
-Check for `SHUTTLE=true` for custom behavior when running on Shuttle.
+Check for `SHUTTLE=true` or use [the shuttle feature flag](./project-structure#cargo-feature-flags) for custom behavior when running on Shuttle.
 
 ```bash
 SHUTTLE=true
-RUST_VERSION="1.75.0"
-RUSTUP_TOOLCHAIN="1.75.0"
+RUST_VERSION="1.79.0"
+RUSTUP_TOOLCHAIN="1.79.0"
 ```
 
 ### Build environment
@@ -68,6 +68,12 @@ rustflags = ["-C", "link-arg=-fuse-ld=/usr/bin/ld.lld"]
 ### Runtime environment
 
 See [Shuttle Secrets](/resources/shuttle-secrets)
+
+## Multiple environments
+
+Multiple environments (such as development, staging and production) within a project is a planned feature.
+Until that feature is ready, you can use a workflow of using one Shuttle project for each environment (for example `project` and `project-dev`).
+To deploy to the non-default project name, you can use the `deploy` command with `--name` for targetting a different project, and `--secrets` to use a different secrets file.
 
 ## Limitations
 

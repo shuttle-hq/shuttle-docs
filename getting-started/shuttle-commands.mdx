@@ -98,3 +98,8 @@ All project-related commands can use:
 Use `cargo shuttle generate shell <shell>` with one of: bash, elvish, fish, powershell, zsh.
 
 Example configuration for Zsh on Linux: add `eval "$(cargo shuttle generate shell zsh)"` to `~/.zshrc`.
+
+### Utility
+
+- `cargo shuttle --debug <command>`: Turn on tracing output for Shuttle libraries. (WARNING: can print sensitive data)
+- `cargo shuttle deploy --output-archive <path>`: Dump the deployment archive to disk instead of deploying it. Useful for debugging.

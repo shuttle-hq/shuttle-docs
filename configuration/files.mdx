@@ -45,6 +45,12 @@ You can double check which files are included in your deployment by turning on d
 cargo shuttle --debug deploy
 ```
 
+or inspect the archive after writing it to disk:
+
+```bash
+cargo shuttle deploy --output-archive deployment.tar
+```
+
 ## Serving static files
 
 Serving a web project often means that there are static HTML, CSS, or JavaScript files to serve.
