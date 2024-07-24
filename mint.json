@@ -101,6 +101,13 @@
             "resources/shuttle-opendal"
           ]
         },
+        {
+          "group": "LLMs ✨",
+          "icon": "microchip",
+          "pages": [
+            "resources/shuttle-openai"
+          ]
+        },
         "resources/shuttle-secrets",
         "resources/shuttle-metadata",
         "resources/custom-resources"
