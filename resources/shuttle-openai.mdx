@@ -39,6 +39,10 @@ async fn app(
 | Parameter | Type  | Description                          |
 |-----------|-------|--------------------------------------|
 | api_key   | `str` | The API key for OpenAI authentication |
+| api_base   | `Option<str>` | To use a API base url different from default [OPENAI_API_BASE](https://docs.rs/async-openai/latest/async_openai/config/constant.OPENAI_API_BASE.html) |
+| org_id   | `Option<str>` | To use a different organization id other than default |
+| project_id   | `Option<str>` | Non default project id |
+
 
 The API key is loaded from your `Secrets.toml` file.
 
