@@ -1,0 +1,63 @@
+---
+title: "Integrate OpenAI with Shuttle"
+icon: "microchip"
+---
+
+# Integrate OpenAI with Shuttle
+
+This plugin allows services to connect to [OpenAI](https://openai.com/), enabling easy access to OpenAI's powerful language models and AI capabilities.
+
+## Usage
+
+Add `shuttle-openai` to the dependencies for your service by running `cargo add shuttle-openai`.
+
+This resource will be provided by adding the `shuttle_openai::OpenAI` attribute to your Shuttle `main` decorated function.
+
+It returns an `async_openai::Client<OpenAIConfig>` for you to interact with OpenAI's services.
+
+### Example
+
+In the case of an Axum server, your main function will look like this:
+
+```rust
+use async_openai::{Client, config::OpenAIConfig};
+use shuttle_axum::ShuttleAxum;
+
+#[shuttle_runtime::main]
+async fn app(
+    #[shuttle_openai::OpenAI(api_key = "{secrets.OPENAI_API_KEY}")]
+    openai: Client<OpenAIConfig>,
+) -> ShuttleAxum {
+    // Your app logic here
+}
+```
+
+[Click here for the full example.](https://github.com/shuttle-hq/shuttle-examples/tree/main/axum/openai)
+
+### Parameters
+
+| Parameter | Type  | Description                          |
+|-----------|-------|--------------------------------------|
+| api_key   | `str` | The API key for OpenAI authentication |
+| api_base   | `Option<str>` | To use a API base url different from default [OPENAI_API_BASE](https://docs.rs/async-openai/latest/async_openai/config/constant.OPENAI_API_BASE.html) |
+| org_id   | `Option<str>` | To use a different organization id other than default |
+| project_id   | `Option<str>` | Non default project id |
+
+
+The API key is loaded from your `Secrets.toml` file.
+
+## Configuration
+
+To use this integration, you need to set up your OpenAI API key in the `Secrets.toml` file:
+
+```toml
+OPENAI_API_KEY = "your-api-key-here"
+```
+
+Make sure to keep your API key confidential and never commit it to version control.
+
+## Additional Information
+
+For more details on how to use the OpenAI client in your Rust application, refer to the [async_openai documentation](https://docs.rs/async-openai/latest/async_openai/).
+
+Remember to handle API usage responsibly and in accordance with OpenAI's usage policies and rate limits.
