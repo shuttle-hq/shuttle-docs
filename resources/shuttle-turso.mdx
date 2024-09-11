@@ -28,14 +28,14 @@ If you want to connect to a remote database when running locally, you can specif
 In the case of an Axum server, your main function will look like this:
 
 ```rust
-use libsql::Connection;
+use libsql::Database;
 use shuttle_axum::ShuttleAxum;
 
 #[shuttle_runtime::main]
 async fn app(
 #[shuttle_turso::Turso(
     addr="libsql://my-turso-db-name.turso.io",
-	token="{secrets.DB_TURSO_TOKEN}")] client: Connection,
+	token="{secrets.DB_TURSO_TOKEN}")] client: Database,
 // use secrets if you are not hardcoding your token/addr
 #[shuttle_secrets::Secrets] secrets: SecretStore
 ) -> ShuttleAxum {
