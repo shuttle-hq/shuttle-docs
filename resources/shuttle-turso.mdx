@@ -11,7 +11,7 @@ This plugin allows services to connect to a [Turso](https://turso.tech) database
 
 Add `shuttle-turso` and `libsql` to the dependencies for your service by running `cargo add shuttle-turso libsql`. This resource will be provided by adding the `shuttle_turso::Turso` attribute to your Shuttle main decorated function.
 
-It returns a `libsql::Connection`. When running locally it will instantiate a local SQLite database of the name of your service instead of connecting to your edge database.
+It returns a `libsql::Database`. When running locally it will instantiate a local SQLite database of the name of your service instead of connecting to your edge database.
 
 If you want to connect to a remote database when running locally, you can specify the `local_addr` parameter. In that case, the token will be read from your `Secrets.dev.toml` file.
 
