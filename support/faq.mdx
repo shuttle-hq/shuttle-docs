@@ -16,7 +16,7 @@ This section is aimed at collecting common questions users have to provide docum
     Read more about the deployment environment [here](/configuration/environment).
   </Accordion>
   <Accordion title="What happens when I deploy to Shuttle?">
-    Your code is analyzed and built on our servers. The first time you introduce additional resources in your code, like the first time you use a database, we will add that resource to your project and wire it automatically to your deployment.
+    Your code is built and hosted on our servers. The first time you introduce additional resources in your code, like the first time you use a database, we will add that resource to your project and wire it automatically to your deployment.
     Read about what happens to deployment files [here](/configuration/files).
   </Accordion>
   <Accordion title="Which version of Rust will my project be compiled with?">
@@ -32,9 +32,6 @@ This section is aimed at collecting common questions users have to provide docum
 
     For a tutorial on how to build and deploy a simple full-stack app using Next.js & Rust, check out this tutorial: [Deploying a NextJS frontend with Rust, in one go](https://joshmo.hashnode.dev/deploying-a-nextjs-front-end-with-a-rust-api-in-one-go)
   </Accordion>
-  <Accordion title="How does this differ from using serverless framework with Rust Lambda and provided runtime?">
-    You can bring your lambda code to Shuttle as is. And we run it on dedicated infrastructure that keeps the state of your services across requests, has no cold-start and can even have long-running threads, all of which is not possible on AWS Lambda.
-  </Accordion>
   <Accordion title="Can I implement my own custom service for Shuttle?">
     Absolutely! And it's quite easy. Check out this section of our docs for the steps to do so: [Custom Services](/templates/tutorials/custom-service)
   </Accordion>
@@ -42,23 +39,13 @@ This section is aimed at collecting common questions users have to provide docum
     Yes, you can create a SeaORM connection from the sqlx pool Shuttle passes to you when you provision a SQL database. You can take a look at the example [here](https://github.com/shuttle-hq/shuttle/issues/179#issuecomment-1203536025).
   </Accordion>
   <Accordion title="Can I rename my Shuttle project?">
-    Certainly. Just create a `Shuttle.toml` file in the workspace root directory where your `Cargo.toml` is and add `name = "your-project-name"`. Read more [here](/configuration/files).
+    A project can't yet be renamed in place, but you can create a `Shuttle.toml` file to deploy it to a new name. Read more [here](/configuration/project-name).
   </Accordion>
   <Accordion title="Where geographically are deployments hosted?">
     Currently, all deployments are in the eu-west2 region (London).
     We do plan to support multiple regions, but we can't give a precise ETA yet.
   </Accordion>
   <Accordion title="Can I self-host Shuttle?">
-    There are different ways to interpret "self hosting Shuttle".
-
-    Items (2) and (3) below are not officially supported yet. Item (3) is on the roadmap.
-
-    1. **Single project local run**.
-       If you are mainly using Shuttle for the automation of secrets and database containers,
-       using `cargo shuttle run --release` on your own server might be sufficient.
-    2. **Running the Shuttle stack on your own server**.
-       A similar setup which can give you an experience more similar to the full Shuttle experience.
-    3. **[Advanced] Hosting Shuttle in your own cloud environment**.
-       This option lets you run a replica of the Shuttle production environment, under a custom domain.
+    See [this issue](https://github.com/shuttle-hq/shuttle/issues/1584) for the latest status and discussion on this topic.
   </Accordion>
 </AccordionGroup>
