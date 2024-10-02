@@ -84,10 +84,10 @@ open a terminal.
 
 ### Building the Barebones - 09:59 minutes remaining
 
-I'm using [Shuttle](https://www.shuttle.rs/) for this project. It's a serverless
+I'm using [Shuttle](https://www.shuttle.dev/) for this project. It's a serverless
 platform built for Rust and I don't have to deal with provisioning databases, or
 subdomains or any of that gunk. I already have the CLI
-[installed](https://docs.shuttle.rs/introduction/installation).
+[installed](https://docs.shuttle.dev/introduction/installation).
 
 I stop and think for a little bit - which web framework do I want to use? I think
 I'm going to go with Rocket. It's pretty much production ready with a sweet API and
@@ -184,7 +184,7 @@ to the list of acceptable hosts etc etc etc. Oof that sounds like a lot of work.
 
 Shuttle does a lot of this stuff for you - I just didn't remember how. I
 quickly head over to the
-[Shuttle shared database](https://docs.shuttle.rs/resources/shuttle-shared-db)
+[Shuttle shared database](https://docs.shuttle.dev/resources/shuttle-shared-db)
 section in the docs. I added the `sqlx` dependency to `Cargo.toml` and change
 one line in `main.rs`:
 

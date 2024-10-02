@@ -10,7 +10,7 @@
   "logo": {
     "light": "/images/logo/light.png",
     "dark": "/images/logo/dark.png",
-    "href": "https://www.shuttle.rs"
+    "href": "https://www.shuttle.dev"
   },
   "favicon": "/favicon.png",
   "colors": {
@@ -20,7 +20,7 @@
   },
   "topbarCtaButton": {
     "name": "Log In",
-    "url": "https://console.shuttle.rs/"
+    "url": "https://console.shuttle.dev/"
   },
   "anchors": [
     {
@@ -50,7 +50,7 @@
     },
     {
       "name": "Blog",
-      "url": "https://www.shuttle.rs/blog/"
+      "url": "https://www.shuttle.dev/blog/"
     }
   ],
   "navigation": [
