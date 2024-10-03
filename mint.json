@@ -68,8 +68,8 @@
         "getting-started/installation",
         "getting-started/quick-start",
         "getting-started/local-run",
-        "getting-started/shuttle-commands",
-        "getting-started/idle-projects"
+        "getting-started/deploy",
+        "getting-started/shuttle-commands"
       ]
     },
     {

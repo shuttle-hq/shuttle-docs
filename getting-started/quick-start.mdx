@@ -1,31 +1,34 @@
 ---
 title: "Quick Start"
-icon: "rabbit-running"
+description: "Fire upp your first project after installation 🚀"
+icon: "jet-fighter"
 ---
 
-We will assume that you have already installed Shuttle and logged in.
-If you haven't, you should check out our [installation](./installation) section.
+<Note>
+This page assumes that you have installed Shuttle.
+If you haven't, go to the [installation](./installation) guide.
+</Note>
 
-**Creating your first project**
+## Login
 
-To initialize your project, simply write:
+The login command opens the [Shuttle Console](https://console.shuttle.dev/) where you can copy your API key:
+
+```sh
+cargo shuttle login
+```
+
+## Create your first project
+
+The init command lets you generate a "Hello, World!" project or one of our [examples](/examples) or [templates](/templates).
 
 ```sh
 cargo shuttle init
 ```
 
-![Shuttle Scaffolding](/images/actix-scaffold-demo.gif)
-
-You can then `cd` into the folder and try the app locally:
+You can then `cd` into the folder and run your app locally. Check out the [local run](./local-run) page for more.
 
 ```sh
 cargo shuttle run
-```
-
-In case you didn't create the project environment in the `init` command, run:
-
-```sh
-cargo shuttle project start
 ```
 
 Then, the app can be deployed with:
@@ -35,7 +38,3 @@ cargo shuttle deploy --allow-dirty
 ```
 
 <Info>`--allow-dirty` or `--ad` allows deploying with uncommitted git changes.</Info>
-
-You can also run your project locally for development, check out our [local run](./local-run) section.
-
-Feel free to build on top of the generated "Hello, World!" project or check out one of our [examples](/examples) or [templates](/templates).

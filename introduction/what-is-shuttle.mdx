@@ -13,23 +13,25 @@ As a platform designed with a focus on providing an exceptional developer experi
 ```rust
 #[shuttle_runtime::main]
 async fn main(
-    // automatic db provisioning + hands you back an authenticated connection pool
-    #[shuttle_shared_db::Postgres] pool: PgPool,
-) -> ShuttleRocket<...> {
-    // application code
+    // Automaticcally provisions a Postgres database
+    // and hands you an authenticated connection pool
+    #[shuttle_shared_db::Postgres] pool: sqlx::PgPool,
+) -> ShuttleAxum {
+    // Application code
 }
 ```
 
 You can hit the ground running and swiftly transform your ideas into tangible solutions. Accelerate your project's progress by rapidly building and deploying prototypes, ensuring you bring your vision to life in record time.
 
-<Info>Our mission is aligned with the wave of Rust becoming the future of web development, as we strive to deliver cutting-edge solutions that leverage the full potential of [the most loved programming language](https://survey.stackoverflow.co/2023/).</Info>
+<Info>Our mission is aligned with the wave of Rust becoming the future of web development, as we strive to deliver cutting-edge solutions that leverage the full potential of [the most loved programming language](https://survey.stackoverflow.co/2024/technology/#admired-and-desired).</Info>
 
 ## Supported Applications and Frameworks
 
-Shuttle can host many types of Rust programs.
-The Shuttle environment provides a network port for web traffic exposed to the Internet.
-Therefore, the most common use case is to deploy web apps.
-Apps that can bind to a socket and accept incoming HTTP traffic can run on Shuttle.
+Many types of Rust programs can be deployed on Shuttle.
+
+Shuttle provides all hosted apps with proxied HTTPS web traffic.
+Therefore, the most common use case is to deploy web apps and APIs.
+Any app that can bind to a socket and accept incoming HTTP traffic can run on Shuttle.
 
 To make life easier we have implemented all the boilerplate required for these Rust web frameworks. Get started with just a few lines of code.
 
@@ -50,5 +52,5 @@ If you need a custom service, you can take a look at our guide [right here](/tem
 ## Resource Provisioning
 
 One of the great features of Shuttle is the provisioning of resources through macros.
-With just a few lines of code, you can get access to [AWS RDS](/resources/shuttle-aws-rds), [shared Postgres or Mongo databases](/resources/shuttle-shared-db), and more.
+With just a few lines of code, you can get access to [Postgres databases](/resources/shuttle-shared-db) and more.
 Check the [Resources](/resources/overview) section for a full overview.

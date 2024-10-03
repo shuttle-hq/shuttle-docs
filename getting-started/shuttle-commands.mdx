@@ -19,24 +19,26 @@ cargo shuttle <COMMAND> --help
 
 ## Commands
 
-| Command    | Description |
-| ---------- | ----------- |
-| init       | Generate a Shuttle project from a template |
-| run        | Run a Shuttle service locally |
-| deploy     | Deploy a Shuttle service |
-| deployment | Manage deployments of a Shuttle service [aliases: depl] |
-| status     | View the status of a Shuttle service |
-| stop       | Stop a Shuttle service |
-| logs       | View logs of a Shuttle service |
-| project    | Manage projects on Shuttle [aliases: proj] |
-| resource   | Manage resources [aliases: res] |
-| clean      | Remove cargo build artifacts in the Shuttle environment |
-| login      | Login to the Shuttle platform |
-| logout     | Log out of the Shuttle platform |
-| generate   | Generate shell completions and man page |
-| feedback   | Open an issue on GitHub and provide feedback |
-| upgrade    | Upgrade the cargo-shuttle binary |
-| help       | Print this message or the help of the given subcommand(s) |
+| Command     | Description |
+| ----------- | ----------- |
+| init        | Generate a Shuttle project from a template |
+| run         | Run a Shuttle service locally |
+| deploy      | Deploy a Shuttle service |
+| deployment  | Manage deployments of a Shuttle service [aliases: depl] |
+| status      | View the status of a Shuttle service |
+| stop        | Stop a Shuttle service |
+| logs        | View logs of a Shuttle service |
+| project     | Manage projects on Shuttle [aliases: proj] |
+| resource    | Manage resources [aliases: res] |
+| certificate | Manage SSL certificates for custom domains [aliases: cert] |
+| clean       | Remove cargo build artifacts in the Shuttle environment |
+| account     | Show info about your Shuttle account [aliases: acc] |
+| login       | Login to the Shuttle platform |
+| logout      | Log out of the Shuttle platform |
+| generate    | Generate shell completions and man page |
+| feedback    | Open an issue on GitHub and provide feedback |
+| upgrade     | Upgrade the cargo-shuttle binary |
+| help        | Print this message or the help of the given subcommand(s) |
 
 ## Cookbook / Cheat Sheet
 
@@ -49,20 +51,23 @@ Use the global `--debug` flag to print detailed debug output.
 - `cargo install cargo-shuttle`: For more alternatives, see [Installation](./installation).
 - `cargo shuttle login`: Open the Shuttle Console and paste the API key to log in.
 - `cargo shuttle init`: Log in and initialize a project.
+- `cargo shuttle account`: Check account details.
 
 ### Local run
 
-- `cargo shuttle run`: Run the project locally so you can test your changes. For more tips, see [Local Run](./local-run).
+For more tips, see [Local Run](./local-run).
+
+- `cargo shuttle run`: Run the project locally so you can test your changes.
 - `cargo shuttle run --port 8080`: Change the local port.
 - `cargo shuttle run --port 8080 --external`: Expose to local network by listening on `0.0.0.0`.
 - `cargo shuttle run --secrets <file>`: Use a non-default secrets file for this run.
+- `cargo shuttle run --release`: Compile with release mode.
 
 ### Start and deploy a project
 
-- `cargo shuttle project start`: Start the container for this project on Shuttle.
+- `cargo shuttle project create`: Start the container for this project on Shuttle.
 - `cargo shuttle deploy`: Deploy the project to Shuttle.
-- `cargo shuttle deploy --allow-dirty`: Deploy regardless whether there are pending git changes. Alias: `--ad`.
-- `cargo shuttle deploy --no-test`: Don't run unit tests before starting the deployment. Alias: `--nt`.
+- `cargo shuttle deploy --no-follow`: Don't poll deployment state. Alias: `--nf`.
 - `cargo shuttle deploy --secrets <file>`: Use a non-default secrets file for this deployment. It must be located in the same folder that Secrets.toml should be in.
 
 ### Manage projects
@@ -71,22 +76,22 @@ Use the global `--debug` flag to print detailed debug output.
 All project-related commands can use:
 - `--working-directory <path>` or `--wd <path>` to execute the command in a different folder.
 - `--name <name>` to specify project name explicitly (see [Project name](/configuration/project-name)).
+- `--id <id>` to specify project id explicitly (see [Project name](/configuration/project-name)).
 </Tip>
 
 - `cargo shuttle project list`: List your projects.
 - `cargo shuttle project status`: Check the state of this project.
-- `cargo shuttle project restart`: Restart your project's container and upgrade to the latest deployer. See [Upgrading](/configuration/shuttle-versions#upgrading-shuttle-version).
-- `cargo shuttle project delete`: Delete a project. The project might need to be restarted first, and all resources need to be deleted first.
+- `cargo shuttle project link`: Link this project folder to a project on Shuttle.
+- `cargo shuttle project delete`: Delete a project.
 
 ### Manage deployments and logs
 
 - `cargo shuttle deployment list`: List deployments in this project.
-- `cargo shuttle status`: Show status of the currently running deployment.
-- `cargo shuttle stop`: Stop the currently running deployment.
+- `cargo shuttle deployment status`: Show status of the currently running deployment.
+- `cargo shuttle deployment stop`: Stop any currently running deployments.
 - `cargo shuttle logs`: Get all logs from the currently running deployment.
-- `cargo shuttle logs --latest`: Get all logs from the currently running deployment.
+- `cargo shuttle logs --latest`: Get all logs from the latest deployment.
 - `cargo shuttle logs <id>`: Get all logs from a specific deployment.
-- `cargo shuttle logs --follow`: Stream logs of the deployed service and stream them to your terminal.
 - `cargo shuttle logs --raw`: Print the logs without timestamps and origin tags. The `--raw` flag is also available for the `run` and `deploy` commands.
 
 ### Manage resources

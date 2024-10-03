@@ -1,11 +1,23 @@
 ---
 title: "Installation"
+description: "How to install the Shuttle Command Line Interface (CLI)"
 icon: "wrench"
 ---
 
-## Install Shuttle
+The Shuttle CLI can be installed with a pre-built binary or compiled from source with cargo.
+There is also an install script that helps you choose the best option.
 
-The `cargo-shuttle` CLI can be installed with a pre-built binary, from source with cargo, or with the install script.
+## Binaries
+
+<Warning>
+After installation, you will have two binaries: `shuttle` and `cargo-shuttle`.
+
+- `shuttle` is used for interacting with the NEW [shuttle.dev](https://www.shuttle.dev) platform.
+- `cargo-shuttle` is used for interacting with the older [shuttle.rs](https://www.shuttle.rs) platform.
+
+This documentation covers the NEW [shuttle.dev](https://www.shuttle.dev) platform.
+Go to [docs.shuttle.rs](https://docs.shuttle.rs) to view the docs for the shuttle.rs platform.
+</Warning>
 
 ### Install script
 
@@ -25,11 +37,10 @@ iwr https://www.shuttle.dev/install-win | iex
 
 ### Pre-built binary
 
-Pre-built binaries of the `cargo-shuttle` CLI for most platforms can be found on [our GitHub](https://github.com/shuttle-hq/shuttle/releases/latest).
+Pre-built binaries of the Shuttle CLI for most platforms can be found on [our GitHub](https://github.com/shuttle-hq/shuttle/releases/latest).
 
 The binaries can also be installed using [cargo-binstall](https://github.com/cargo-bins/cargo-binstall),
-which will automatically download the correct binary for your system.
-To install with `cargo-binstall`, run:
+which will automatically download the correct binary for your system:
 
 ```sh
 cargo binstall cargo-shuttle
@@ -37,7 +48,7 @@ cargo binstall cargo-shuttle
 
 ### From source
 
-Although a bit slower, you can also install directly with cargo:
+Although compiling the source code is a bit slower, you can do so with cargo:
 
 ```sh
 cargo install cargo-shuttle
@@ -45,7 +56,7 @@ cargo install cargo-shuttle
 
 ### Distro packages (unofficial)
 
-`cargo-shuttle` is also packaged by community members for some distros:
+Shuttle CLI is also packaged by community members for some distros:
 
 [![Packaging status](https://repology.org/badge/vertical-allrepos/cargo-shuttle.svg)](https://repology.org/project/cargo-shuttle/versions)
 
@@ -60,13 +71,3 @@ Alpine Linux: available on [Alpine Edge](https://pkgs.alpinelinux.org/packages?n
 ```sh
 apk add cargo-shuttle
 ```
-
-## Login
-
-After installing, log in with:
-
-```sh
-cargo shuttle login
-```
-
-To get up and running, proceed to our [Quick Start](./quick-start) page!

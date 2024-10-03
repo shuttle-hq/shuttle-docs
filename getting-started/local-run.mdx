@@ -1,11 +1,13 @@
 ---
 title: "Local Run"
-description: "Test your Shuttle app on your local system"
+description: "Develop your Shuttle app locally"
 icon: "code"
 ---
 
-We will assume that you have already initialized a project. If you haven't, you should
-check out our [quick start](./quick-start) section.
+<Note>
+This page assumes that you have initialized a Shuttle project.
+If you haven't, go to the [quick start](./quick-start) guide.
+</Note>
 
 While deploying to production is easy with Shuttle, running your project locally is
 useful for development. To start your project on your local system, while in your
@@ -18,16 +20,16 @@ cargo shuttle run
 ### Local runs with databases
 
 If your project relies on a database resource, it will default to starting a [Docker](https://docs.docker.com/get-docker/) container for that database.
-If you'd like to opt out of this behavior and rather supply your own database URI, simply pass it in as an argument to your resource.
+If you'd like to opt out of this behavior and supply your own database URI, simply pass it in as an argument to your resource.
 This argument also supports insertion of secrets from `Secrets.toml` with string interpolation:
 
 ```rust
 #[shuttle_runtime::main]
-async fn tide(
-    #[shuttle_aws_rds::Postgres(
+async fn main(
+    #[shuttle_shared_db::Postgres(
         local_uri = "postgres://postgres:{secrets.PASSWORD}@localhost:16695/postgres"
     )] pool: PgPool,
-) -> ShuttleTide<MyState> { ... }
+) -> ShuttleAxum { ... }
 ```
 
 <Note>**IMPORTANT:** If Docker isn't started, you may receive an "os error 2" error. This is typically related to your Docker installation. If you're using Docker via the CLI, you can use any Docker command to start it up. If you're using Docker Desktop, you will need to start Docker Desktop.</Note>
