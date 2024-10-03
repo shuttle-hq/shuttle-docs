@@ -7,7 +7,7 @@ icon: "trash-can"
 To delete a project, start off with
 
 ```bash
-cargo shuttle project delete --name <name>
+shuttle project delete --name <name>
 ```
 
 <Note>In these examples, the `--name` flag is used to specify the project name explicitly. Depending on your files, you might not need it. See [Project name](/configuration/project-name) for other alternatives.</Note>
@@ -15,29 +15,29 @@ cargo shuttle project delete --name <name>
 If the delete command gives you a 503 error, try restarting the project. This is needed in order to check if the project has resources linked.
 
 ```bash
-cargo shuttle project restart --name <name>
-cargo shuttle project delete --name <name>
+shuttle project restart --name <name>
+shuttle project delete --name <name>
 ```
 
 If you have a running deployment, you will be asked to stop it.
 
 ```bash
-cargo shuttle stop --name <name>
+shuttle stop --name <name>
 ```
 
 If you have secrets recorded in the project, you will be asked to delete them.
 
 ```bash
-cargo shuttle resource delete secrets --name <name>
+shuttle resource delete secrets --name <name>
 ```
 
 If you have databases linked to the project, you will be asked to delete them.
 
 ```bash
 # check which type of database
-cargo shuttle resource list --name <name>
+shuttle resource list --name <name>
 # example for a shared postgres db
-cargo shuttle resource delete database::shared::postgres --name <name>
+shuttle resource delete database::shared::postgres --name <name>
 ```
 
 If secrets or databases are not being deleted successfully with the above commands, please contact us for further support.

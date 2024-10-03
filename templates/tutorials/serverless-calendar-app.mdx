@@ -97,7 +97,7 @@ To initialize the project using the awesome
 
 ```bash
 cargo install cargo-shuttle
-cargo shuttle init --template axum --name zerocal zerocal
+shuttle init --template axum --name zerocal zerocal
 ```
 
 and I was greeted with everything I needed to get started:
@@ -132,13 +132,13 @@ It will ask you to authorize it to access your Github account.
 Then:
 
 ```bash
-cargo shuttle login
+shuttle login
 ```
 
 and finally:
 
 ```bash
-cargo shuttle deploy
+shuttle deploy
 ```
 
 Now let's head over to https://zerocal.shuttleapp.rs:
@@ -289,7 +289,7 @@ that for another time.
 Let's test it:
 
 ```rust
-> cargo shuttle run # This starts a local dev server
+> shuttle run # This starts a local dev server
 > curl 127.0.0.1:8000?start=2022-11-04+20:00&duration=3h&title=Birthday&description=Party
 *🤖 bleep bloop, calendar file created*
 ```
@@ -368,7 +368,7 @@ Well, almost. We still need to deploy it.
 ### Deploying
 
 ```bash
-cargo shuttle deploy
+shuttle deploy
 ```
 
 Right, that's all. It's that easy. Thanks to the folks over at

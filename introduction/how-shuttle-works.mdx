@@ -21,7 +21,7 @@ async fn main() -> shuttle_axum::ShuttleAxum {
 ```
 
 This example starts an HTTP server where the `GET /` endpoint returns `Hello, world!`.
-But most importantly, the code you see in the snippet above, is all it takes for `cargo shuttle deploy` to deploy it.
+But most importantly, the code you see in the snippet above, is all it takes for `shuttle deploy` to deploy it.
 
 This is possible due to the `#[shuttle_runtime::main]` procedural macro.
 The macro wraps your app with Shuttle's runtime, which handles resource provisioning and initialization for you.
@@ -66,7 +66,7 @@ For more info on resources, head on over to our [Resources](/resources/overview)
 
 ## Deploying your Project
 
-When you run `cargo shuttle deploy`, your project code is archived and sent to our platform where it is built into a Docker image.
+When you run `shuttle deploy`, your project code is archived and sent to our platform where it is built into a Docker image.
 Your service is then be started on Shuttle's infrastructure on AWS in London (eu-west-2).
 The generated code from `shuttle_runtime::main` handles resource provisioning and initialization, leaving you to focus on what matters.
 

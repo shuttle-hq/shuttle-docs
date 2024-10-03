@@ -14,7 +14,7 @@ This page answers:
 
 ## Files uploaded in deployment
 
-When you run `cargo shuttle deploy`, all source files in your cargo workspace that are not ignored by `.gitignore` or `.ignore` rules are packed into a tar-gzip archive and uploaded to Shuttle, where they are then extracted, built, and hosted.
+When you run `shuttle deploy`, all source files in your cargo workspace that are not ignored by `.gitignore` or `.ignore` rules are packed into a tar-gzip archive and uploaded to Shuttle, where they are then extracted, built, and hosted.
 
 <Info>The deployment POST request (after archive compression) has a size limit of 50 MB.</Info>
 
@@ -42,13 +42,13 @@ assets = [
 You can double check which files are included in your deployment by turning on detailed logging:
 
 ```bash
-cargo shuttle --debug deploy
+shuttle --debug deploy
 ```
 
 or inspect the archive after writing it to disk:
 
 ```bash
-cargo shuttle deploy --output-archive deployment.tar
+shuttle deploy --output-archive deployment.tar
 ```
 
 ## Serving static files
@@ -71,6 +71,6 @@ Your app is executed inside the project directory, in the same way that cargo wo
 When you deploy again, the project directory is cleared, and the new deployment's files are placed there.
 This means that files saved to this directory are deleted at the time of a new deployment.
 
-Files saved in other parts of the filesystem, such as `/tmp`, will be cleared when the container restarts, which is done when you run `cargo shuttle project restart`.
+Files saved in other parts of the filesystem, such as `/tmp`, will be cleared when the container restarts, which is done when you run `shuttle project restart`.
 
 To persist data across deploys and container restarts, use a [database](/resources/shuttle-shared-db) or [shuttle-persist](/resources/shuttle-persist).

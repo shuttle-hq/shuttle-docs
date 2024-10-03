@@ -14,7 +14,7 @@ If you haven't, go to the [installation](./installation) guide.
 The login command opens the [Shuttle Console](https://console.shuttle.dev/) where you can copy your API key:
 
 ```sh
-cargo shuttle login
+shuttle login
 ```
 
 ## Create your first project
@@ -22,19 +22,19 @@ cargo shuttle login
 The init command lets you generate a "Hello, World!" project or one of our [examples](/examples) or [templates](/templates).
 
 ```sh
-cargo shuttle init
+shuttle init
 ```
 
 You can then `cd` into the folder and run your app locally. Check out the [local run](./local-run) page for more.
 
 ```sh
-cargo shuttle run
+shuttle run
 ```
 
 Then, the app can be deployed with:
 
 ```sh
-cargo shuttle deploy --allow-dirty
+shuttle deploy --allow-dirty
 ```
 
 <Info>`--allow-dirty` or `--ad` allows deploying with uncommitted git changes.</Info>

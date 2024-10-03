@@ -96,7 +96,7 @@ I'm reasonably proficient with it.
 To initialize a rocket project with boilerplate, I can use the Shuttle CLI `init` command:
 
 ```bash
-cargo shuttle init --template rocket url-shortener
+shuttle init --template rocket url-shortener
 ```
 
 This leaves me with the following `main.rs` file:
@@ -140,7 +140,7 @@ isolated container in Shuttle's infrastructure.
 Now, to deploy:
 
 ```sh
-$ cargo shuttle deploy
+$ shuttle deploy
    Packaging url-shortener v0.1.0 (/private/shuttle/examples/url-shortener)
    Archiving Cargo.toml
    Archiving Cargo.toml.orig
@@ -203,7 +203,7 @@ code.
 Lets deploy it and see what happens:
 
 ```bash
-cargo shuttle deploy
+shuttle deploy
 ...
     Finished dev [unoptimized + debuginfo] target(s) in 19.50s
 

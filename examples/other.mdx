@@ -4,7 +4,7 @@ This section contains examples for the following frameworks: Tower, Warp, Salvo,
 
 This example provides a simple "Hello, world!" Rust application that you can deploy with Shuttle. It's a great starting point for learning how to use Shuttle and getting familiar with the deployment process for Rust applications.
 
-In order to get started, initialize your project with `cargo shuttle init` and pick the framework you want to use for this example.
+In order to get started, initialize your project with `shuttle init` and pick the framework you want to use for this example.
 
 Once you are done, your project should be setup with all the required dependencies so go ahead and copy/paste the relevant code snippet from below into your `main.rs` file.
 
@@ -131,11 +131,11 @@ async fn tide() -> shuttle_tide::ShuttleTide<()> {
 Run the example locally with:
 
 ```bash
-cargo shuttle run
+shuttle run
 ```
 
 In order to deploy the example, simply run:
 
 ```bash
-cargo shuttle deploy
+shuttle deploy
 ```

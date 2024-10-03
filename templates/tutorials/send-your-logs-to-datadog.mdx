@@ -20,7 +20,7 @@ A few months ago, I wrote a [post](https://robertohuertas.com/2023/01/09/shuttle
 
 [Shuttle](https://www.shuttle.dev/) is still in beta, and although its observability features are not really polished yet, they offer [support](https://docs.shuttle.dev/introduction/telemetry) for [Tokio Tracing](https://docs.rs/tracing/latest/tracing/) and a way to [view logs](https://docs.shuttle.dev/introduction/telemetry#viewing-logs) by using their CLI tool.
 
-By simply running `cargo shuttle logs --follow`, you will be able to see something like this:
+By simply running `shuttle logs --follow`, you will be able to see something like this:
 
 ![shuttle logs](https://robertohuertas.com/assets/images/shuttle-datadog/shuttle-cli-logs.png)
 
@@ -94,7 +94,7 @@ Feel free to use it as a reference.
 First of all, we need to create a new [Shuttle](https://www.shuttle.dev/) project. You can do that by using the [Shuttle CLI](https://docs.shuttle.dev/getting-started/cli):
 
 ```bash
-cargo shuttle init --template axum
+shuttle init --template axum
 ```
 
 Follow the instructions and you should have a new project ready to go. I called mine `shuttle-datadog-logs`, but use the name you want.
@@ -259,7 +259,7 @@ LOG_LEVEL = "INFO"
 
 ### Running the project
 
-Now, run `cargo shuttle run` and go to `http://localhost:8000` in your browser to see our "Hello, world!" message.
+Now, run `shuttle run` and go to `http://localhost:8000` in your browser to see our "Hello, world!" message.
 
 Alternatively, you can also use `curl` to test the endpoint:
 

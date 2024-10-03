@@ -21,10 +21,10 @@ When running commands, the project name can always be overridden with the `--nam
 
 ```bash
 # Create a project called `my-project-name`
-cargo shuttle start --name my-project-name
+shuttle start --name my-project-name
 
 # Check the deployment list of `my-project-name`
-cargo shuttle deployment list --name my-project-name
+shuttle deployment list --name my-project-name
 ```
 
 ### via Shuttle.toml
@@ -43,7 +43,7 @@ In the absence of either of the previous two options, the project will be named 
 A new Shuttle project can be named by passing in a project name with the `--name` option, for example:
 
 ```bash
-cargo shuttle init --template axum --name my-project-name some-directory
+shuttle init --template axum --name my-project-name some-directory
 ```
 
 This will create a new Axum-based project in `some-directory` and update the name field in `Cargo.toml` accordingly.

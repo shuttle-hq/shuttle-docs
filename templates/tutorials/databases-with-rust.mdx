@@ -4,7 +4,7 @@ title: "Working with Databases in Rust"
 
 In this guide we'll be looking at working with PostgresQL & `shuttle-persist` (Shuttle's key-value data store) and how we can interface with them easily using Rust. By the end of this guide you'll have more of an idea of how to use both and when each one would be better for your use case.
 
-It will be assumed you already have a project initialised - if not, you can always initialise a new project with `cargo shuttle init`.
+It will be assumed you already have a project initialised - if not, you can always initialise a new project with `shuttle init`.
 
 ## SQL 
 Relational databases are the classical way to store data in the backend of web applications when it comes to storing records and persisted data.  Shuttle currently offers free provisioned SQL instances for your applications and currently provides it through an SQLx connection pool. It should be noted that although we're using Postgres for this guide, the same concepts works equally well with both MySQL and MariaDB.

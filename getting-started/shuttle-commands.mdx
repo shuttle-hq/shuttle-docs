@@ -7,14 +7,14 @@ Interaction with the Shuttle services is mainly done with through the `cargo-shu
 
 Some tasks, such as viewing logs, can also be done in the [Shuttle Console](https://console.shuttle.dev/).
 
-Commands are issued in the format: `cargo shuttle [OPTIONS] <COMMAND>`.
+Commands are issued in the format: `shuttle [OPTIONS] <COMMAND>`.
 
 To get an overview of available commands, subcommands, and options, run:
 
 ```bash
-cargo shuttle help
+shuttle help
 # or
-cargo shuttle <COMMAND> --help
+shuttle <COMMAND> --help
 ```
 
 ## Commands
@@ -49,26 +49,26 @@ Use the global `--debug` flag to print detailed debug output.
 ### Get started
 
 - `cargo install cargo-shuttle`: For more alternatives, see [Installation](./installation).
-- `cargo shuttle login`: Open the Shuttle Console and paste the API key to log in.
-- `cargo shuttle init`: Log in and initialize a project.
-- `cargo shuttle account`: Check account details.
+- `shuttle login`: Open the Shuttle Console and paste the API key to log in.
+- `shuttle init`: Log in and initialize a project.
+- `shuttle account`: Check account details.
 
 ### Local run
 
 For more tips, see [Local Run](./local-run).
 
-- `cargo shuttle run`: Run the project locally so you can test your changes.
-- `cargo shuttle run --port 8080`: Change the local port.
-- `cargo shuttle run --port 8080 --external`: Expose to local network by listening on `0.0.0.0`.
-- `cargo shuttle run --secrets <file>`: Use a non-default secrets file for this run.
-- `cargo shuttle run --release`: Compile with release mode.
+- `shuttle run`: Run the project locally so you can test your changes.
+- `shuttle run --port 8080`: Change the local port.
+- `shuttle run --port 8080 --external`: Expose to local network by listening on `0.0.0.0`.
+- `shuttle run --secrets <file>`: Use a non-default secrets file for this run.
+- `shuttle run --release`: Compile with release mode.
 
 ### Start and deploy a project
 
-- `cargo shuttle project create`: Start the container for this project on Shuttle.
-- `cargo shuttle deploy`: Deploy the project to Shuttle.
-- `cargo shuttle deploy --no-follow`: Don't poll deployment state. Alias: `--nf`.
-- `cargo shuttle deploy --secrets <file>`: Use a non-default secrets file for this deployment. It must be located in the same folder that Secrets.toml should be in.
+- `shuttle project create`: Start the container for this project on Shuttle.
+- `shuttle deploy`: Deploy the project to Shuttle.
+- `shuttle deploy --no-follow`: Don't poll deployment state. Alias: `--nf`.
+- `shuttle deploy --secrets <file>`: Use a non-default secrets file for this deployment. It must be located in the same folder that Secrets.toml should be in.
 
 ### Manage projects
 
@@ -79,33 +79,33 @@ All project-related commands can use:
 - `--id <id>` to specify project id explicitly (see [Project name](/configuration/project-name)).
 </Tip>
 
-- `cargo shuttle project list`: List your projects.
-- `cargo shuttle project status`: Check the state of this project.
-- `cargo shuttle project link`: Link this project folder to a project on Shuttle.
-- `cargo shuttle project delete`: Delete a project.
+- `shuttle project list`: List your projects.
+- `shuttle project status`: Check the state of this project.
+- `shuttle project link`: Link this project folder to a project on Shuttle.
+- `shuttle project delete`: Delete a project.
 
 ### Manage deployments and logs
 
-- `cargo shuttle deployment list`: List deployments in this project.
-- `cargo shuttle deployment status`: Show status of the currently running deployment.
-- `cargo shuttle deployment stop`: Stop any currently running deployments.
-- `cargo shuttle logs`: Get all logs from the currently running deployment.
-- `cargo shuttle logs --latest`: Get all logs from the latest deployment.
-- `cargo shuttle logs <id>`: Get all logs from a specific deployment.
-- `cargo shuttle logs --raw`: Print the logs without timestamps and origin tags. The `--raw` flag is also available for the `run` and `deploy` commands.
+- `shuttle deployment list`: List deployments in this project.
+- `shuttle deployment status`: Show status of the currently running deployment.
+- `shuttle deployment stop`: Stop any currently running deployments.
+- `shuttle logs`: Get all logs from the currently running deployment.
+- `shuttle logs --latest`: Get all logs from the latest deployment.
+- `shuttle logs <id>`: Get all logs from a specific deployment.
+- `shuttle logs --raw`: Print the logs without timestamps and origin tags. The `--raw` flag is also available for the `run` and `deploy` commands.
 
 ### Manage resources
 
-- `cargo shuttle resource list`: List resources linked to this project.
-- `cargo shuttle resource delete <type>`: Delete a resource such as databases and secrets.
+- `shuttle resource list`: List resources linked to this project.
+- `shuttle resource delete <type>`: Delete a resource such as databases and secrets.
 
 ### Shell completions
 
-Use `cargo shuttle generate shell <shell>` with one of: bash, elvish, fish, powershell, zsh.
+Use `shuttle generate shell <shell>` with one of: bash, elvish, fish, powershell, zsh.
 
-Example configuration for Zsh on Linux: add `eval "$(cargo shuttle generate shell zsh)"` to `~/.zshrc`.
+Example configuration for Zsh on Linux: add `eval "$(shuttle generate shell zsh)"` to `~/.zshrc`.
 
 ### Utility
 
-- `cargo shuttle <command> --debug`: Turn on tracing output for Shuttle libraries. (WARNING: can print sensitive data)
-- `cargo shuttle deploy --output-archive <path>`: Dump the deployment archive to disk instead of deploying it. Useful for debugging.
+- `shuttle <command> --debug`: Turn on tracing output for Shuttle libraries. (WARNING: can print sensitive data)
+- `shuttle deploy --output-archive <path>`: Dump the deployment archive to disk instead of deploying it. Useful for debugging.
