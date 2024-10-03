@@ -57,7 +57,7 @@ It allows you to create a calendar event from the convenience of your command
 line:
 
 ```bash
-> curl https://zerocal.shuttleapp.rs?start=2022-11-04+20:00&duration=3h&title=Birthday&description=paaarty
+> curl https://zerocal.shuttle.app?start=2022-11-04+20:00&duration=3h&title=Birthday&description=paaarty
 BEGIN:VCALENDAR
 VERSION:2.0
 PRODID:ICALENDAR-RS
@@ -77,7 +77,7 @@ END:VCALENDAR
 You can then save that to a file and open it with your calendar app.
 
 ```bash
-curl https://zerocal.shuttleapp.rs?start=2022-11-04+20:00&duration=3h&title=Birthday&description=paaarty > birthday.ics
+curl https://zerocal.shuttle.app?start=2022-11-04+20:00&duration=3h&title=Birthday&description=paaarty > birthday.ics
 open birthday.ics
 ```
 
@@ -86,7 +86,7 @@ server, it just generates a calendar event on the fly and returns it.
 
 ### How I built it
 
-You probably noticed that the URL contains "shuttleapp.rs". That's because I'm
+You probably noticed that the URL contains "shuttle.app". That's because I'm
 using [shuttle.dev](https://github.com/shuttle-hq/shuttle) to host the website.
 
 Shuttle is a hosting service for Rust projects and I wanted to try it out for a
@@ -141,7 +141,7 @@ and finally:
 shuttle deploy
 ```
 
-Now let's head over to https://zerocal.shuttleapp.rs:
+Now let's head over to https://zerocal.shuttle.app:
 
 Hello World! Deploying the first version took less than 5 minutes. Nice! We're
 all set for our custom calendar app.
@@ -252,7 +252,7 @@ async fn calendar(Query(params): Query<HashMap<String, String>>) -> impl IntoRes
   if let Some(description) = params.get("description") {
     event.description(description);
   } else {
-    event.description("Powered by zerocal.shuttleapp.rs");
+    event.description("Powered by zerocal.shuttle.app");
   }
 
   if let Some(start) = params.get("start") {
@@ -374,7 +374,7 @@ shuttle deploy
 Right, that's all. It's that easy. Thanks to the folks over at
 [shuttle.dev](https://github.com/shuttle-hq/shuttle) for making this possible.
 
-The calendar app is now available at https://zerocal.shuttleapp.rs.
+The calendar app is now available at https://zerocal.shuttle.app.
 
 Now I can finally send my friends a link to a calendar event for our next pub
 crawl. They'll surely appreciate it.yeahyeah
@@ -396,7 +396,7 @@ Here are some ideas:
   (`https://calendar.google.com/calendar/render?action=TEMPLATE&dates=20221003T224500Z%2F20221003T224500Z&details=&location=&text=`).
 - Add example bash command to create a calendar event from the command line.
 - Shorten the URL (e.g.
-  `zerocal.shuttleapp.rs/2022-11-04T20:00/3h/Birthday/Party`)?
+  `zerocal.shuttle.app/2022-11-04T20:00/3h/Birthday/Party`)?
 
 Check out the [issue tracker](https://github.com/mre/zerocal) and feel free to
 open a PR!

@@ -1,6 +1,6 @@
 {
   "$schema": "https://mintlify.com/schema.json",
-  "name": "Shuttle",
+  "name": "Shuttle Docs",
   "analytics": {
     "posthog": {
       "apiKey": "phc_cQMQqF5QmcEzXEaVlrhv3yBSNRyaabXYAyiCV7xKHUH",
@@ -12,13 +12,27 @@
     "dark": "/images/logo/dark.png",
     "href": "https://www.shuttle.dev"
   },
+  "layout": "topnav",
+  "sidebar": {"items": "border"},
+  "versions": [
+    {"name": "🟢 docs.shuttle.dev (NEW)", "url": "https://docs.shuttle.dev/"},
+    {"name": "🔵 docs.shuttle.rs ", "url": "https://docs.shuttle.rs/"}
+  ],
+  "background": {"style": "windows"},
   "favicon": "/favicon.png",
   "colors": {
-    "primary": "#F25100",
-    "light": "#F09050",
-    "dark": "#C34100"
+    "background": {
+      "dark": "#001811",
+      "light": "#c0ffd0"
+    },
+    "primary": "#000",
+    "light": "#7f7",
+    "dark": "#5a5"
   },
-  "topbarCtaButton": {
+  "topbarLinks": [
+    {"name": "Support", "url": "https://docs.shuttle.dev/support/support"}
+  ],
+  "topbarCtaButton": {"style": "roundedRectangle","type": "link",
     "name": "Log In",
     "url": "https://console.shuttle.dev/"
   },
@@ -57,73 +71,79 @@
     {
       "group": "Introduction",
       "pages": [
-        "introduction/welcome",
+        "introduction/docs",
         "introduction/what-is-shuttle",
-        "introduction/how-shuttle-works"
+        "introduction/how-shuttle-works",
+        "introduction/platform-update",
+        "introduction/platform-migration"
       ]
     },
     {
       "group": "Getting Started",
       "pages": [
         "getting-started/installation",
-        "getting-started/quick-start",
-        "getting-started/local-run",
-        "getting-started/deploy",
-        "getting-started/shuttle-commands"
+        "getting-started/quick-start"
       ]
     },
     {
-      "group": "Configuration",
+      "group": "Shuttle",
       "pages": [
-        "configuration/project-structure",
-        "configuration/project-name",
-        "configuration/files",
-        "configuration/environment",
-        "configuration/logs",
-        "configuration/ci-cd",
-        "configuration/domain-names",
-        "configuration/shuttle-versions"
+        "docs/projects",
+        "docs/project-configuration",
+        "docs/local-run",
+        "docs/files",
+        "docs/builds",
+        "docs/deployment-environment",
+        "docs/logs",
+        "docs/domain-names",
+        "docs/console"
       ]
     },
     {
       "group": "Resources",
       "pages": [
-        "resources/overview",
+        "resources/resources",
+        "resources/shuttle-secrets",
         {
           "group": "Databases",
           "icon": "database",
           "pages": [
-            "resources/shuttle-aws-rds",
-            "resources/shuttle-shared-db",
-            "resources/shuttle-persist",
-            "resources/shuttle-turso",
-            "resources/shuttle-qdrant",
-            "resources/shuttle-opendal"
+            "resources/shuttle-shared-db"
           ]
-        },
-        {
-          "group": "LLMs ✨",
-          "icon": "microchip",
-          "pages": [
-            "resources/shuttle-openai"
-          ]
-        },
-        "resources/shuttle-secrets",
-        "resources/shuttle-metadata",
-        "resources/custom-resources"
+        }
       ]
     },
     {
-      "group": "Migration",
-      "pages": ["migration/migrating-to-shuttle"]
+      "group": "Integrations",
+      "pages": [
+        {
+          "group": "Databases",
+          "icon": "database",
+          "pages": [
+            "integrations/shuttle-turso",
+            "integrations/shuttle-qdrant",
+            "integrations/shuttle-opendal"
+          ]
+        },
+        "integrations/shuttle-openai",
+        "integrations/custom-resources"
+      ]
+    },
+    {
+      "group": "Guides",
+      "pages": [
+        "docs/cli",
+        "docs/upgrade",
+        "docs/migrating-to-shuttle",
+        "docs/migrating-rds-postgres"
+      ]
     },
     {
       "group": "Support",
       "pages": [
+        "support/support",
         "support/faq",
-        "support/troubleshooting",
-        "support/delete-project",
-        "support/migrating-rds-postgres"
+        "support/troubleshooting"
       ]
     },
     {

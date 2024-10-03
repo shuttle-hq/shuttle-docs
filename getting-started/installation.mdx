@@ -1,23 +1,13 @@
 ---
 title: "Installation"
 description: "How to install the Shuttle Command Line Interface (CLI)"
-icon: "wrench"
+icon: "download"
 ---
 
 The Shuttle CLI can be installed with a pre-built binary or compiled from source with cargo.
 There is also an install script that helps you choose the best option.
 
-## Binaries
-
-<Warning>
-After installation, you will have two binaries: `shuttle` and `cargo-shuttle`.
-
-- `shuttle` is used for interacting with the NEW [shuttle.dev](https://www.shuttle.dev) platform.
-- `cargo-shuttle` is used for interacting with the older [shuttle.rs](https://www.shuttle.rs) platform.
-
-This documentation covers the NEW [shuttle.dev](https://www.shuttle.dev) platform.
-Go to [docs.shuttle.rs](https://docs.shuttle.rs) to view the docs for the shuttle.rs platform.
-</Warning>
+<Snippet file="binaries.mdx" />
 
 ### Install script
 
@@ -58,16 +48,21 @@ cargo install cargo-shuttle
 
 Shuttle CLI is also packaged by community members for some distros:
 
+<AccordionGroup>
+  <Accordion title="Arch Linux">
+    Available in the [community repository](https://archlinux.org/packages/extra/x86_64/cargo-shuttle/).
+
+    ```sh
+    pacman -S cargo-shuttle
+    ```
+  </Accordion>
+  <Accordion title="Alpine Linux">
+    Available on [Alpine Edge](https://pkgs.alpinelinux.org/packages?name=cargo-shuttle&branch=edge) after enabling the [testing repository](https://wiki.alpinelinux.org/wiki/Repositories).
+
+    ```sh
+    apk add cargo-shuttle
+    ```
+  </Accordion>
+</AccordionGroup>
+
 [![Packaging status](https://repology.org/badge/vertical-allrepos/cargo-shuttle.svg)](https://repology.org/project/cargo-shuttle/versions)
-
-Arch Linux: available on the [community repository](https://archlinux.org/packages/extra/x86_64/cargo-shuttle/).
-
-```sh
-pacman -S cargo-shuttle
-```
-
-Alpine Linux: available on [Alpine Edge](https://pkgs.alpinelinux.org/packages?name=cargo-shuttle&branch=edge) after enabling the [testing repository](https://wiki.alpinelinux.org/wiki/Repositories).
-
-```sh
-apk add cargo-shuttle
-```

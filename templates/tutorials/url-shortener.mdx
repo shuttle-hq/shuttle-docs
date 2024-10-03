@@ -160,14 +160,14 @@ $ shuttle deploy
         Project:            url-shortener
         Deployment Id:      3d08ac34-ad63-41c1-836b-99afdc90af9f
         Deployment Status:  DEPLOYED
-        Host:               url-shortener.shuttleapp.rs
+        Host:               url-shortener.shuttle.app
         Created At:         2022-04-13 03:07:34.412602556 UTC
 ```
 
 Ok... this seemed a little too easy, let's see if it works.
 
 ```sh
-$ curl https://url-shortener.shuttleapp.rs/
+$ curl https://url-shortener.shuttle.app/
 Hello, world!
 ```
 
@@ -210,7 +210,7 @@ shuttle deploy
         Project:            url-shortener
         Deployment Id:      538e41cf-44a9-4158-94f1-3760b42619a3
         Deployment Status:  DEPLOYED
-        Host:               url-shortener.shuttleapp.rs
+        Host:               url-shortener.shuttle.app
         Created At:         2022-04-13 03:08:30.412602556 UTC
         Database URI:       postgres://***:***@pg.shuttle.rs/db-url-shortener
 ```
@@ -276,7 +276,7 @@ async fn shorten(url: String, pool: &State<PgPool>) -> Result<String, Status> {
         .execute(&**pool)
         .await
         .map_err(|_| Status::InternalServerError)?;
-    Ok(format!("https://url-shortener.shuttleapp.rs/{id}"))
+    Ok(format!("https://url-shortener.shuttle.app/{id}"))
 }
 ```
 
@@ -313,8 +313,8 @@ the clock counting down as Shuttle deployed my url-shortener. 19.3 seconds and
 we're live. As soon as the `DEPLOYED` dialog came up, I instantly tested it out:
 
 ```bash
-$ curl -X POST -d "https://google.com" https://url-shortener.shuttleapp.rs
-https://s.shuttleapp.rs/XDlrTB⏎
+$ curl -X POST -d "https://google.com" https://url-shortener.shuttle.app
+https://s.shuttle.app/XDlrTB⏎
 ```
 
 I then copy/pasted the shortened URL to my browser and, lo an behold, was

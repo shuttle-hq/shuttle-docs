@@ -6,14 +6,14 @@ icon: "globe"
 
 <Snippet file="pro-feature.mdx" />
 
-By adding a custom domain to your project, web traffic can be served on your own fancy domain name instead of `*.shuttleapp.rs`.
+By adding a custom domain to your project, web traffic can be served on your own fancy domain name in addition to the default `<project-name>-<nonce>.shuttle.app`.
 
 You can add a root-level domain (`example.com`) or a subdomain (`thing.example.com`).
 
 Adding a custom domain to your project follows these steps:
 - Purchase a domain name from a DNS provider,
 - set up a DNS record to make it point to your Shuttle server, and
-- get an SSL certificate that enables HTTPS traffic to your project.
+- generate an SSL certificate that enables HTTPS traffic to your project.
 
 # Set up DNS record
 
@@ -25,7 +25,7 @@ If you have your domain name on Cloudflare, the process is quite simple. Go to `
 
 ### Root domain
 
-Add a `CNAME` record from `@` to your `.shuttleapp.rs` subdomain. Disable the Proxy.
+Add a `CNAME` record from `@` to your `*.shuttle.app` subdomain. Disable the Proxy.
 
 ![cloudflare root cname](/images/cloudflare_root_cname.png)
 
@@ -35,11 +35,11 @@ You can also add a `CNAME` for the `www` subdomain if you also want traffic to `
 
 ### Subdomain
 
-Add a `CNAME` record from your subdomain to your `.shuttleapp.rs` subdomain. Disable the Proxy.
+Add a `CNAME` record from your subdomain to your `*.shuttle.app` subdomain. Disable the Proxy.
 
 ![cloudflare subdomain cname](/images/cloudflare_sub_cname.png)
 
-In the example above, the subdomain `thing` (as in `thing.my-domain.com`) is being directed to `example.shuttleapp.rs`.
+In the example above, the subdomain `thing` (as in `thing.my-domain.com`) is being directed to `example.shuttle.app`.
 
 ## Other DNS providers
 
@@ -47,12 +47,23 @@ The process for other providers can vary, but here are the general steps. If you
 
 ### Root domain
 
-If you are adding a root-level domain, add an `A` record that points to the same IP address that is returned by `dig A example.shuttleapp.rs`, which is currently `18.132.234.15`.
+If you are adding a root-level domain, add an `A` record that points to the same IP address that is returned by `dig A example.shuttle.app`, which is currently `TODO`.
 
 ### Subdomain
 
-If you are adding a subdomain, add a `CNAME` record from your subdomain to your `.shuttleapp.rs` subdomain.
+If you are adding a subdomain, add a `CNAME` record from your subdomain to your `*.shuttle.app` subdomain.
 
 # Set up SSL certificate
 
-TODO
+Once the DNS records have propagated, add an SSL certificate and start receiving HTTPS traffic by running:
+
+```bash
+shuttle certificate add <domain>
+```
+
+After that, you can manage certificates with:
+
+```bash
+shuttle certificate list
+shuttle certificate delete <domain>
+```

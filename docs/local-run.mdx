@@ -1,13 +1,8 @@
 ---
 title: "Local Run"
 description: "Develop your Shuttle app locally"
-icon: "code"
+icon: "screwdriver-wrench"
 ---
-
-<Note>
-This page assumes that you have initialized a Shuttle project.
-If you haven't, go to the [quick start](./quick-start) guide.
-</Note>
 
 While deploying to production is easy with Shuttle, running your project locally is
 useful for development. To start your project on your local system, while in your
@@ -17,9 +12,14 @@ project directory, run:
 shuttle run
 ```
 
+The Shuttle CLI builds and runs your app in a similar way that the Shuttle platform does.
+It then starts a local provisioner server that simulates resource provisioning on the local system using Docker.
+
+The environment variables available in the [deployment environment](/docs/runtime-environment) are also set during a local run.
+
 ### Local runs with databases
 
-If your project relies on a database resource, it will default to starting a [Docker](https://docs.docker.com/get-docker/) container for that database.
+If your project uses a database resource, it will default to starting a local [Docker](https://docs.docker.com/get-docker/) container for that database.
 If you'd like to opt out of this behavior and supply your own database URI, simply pass it in as an argument to your resource.
 This argument also supports insertion of secrets from `Secrets.toml` with string interpolation:
 

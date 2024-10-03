@@ -1,11 +1,11 @@
 ---
 title: "Quick Start"
 description: "Fire upp your first project after installation 🚀"
-icon: "jet-fighter"
+icon: "circle-play"
 ---
 
 <Note>
-This page assumes that you have installed Shuttle.
+This page assumes that you have installed the Shuttle CLI.
 If you haven't, go to the [installation](./installation) guide.
 </Note>
 
@@ -19,13 +19,14 @@ shuttle login
 
 ## Create your first project
 
-The init command lets you generate a "Hello, World!" project or one of our [examples](/examples) or [templates](/templates).
+The init command lets you generate a Hello World project or one of our [examples](/examples) or [templates](/templates).
+For your first project, try a Hello World template.
 
 ```sh
 shuttle init
 ```
 
-You can then `cd` into the folder and run your app locally. Check out the [local run](./local-run) page for more.
+You can then `cd` into the created folder and run your app locally. Check out the [local run](./local-run) page for more.
 
 ```sh
 shuttle run
@@ -34,7 +35,12 @@ shuttle run
 Then, the app can be deployed with:
 
 ```sh
-shuttle deploy --allow-dirty
+shuttle deploy
 ```
 
-<Info>`--allow-dirty` or `--ad` allows deploying with uncommitted git changes.</Info>
+This uploads your code and builds it.
+After that, the resulting Docker image is launched and hosted, and can start receiving HTTPS traffic.
+
+<Snippet file="project-gc.mdx" />
+
+To learn more about available deployment configuration, check out [Deployment files](/docs/files).

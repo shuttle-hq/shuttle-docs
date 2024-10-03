@@ -1,0 +1,70 @@
+---
+title: "Builds"
+description: "Details about the environment your app is built in"
+icon: "hammer"
+---
+
+Shuttle builds run on AWS CodeBuild, where we compile your Rust app and place it in a Shuttle `runtime` Debian-based Docker image.
+
+## Builder image
+
+The Rust builder image is based on [cargo-chef](https://github.com/LukeMathWalker/cargo-chef) to utilize Docker-layer caching of the build dependencies.
+
+### Rust toolchain
+
+The Rust version in the image is regularly updated to the latest stable `stable-x86_64-unknown-linux-gnu` toolchain.
+
+By default, the `wasm32-unknown-unknown` target is installed, which enables compiling WASM frontends.
+
+### External tools
+
+Apart from what is already found in the Debian-based cargo-chef image [[1]](https://github.com/debuerreotype/docker-debian-artifacts/blob/bfa3d175e4153a23ffb4cf1b573d72408333b4e2/bookworm/rootfs.manifest) [[2]](https://github.com/docker-library/buildpack-deps/blob/fdfe65ea0743aa735b4a5f27cac8e281e43508f5/debian/bookworm/Dockerfile), these `apt` packages are also installed:
+
+- `clang`
+- `cmake`
+- `llvm-dev`
+- `libclang-dev`
+- `mold`
+- `protobuf-compiler`
+
+Additionally, these tools are installed:
+
+- `cargo-binstall` (latest)
+- `trunk` (0.19.2)
+
+<Tip>Some other build tool you think we should add? Let us know!</Tip>
+
+## Customize build process
+
+### Feature flags
+
+Use [the "shuttle" feature flag](/docs/project-configuration#cargo-feature-flags) for custom behavior when building on Shuttle.
+
+### Environment variables
+
+{/* TODO `SHUTTLE=true` */}
+
+If you have build flags or env variables that need to be set during compilation, you can add them in `.cargo/config.toml` ([docs](https://doc.rust-lang.org/cargo/reference/config.html)) and include it in your deployment. Below are some examples.
+
+```toml .cargo/config.toml
+[build]
+rustflags = ["--foo", "bar"]
+
+[env]
+MY_ENV_VAR = "Shuttle to the moon! 🚀🚀🚀"
+```
+
+## Runtime image
+
+The runtime image that your built executable is placed in is a `bookworm-slim` (Debian 12) with `ca-certificates` and `curl` installed.
+
+## (EXPERIMENTAL) Hook scripts
+
+<Warning>This feature is experimental and can change</Warning>
+
+There are three optional bash scripts that can be used to run custom commands during the build.
+Create them at the root of your project.
+
+- `shuttle_prebuild.sh`: Runs before `cargo build`. Can be used to install custom build dependencies.
+- `shuttle_postbuild.sh`: Runs after `cargo build`.
+- `shuttle_setup_container.sh`: Runs in the runtime image before build artifacts are copied into it. Can be used to install custom runtime dependencies.

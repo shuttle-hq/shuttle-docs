@@ -1,20 +1,20 @@
 ---
-title: "Command Line Interface"
-icon: "terminal"
+title: "CLI"
+description: "Overview of the Shuttle commands"
+icon: "code"
 ---
 
-Interaction with the Shuttle services is mainly done with through the `cargo-shuttle` Command Line Interface (CLI).
-
+Interaction with the Shuttle platform is mainly done with the `shuttle` Command Line Interface (CLI).
 Some tasks, such as viewing logs, can also be done in the [Shuttle Console](https://console.shuttle.dev/).
 
-Commands are issued in the format: `shuttle [OPTIONS] <COMMAND>`.
+<Snippet file="binaries.mdx" />
 
 To get an overview of available commands, subcommands, and options, run:
 
 ```bash
 shuttle help
 # or
-shuttle <COMMAND> --help
+shuttle <command> --help
 ```
 
 ## Commands
@@ -25,13 +25,10 @@ shuttle <COMMAND> --help
 | run         | Run a Shuttle service locally |
 | deploy      | Deploy a Shuttle service |
 | deployment  | Manage deployments of a Shuttle service [aliases: depl] |
-| status      | View the status of a Shuttle service |
-| stop        | Stop a Shuttle service |
 | logs        | View logs of a Shuttle service |
 | project     | Manage projects on Shuttle [aliases: proj] |
 | resource    | Manage resources [aliases: res] |
 | certificate | Manage SSL certificates for custom domains [aliases: cert] |
-| clean       | Remove cargo build artifacts in the Shuttle environment |
 | account     | Show info about your Shuttle account [aliases: acc] |
 | login       | Login to the Shuttle platform |
 | logout      | Log out of the Shuttle platform |
