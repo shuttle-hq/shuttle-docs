@@ -22,8 +22,8 @@
   "favicon": "/favicon.png",
   "colors": {
     "background": {
-      "dark": "#001811",
-      "light": "#c0ffd0"
+      "dark": "#000a05",
+      "light": "#d0ffe0"
     },
     "primary": "#000",
     "light": "#7f7",
@@ -134,8 +134,7 @@
       "pages": [
         "docs/cli",
         "docs/upgrade",
-        "docs/migrating-to-shuttle",
-        "docs/migrating-rds-postgres"
+        "docs/migrating-to-shuttle"
       ]
     },
     {
