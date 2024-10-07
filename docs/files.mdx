@@ -28,7 +28,7 @@ If you have ignored files that you want to include in the deployment upload, dec
 
 ```toml Shuttle.toml
 # Declare ignored files that should be included in deployment:
-[deploy] # TODO
+[deploy]
 include = [
   "file.txt", # include file.txt
   "frontend/dist/*", # include all files and subdirs in frontend/dist/
@@ -70,7 +70,7 @@ Then, add `[build]` configuration in `Shuttle.toml` to copy them from the builde
 
 ```toml Shuttle.toml
 # Declare files that should be moved to the runtime container:
-[build] # TODO
+[build]
 assets = [
   "file.txt", # include file.txt
   "frontend/dist/*", # include all files and subdirs in frontend/dist/
