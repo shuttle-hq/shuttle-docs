@@ -7,6 +7,9 @@
       "apiHost": "https://eu.posthog.com"
     }
   },
+  "integrations": {
+    "intercom": "rwqmvfqn"
+  },
   "logo": {
     "light": "/images/logo/light.png",
     "dark": "/images/logo/dark.png",
@@ -30,7 +33,7 @@
     "dark": "#5a5"
   },
   "topbarLinks": [
-    {"name": "Support", "url": "https://docs.shuttle.dev/support/support"}
+    {"name": "Support (?)", "url": "https://docs.shuttle.dev/support/support"}
   ],
   "topbarCtaButton": {"style": "roundedRectangle","type": "link",
     "name": "Log In",
@@ -141,6 +144,7 @@
       "group": "Support",
       "pages": [
         "support/support",
+        "support/pricing",
         "support/faq",
         "support/troubleshooting"
       ]

@@ -1,15 +1,67 @@
 ---
-title: Platform update
+title: Platform update (TODO)
 description: In Q4 2024, Shuttle is launching a new and improved platform
 icon: layer-group
 ---
 
-Ivan get in here
-
-
-
-
+[TODO: Info from announcement copy]
 
 # Changelog
 
+## Changed
 
+- ⚠️ The Shuttle Console is located at [console.shuttle.dev](https://console.shuttle.dev/) instead of **console.shuttle.rs**.
+- ⚠️ Project subdomains are under `*.shuttle.app` instead of `*.shuttleapp.rs`
+- ⚠️ A new binary `shuttle` is now provided for using the new platform ([read more](/getting-started/installation)).
+- Project names are no longer globally unique, only unique per account. Project URLs now have some random characters at the end of its default subdomain, e.g. `myproject-3h5n.shuttle.app`.
+- Builds and deployments are now fully separated. This allows for more specialised build workflows, and more efficient deployment hosting.
+  - Builds run on AWS CodeBuild, and now produce a Docker image instead of just a binary. *This implies we can support more languages than Rust in the future. ✨*
+  - Deployments run on AWS ECS with Fargate.
+- CLI commands:
+  - `deploy`: no longer runs tests, so `--no-test` has no effect.
+  - `deploy`: no longer denies dirty deployments by default ([read more](/docs/files#block-dirty-deployments)).
+  - `status`: use `deployment status` instead.
+  - `stop`: use `deployment stop` instead.
+  - `project status`: projects no longer have a state, so `--follow` has no effect.
+  - `project link`: explicitly re-link the project directory to a Shuttle project. (more below)
+- Max archive size for deployments is now 100 MB (up from 50MB).
+- Shuttle.toml:
+  - Renamed the `assets` field to `deploy.include` ([read more](/docs/files#include-ignored-files)).
+  - For static files to move from the build stage to the runtime container, you must specify `build.assets` ([read more](/docs/files#build-assets)).
+- Shared Postgres resource:
+  - Postgres 16
+  - Now based on AWS RDS
+  - Now has common [Postgres Extensions](https://docs.aws.amazon.com/AmazonRDS/latest/PostgreSQLReleaseNotes/postgresql-extensions.html#postgresql-extensions-16x)
+
+## Added
+
+- The Shuttle proxy, that proxies HTTP requests to user projects, now sets the [X-Forwarded-For header](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/X-Forwarded-For) on all requests, with the IP of the original caller.
+- CLI commands:
+  - Commands that target a project: You will now be prompted to link your project directory to a Shuttle project.
+  - In addition to `--name <name>`, you can also use `--id <id>` to target specific projects. This overrides project linking.
+  - A new `certificate` command for adding SSL certificates to custom domains.
+  - `deploy --no-follow` to not poll the deployment status until it reaches a running or failed state.
+  - `account` to show information about your account.
+
+## Removed
+
+- **Shuttle Persist** resource and the persistent file volume. *(We plan to implement an S3-based replacement.)*
+- **MongoDB Shared Database** resource. *(Removed due to having very few users.)*
+- **AWS RDS Database** resource. *(We plan to add a replacement later.)*
+- CLI commands:
+  - `project stop`
+  - `project restart`
+  - `clean`
+- The **Teams** feature has been temporarily disabled. We plan to enable it after improvements have been made. *(The implementation of teams was very inefficient, and slowed down everyone's experience of using the Shuttle API.)*
+
+## Upcoming features
+
+Not all planned features are implemented yet. Here is a list of planned changes:
+
+- Full HTTP/2 support
+- Feature parity between CLI and Shuttle Console
+- Project idling or other way to reduce compute costs
+- Customising CPU and RAM for the builder and runtime containers
+- Deploying prebuilt shuttle-examples docker images (allows one-click deploys)
+- Streaming logs with `shuttle logs --follow` and during a `deploy` command
+- New resources, such as S3 bucket and a replacement for Shuttle Persist and Shuttle AWS RDS

@@ -6,7 +6,7 @@ icon: "database"
 This plugin manages databases on [Shuttle](https://www.shuttle.dev) and connects them to your app.
 A shared database is in the same cluster as other user's databases, but it is not accessible by other users.
 
-If you want a high performing and isolated database, consider [Shuttle AWS RDS](./shuttle-aws-rds).
+{/* If you want a high performing and isolated database, consider [Shuttle AWS RDS](./shuttle-aws-rds). */}
 
 <Tip>You can connect to any type of remotely hosted database from your code, so do not let our current database offerings limit your creativity! Got other databases you want to see on Shuttle? Let us know!</Tip>
 
@@ -18,9 +18,6 @@ Each type of shareable database is behind its own feature flag and macro attribu
 | Engine   | Feature flag | Attribute path |
 |----------|--------------|----------------|
 | Postgres | `postgres`   | `shuttle_shared_db::Postgres` |
-| MongoDB  | `mongodb`    | `shuttle_shared_db::MongoDb`  |
-
-<Warning>The MongoDB resource will be deprecated in the near future. If this resource is important to you, please open a [GitHub issue](https://github.com/shuttle-hq/shuttle/issues) detailing your use-case.</Warning>
 
 ### Output type
 
@@ -36,8 +33,6 @@ Depending on which type declaration is used as the output type in the macro, you
 | Postgres | `diesel-async` | `diesel_async::AsyncPgConnection` | An async diesel connection with reasonable defaults |
 | Postgres | `diesel-async-bb8` | `diesel_bb8::Pool<diesel_async::AsyncPgConnection>` | A bb8 connection pool with reasonable defaults |
 | Postgres | `diesel-async-deadpool` | `diesel_deadpool::Pool<diesel_async::AsyncPgConnection>` | A deadpool connection pool with reasonable defaults |
-| MongoDB  | | `String` | The connection string including username and password |
-| MongoDB  | | `mongodb::Database` | A client pool connected to the database |
 
 Lastly, add a macro annotation to the Shuttle main function. Here are examples for Postgres:
 
@@ -54,8 +49,6 @@ async fn main(#[shuttle_shared_db::Postgres] pool: sqlx::PgPool) -> ... { ... }
 <Snippet file="sqlx-macros.mdx" />
 
 ### Parameters
-
-Both the Postgres and MongoDB macros take the same optional parameter:
 
 | Parameter | Type | Description |
 |-----------|------|-------------|
@@ -76,9 +69,8 @@ async fn main(
 <Note>Caveat: If you are interpolating a secret from `Secrets.dev.toml`, you need to set the same secret in `Secrets.toml` to a empty string so that this step does not crash in deployment.</Note>
 
 The URI should be formatted according to the
-[Postgres](https://www.postgresql.org/docs/current/libpq-connect.html#LIBPQ-CONNSTRING) or
-[MongoDB](https://www.mongodb.com/docs/manual/reference/connection-string/)
-documentation, depending on which one you're using.
+[Postgres](https://www.postgresql.org/docs/current/libpq-connect.html#LIBPQ-CONNSTRING)
+documentation.
 
 If you do not specify a `local_uri`, then cargo-shuttle will attempt to spin up a Docker container and launch the database inside of it.
 For this to succeed, you must have Docker installed and you must also have started the Docker engine. If you have not used Docker
@@ -114,4 +106,4 @@ async fn main(
 
 The full example can be found on [GitHub](https://github.com/shuttle-hq/shuttle-examples/tree/main/axum/postgres).
 
-TODO limitations, limits?
+{/* TODO limitations, limits? */}

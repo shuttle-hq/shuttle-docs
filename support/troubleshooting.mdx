@@ -22,24 +22,8 @@ This section is aimed at collecting common issues users have to provide quick de
     1) Switch the version of your crate over to the dependency. You can find the correct one either from the error itself, or going to Crates.io and checking the dependencies of the latest Shuttle crate version.
     2) If you are unable to do the above because of nested dependencies, you can typically fork the crate's repo then upgrade the dependency yourself. However, depending on breaking changes this may be a non-trivial amount of work.
   </Accordion>
-  <Accordion title="I get HTTP error code 600 while my project is in deployment">
-    This is most likely to happen if your project panics and crashes. Proper error handling should mitigate this, as well as logging to understand where your application is going wrong..
-
-    Instrumenting your application is a great way to get insight into panics/crashes. We also have [an article on using the Tracing libraries.](https://www.shuttle.dev/blog/2024/01/09/getting-started-tracing-rust)
-  </Accordion>
   <Accordion title="I get 401 Unauthorised error while trying to use the CLI">
     Try logging out and logging back in. If this still doesn't work, feel free to shoot us a message on [our Discord server!](https://discord.gg/shuttle)
-  </Accordion>
-  <Accordion title="How can I return custom errors with Shuttle?">
-    CustomError is an alias for `anyhow::Error`, the simplest way to output a relevant message here is by using `anyhow::Context` like this:
-
-    ```rust
-    use anyhow::Context;
-
-    pool.execute(include_str!("../schema.sql"))
-        .await
-        .context("failed to run migrations")?;
-    ```
   </Accordion>
 </AccordionGroup>
 
