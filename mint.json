@@ -129,7 +129,8 @@
           ]
         },
         "integrations/shuttle-openai",
-        "integrations/custom-resources"
+        "integrations/custom-resources",
+        "integrations/ci-cd"
       ]
     },
     {
