@@ -75,7 +75,7 @@ If you want the deploy command to keep blocking dirty deployments, add the `depl
 
 If your project uses static assets at runtime, you need to declare them in `build.assets` to have them copied from the builder to the runtime image ([docs](/docs/files#build-assets)).
 
-## Local Run
+## 5. Local Run
 
 Check that your project builds and runs locally with
 
@@ -83,7 +83,7 @@ Check that your project builds and runs locally with
 shuttle run
 ```
 
-## Deploy
+## 6. Deploy
 
 Time to deploy!
 
@@ -93,15 +93,23 @@ shuttle deploy
 
 Note your project URL: project subdomains are now under `*.shuttle.app` instead of `*.shuttleapp.rs`.
 
-## Migrate Shared Postgres data
+## 7. (Optional) Migrate Shared Postgres data
 
 <Note>
 We are currently working on a way to dump the data in a shared Postgres, so that it can be restored in a shared Postgres on the shuttle.dev platform.
 Stay tuned!
 </Note>
 
+## 8. (Optional) Update GitHub Action
 
-## Custom domains
+If you are using [deploy-action](https://github.com/shuttle-hq/deploy-action), check the new v2 branch for renamed and new required fields:
+
+- Use `shuttle-hq/deploy-action@v2` instead of `shuttle-hq/deploy-action@main`
+- Rename `deploy-key` to `shuttle-api-key`
+- Add a `project-id` value
+- Any other args can be added in `extra-args`
+
+## 9. (Optional) Custom domains
 
 Once you have moved resources, deployed your app to shuttle.dev, and want to move your custom domain, update your DNS records according to [Domain names](/docs/domain-names) and use the new `shuttle certificate` command to add SSL certificates.
 HTTPS traffic should then be enabled for your custom domain.
