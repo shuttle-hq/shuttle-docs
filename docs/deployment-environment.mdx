@@ -1,5 +1,5 @@
 ---
-title: "Deployment environment TODO"
+title: "Deployment environment (TODO)"
 description: "Details about the environment your app runs in"
 icon: "box"
 ---
@@ -14,20 +14,21 @@ Config, cpu
 
 ## Environment variables
 
-There are some environment variables set in the Shuttle container.
+These are the environment variables set in the Shuttle runtime container.
 Check for `SHUTTLE=true` or use [the shuttle feature flag](./project-structure#cargo-feature-flags) for custom behavior when running on Shuttle.
 
 ```bash
-SHUTTLE=true
+SHUTTLE="true"
+SHUTTLE_PROJECT_ID="<project id>"
+SHUTTLE_PROJECT_NAME="<project name>"
+RUST_LOG="INFO"
 ```
-
-TODO
 
 ## Secrets
 
 See [Shuttle Secrets](/resources/shuttle-secrets)
 
+## Customize Runtime container
 
-
-## Runtime image and container setup
+See [Hook scripts](/docs/builds#experimental-hook-scripts)
 

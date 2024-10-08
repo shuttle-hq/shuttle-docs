@@ -13,27 +13,27 @@
   "logo": {
     "light": "/images/logo/light.png",
     "dark": "/images/logo/dark.png",
-    "href": "https://www.shuttle.dev"
+    "href": "https://www.shuttle.dev/"
   },
   "layout": "topnav",
   "sidebar": {"items": "border"},
   "versions": [
-    {"name": "🟢 docs.shuttle.dev (NEW)", "url": "https://docs.shuttle.dev/"},
-    {"name": "🔵 docs.shuttle.rs ", "url": "https://docs.shuttle.rs/"}
+    {"name": "🟠 shuttle.dev (NEW) 🟠", "url": "https://docs.shuttle.dev/"},
+    {"name": "⚪ shuttle.rs ⚪", "url": "https://docs.shuttle.rs/"}
   ],
   "background": {"style": "windows"},
   "favicon": "/favicon.png",
   "colors": {
     "background": {
-      "dark": "#000a05",
-      "light": "#d0ffe0"
+      "dark": "#0b0a00",
+      "light": "#fcf0d0"
     },
     "primary": "#000",
-    "light": "#7f7",
-    "dark": "#5a5"
+    "light": "#f91",
+    "dark": "#f91"
   },
   "topbarLinks": [
-    {"name": "Support (?)", "url": "https://docs.shuttle.dev/support/support"}
+    {"name": "Support", "url": "https://docs.shuttle.dev/support/support"}
   ],
   "topbarCtaButton": {"style": "roundedRectangle","type": "link",
     "name": "Log In",
@@ -52,7 +52,7 @@
     },
     {
       "name": "Crate Docs",
-      "icon": "rectangle-terminal",
+      "icon": "rust",
       "url": "https://docs.rs/shuttle-runtime/latest/shuttle_runtime/"
     }
   ],
@@ -98,8 +98,7 @@
         "docs/builds",
         "docs/deployment-environment",
         "docs/logs",
-        "docs/domain-names",
-        "docs/console"
+        "docs/domain-names"
       ]
     },
     {
@@ -136,16 +135,15 @@
     {
       "group": "Guides",
       "pages": [
-        "docs/cli",
-        "docs/upgrade",
-        "docs/migrating-to-shuttle"
+        "guides/cli",
+        "guides/upgrade",
+        "guides/migrating-to-shuttle"
       ]
     },
     {
       "group": "Support",
       "pages": [
         "support/support",
-        "support/pricing",
         "support/faq",
         "support/troubleshooting"
       ]

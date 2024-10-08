@@ -42,7 +42,7 @@ Use [the "shuttle" feature flag](/docs/project-configuration#cargo-feature-flags
 
 ### Environment variables
 
-{/* TODO `SHUTTLE=true` */}
+The `SHUTTLE=true` env var is set in the builder image.
 
 If you have build flags or env variables that need to be set during compilation, you can add them in `.cargo/config.toml` ([docs](https://doc.rust-lang.org/cargo/reference/config.html)) and include it in your deployment. Below are some examples.
 
