@@ -1,14 +1,20 @@
 ---
-title: Platform update (TODO)
+title: Platform update
 description: In Q4 2024, Shuttle is launching a new and improved platform
 icon: layer-group
 ---
 
-[TODO: Info from announcement copy]
+Introducing the new Shuttle platform! We've supercharged what developers love about Shuttle, combining our powerful developer experience with enterprise-grade infrastructure. For developers, we've kept it simple and intuitive - no complex configs, just focus on your Rust code. On the production side, we've implemented VM-level isolation, increased reliability and scalability to meet real-world demands. From solo developers to enterprise teams, Shuttle now offers the perfect blend of ease and production-ready robustness.
 
-# Changelog
+{/* ## Q&A
 
-## Changed
+- When is the old platform shutting down?
+- Do I have to migrate my project?
+- etc */}
+
+## Changelog
+
+### Changed
 
 - ⚠️ The Shuttle Console is located at [console.shuttle.dev](https://console.shuttle.dev/) instead of **console.shuttle.rs**.
 - ⚠️ Project subdomains are under `*.shuttle.app` instead of `*.shuttleapp.rs`
@@ -33,7 +39,7 @@ icon: layer-group
   - Now based on AWS RDS
   - Now has common [Postgres Extensions](https://docs.aws.amazon.com/AmazonRDS/latest/PostgreSQLReleaseNotes/postgresql-extensions.html#postgresql-extensions-16x)
 
-## Added
+### Added
 
 - The Shuttle proxy, that proxies HTTP requests to user projects, now sets the [X-Forwarded-For header](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/X-Forwarded-For) on all requests, with the IP of the original caller.
 - CLI commands:
@@ -43,7 +49,7 @@ icon: layer-group
   - `deploy --no-follow` to not poll the deployment status until it reaches a running or failed state.
   - `account` to show information about your account.
 
-## Removed
+### Removed
 
 - **Shuttle Persist** resource and the persistent file volume. *(We plan to implement an S3-based replacement.)*
 - **MongoDB Shared Database** resource. *(Removed due to having very few users.)*
@@ -52,9 +58,9 @@ icon: layer-group
   - `project stop`
   - `project restart`
   - `clean`
-- The **Teams** feature has been temporarily disabled. We plan to enable it after improvements have been made. *(The implementation of teams was very inefficient, and slowed down everyone's experience of using the Shuttle API.)*
+- The **Teams** feature has been temporarily disabled. We plan to enable it after improvements have been made. {/* *(The implementation of teams was very inefficient, and slowed down everyone's experience of using the Shuttle API.)* */}
 
-## Upcoming features
+{/* ## Upcoming features
 
 Not all planned features are implemented yet. Here is a list of planned changes:
 
@@ -65,4 +71,4 @@ Not all planned features are implemented yet. Here is a list of planned changes:
 - Update the Shuttle Deploy GitHub Action
 - Deploying prebuilt shuttle-examples docker images (allows one-click deploys)
 - Streaming logs with `shuttle logs --follow` and during a `deploy` command
-- New resources, such as S3 bucket and a replacement for Shuttle Persist and Shuttle AWS RDS
+- New resources, such as S3 bucket and a replacement for Shuttle Persist and Shuttle AWS RDS */}
