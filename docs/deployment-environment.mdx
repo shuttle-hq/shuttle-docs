@@ -1,16 +1,17 @@
 ---
-title: "Deployment environment (TODO)"
+title: "Deployment environment"
 description: "Details about the environment your app runs in"
 icon: "box"
 ---
 
-## Stuff
+## Infrastructure
 
-General info
+Deployments run in AWS ECS with Fargate VMs.
+The default compute configuration is 0.25 vCPU and 0.5 GB RAM.
+This will soon be made configurable.
+If you need more compute out of the gate, reach out to us.
 
-Defaults, limits
-
-Config, cpu
+{/* HTTPS traffic is proxied to your */}
 
 ## Environment variables
 
