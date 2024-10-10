@@ -6,6 +6,8 @@ icon: layer-group
 
 Introducing the new Shuttle platform! We've supercharged what developers love about Shuttle, combining our powerful developer experience with enterprise-grade infrastructure. For developers, we've kept it simple and intuitive - no complex configs, just focus on your Rust code. On the production side, we've implemented VM-level isolation, increased reliability and scalability to meet real-world demands. From solo developers to enterprise teams, Shuttle now offers the perfect blend of ease and production-ready robustness.
 
+[*Read the full announcement here!*](https://www.shuttle.dev/blog/2024/10/10/shuttle-redefining-backend-development)
+
 {/* ## Q&A
 
 - When is the old platform shutting down?
@@ -45,6 +47,7 @@ Introducing the new Shuttle platform! We've supercharged what developers love ab
   - `project status`: projects no longer have a state, so `--follow` has no effect.
   - `project link`: explicitly re-link the project directory to a Shuttle project. (more below)
 - Max archive size for deployments is now 100 MB (up from 50MB).
+- Secrets.toml must now be in the root of the cargo workspace (`--secrets <file>` can still be used for a custom location).
 - Shuttle.toml:
   - Renamed the `assets` field to `deploy.include` ([read more](/docs/files#include-ignored-files)).
   - For static files to move from the build stage to the runtime container, you must specify `build.assets` ([read more](/docs/files#build-assets)).

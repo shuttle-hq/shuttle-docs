@@ -75,6 +75,12 @@ If you want the deploy command to keep blocking dirty deployments, add the `depl
 
 If your project uses static assets at runtime, you need to declare them in `build.assets` to have them copied from the builder to the runtime image ([docs](/docs/files#build-assets)).
 
+### Secrets.toml
+
+Secrets.toml must now be in the root of the cargo workspace, so move it there if it is in a member crate.
+
+`--secrets <file>` on the deploy command can still be used for a custom secrets file location.
+
 ## 5. Local Run
 
 Check that your project builds and runs locally with
