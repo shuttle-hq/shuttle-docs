@@ -1,33 +1,35 @@
 ---
 title: "Local Run"
-description: "Test your Shuttle app on your local system"
-icon: "code"
+description: "Develop your Shuttle app locally"
+icon: "screwdriver-wrench"
 ---
-
-We will assume that you have already initialized a project. If you haven't, you should
-check out our [quick start](./quick-start) section.
 
 While deploying to production is easy with Shuttle, running your project locally is
 useful for development. To start your project on your local system, while in your
 project directory, run:
 
 ```bash
-cargo shuttle run
+shuttle run
 ```
+
+The Shuttle CLI builds and runs your app in a similar way that the Shuttle platform does.
+It then starts a local provisioner server that simulates resource provisioning on the local system using Docker.
+
+The environment variables available in the [deployment environment](/docs/deployment-environment) are also set during a local run.
 
 ### Local runs with databases
 
-If your project relies on a database resource, it will default to starting a [Docker](https://docs.docker.com/get-docker/) container for that database.
-If you'd like to opt out of this behavior and rather supply your own database URI, simply pass it in as an argument to your resource.
+If your project uses a database resource, it will default to starting a local [Docker](https://docs.docker.com/get-docker/) container for that database.
+If you'd like to opt out of this behavior and supply your own database URI, simply pass it in as an argument to your resource.
 This argument also supports insertion of secrets from `Secrets.toml` with string interpolation:
 
 ```rust
 #[shuttle_runtime::main]
-async fn tide(
-    #[shuttle_aws_rds::Postgres(
+async fn main(
+    #[shuttle_shared_db::Postgres(
         local_uri = "postgres://postgres:{secrets.PASSWORD}@localhost:16695/postgres"
     )] pool: PgPool,
-) -> ShuttleTide<MyState> { ... }
+) -> ShuttleAxum { ... }
 ```
 
 <Note>**IMPORTANT:** If Docker isn't started, you may receive an "os error 2" error. This is typically related to your Docker installation. If you're using Docker via the CLI, you can use any Docker command to start it up. If you're using Docker Desktop, you will need to start Docker Desktop.</Note>
@@ -38,7 +40,7 @@ If you'd like to expose your application to you local network, for example if yo
 website and you'd like to open it on your phone, simply pass in the `--external` flag:
 
 ```bash
-cargo shuttle run --external
+shuttle run --external
 ```
 
 This will bind your local application to `0.0.0.0:8000`, and you will now be able to connect to it
@@ -46,7 +48,7 @@ using your computer's local IP. If you'd also like to change the port, you can d
 argument:
 
 ```bash
-cargo shuttle run --external --port 8123
+shuttle run --external --port 8123
 ```
 
 <Note>You may need to open the port your app is started on in your firewall.</Note>
@@ -60,7 +62,7 @@ Here are some small tips and tricks to boost your productivity when developing l
 To live reload your Shuttle app when you save a file, you can use [cargo-watch](https://github.com/watchexec/cargo-watch):
 
 ```bash
-# This will e(x)ecute `cargo shuttle run` when you save a file.
+# This will e(x)ecute `shuttle run` when you save a file.
 cargo watch -x 'shuttle run'
 # This will also (q)uietly (c)lear the console between runs.
 cargo watch -qcx 'shuttle run'
@@ -68,7 +70,7 @@ cargo watch -qcx 'shuttle run'
 # There are many other helpful options, see `cargo watch --help`
 ```
 
-Small caveat: Be aware that ignoring files with `.ignore` will also affect the behaviour of `cargo shuttle deploy`.
+Small caveat: Be aware that ignoring files with `.ignore` will also affect the behaviour of `shuttle deploy`.
 
 #### Live reload frontend with `tower-livereload`
 

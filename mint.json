@@ -1,26 +1,43 @@
 {
   "$schema": "https://mintlify.com/schema.json",
-  "name": "Shuttle",
+  "name": "Shuttle Docs",
   "analytics": {
     "posthog": {
       "apiKey": "phc_cQMQqF5QmcEzXEaVlrhv3yBSNRyaabXYAyiCV7xKHUH",
       "apiHost": "https://eu.posthog.com"
     }
   },
+  "integrations": {
+    "intercom": "rwqmvfqn"
+  },
   "logo": {
     "light": "/images/logo/light.png",
     "dark": "/images/logo/dark.png",
-    "href": "https://www.shuttle.rs"
+    "href": "https://www.shuttle.dev/"
   },
+  "layout": "topnav",
+  "sidebar": {"items": "border"},
+  "versions": [
+    {"name": "🚀 shuttle.dev (NEW)", "url": "https://docs.shuttle.dev/"},
+    {"name": "⚪ shuttle.rs", "url": "https://docs.shuttle.rs/"}
+  ],
+  "background": {"style": "windows"},
   "favicon": "/favicon.png",
   "colors": {
-    "primary": "#F25100",
-    "light": "#F09050",
-    "dark": "#C34100"
+    "background": {
+      "dark": "#0b0a00",
+      "light": "#fcf0d0"
+    },
+    "primary": "#000",
+    "light": "#f91",
+    "dark": "#f91"
   },
-  "topbarCtaButton": {
+  "topbarLinks": [
+    {"name": "Support", "url": "https://docs.shuttle.dev/support/support"}
+  ],
+  "topbarCtaButton": {"style": "roundedRectangle","type": "link",
     "name": "Log In",
-    "url": "https://console.shuttle.rs/"
+    "url": "https://console.shuttle.dev/"
   },
   "anchors": [
     {
@@ -35,7 +52,7 @@
     },
     {
       "name": "Crate Docs",
-      "icon": "rectangle-terminal",
+      "icon": "rust",
       "url": "https://docs.rs/shuttle-runtime/latest/shuttle_runtime/"
     }
   ],
@@ -50,80 +67,85 @@
     },
     {
       "name": "Blog",
-      "url": "https://www.shuttle.rs/blog/"
+      "url": "https://www.shuttle.dev/blog/"
     }
   ],
   "navigation": [
     {
       "group": "Introduction",
       "pages": [
-        "introduction/welcome",
+        "introduction/docs",
         "introduction/what-is-shuttle",
-        "introduction/how-shuttle-works"
+        "introduction/how-shuttle-works",
+        "introduction/platform-update",
+        "introduction/platform-migration"
       ]
     },
     {
       "group": "Getting Started",
       "pages": [
         "getting-started/installation",
-        "getting-started/quick-start",
-        "getting-started/local-run",
-        "getting-started/shuttle-commands",
-        "getting-started/idle-projects"
+        "getting-started/quick-start"
       ]
     },
     {
-      "group": "Configuration",
+      "group": "Shuttle",
       "pages": [
-        "configuration/project-structure",
-        "configuration/project-name",
-        "configuration/files",
-        "configuration/environment",
-        "configuration/logs",
-        "configuration/ci-cd",
-        "configuration/domain-names",
-        "configuration/shuttle-versions"
+        "docs/projects",
+        "docs/project-configuration",
+        "docs/local-run",
+        "docs/files",
+        "docs/builds",
+        "docs/deployment-environment",
+        "docs/logs",
+        "docs/domain-names"
       ]
     },
     {
       "group": "Resources",
       "pages": [
-        "resources/overview",
+        "resources/resources",
+        "resources/shuttle-secrets",
         {
           "group": "Databases",
           "icon": "database",
           "pages": [
-            "resources/shuttle-aws-rds",
-            "resources/shuttle-shared-db",
-            "resources/shuttle-persist",
-            "resources/shuttle-turso",
-            "resources/shuttle-qdrant",
-            "resources/shuttle-opendal"
+            "resources/shuttle-shared-db"
           ]
-        },
-        {
-          "group": "LLMs ✨",
-          "icon": "microchip",
-          "pages": [
-            "resources/shuttle-openai"
-          ]
-        },
-        "resources/shuttle-secrets",
-        "resources/shuttle-metadata",
-        "resources/custom-resources"
+        }
       ]
     },
     {
-      "group": "Migration",
-      "pages": ["migration/migrating-to-shuttle"]
+      "group": "Integrations",
+      "pages": [
+        {
+          "group": "Databases",
+          "icon": "database",
+          "pages": [
+            "integrations/shuttle-turso",
+            "integrations/shuttle-qdrant",
+            "integrations/shuttle-opendal"
+          ]
+        },
+        "integrations/shuttle-openai",
+        "integrations/custom-resources",
+        "integrations/ci-cd"
+      ]
+    },
+    {
+      "group": "Guides",
+      "pages": [
+        "guides/cli",
+        "guides/upgrade",
+        "guides/migrating-to-shuttle"
+      ]
     },
     {
       "group": "Support",
       "pages": [
+        "support/support",
         "support/faq",
-        "support/troubleshooting",
-        "support/delete-project",
-        "support/migrating-rds-postgres"
+        "support/troubleshooting"
       ]
     },
     {

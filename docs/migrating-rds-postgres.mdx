@@ -1,5 +1,6 @@
 ---
 title: "Migrating from RDS Postgres to Shared Postgres"
+icon: "dove"
 ---
 
 Since the Shuttle AWS RDS resource is only available as a paid add-on, if you cancel your
@@ -19,7 +20,7 @@ async fn main(
 ) -> ShuttleAxum { ... }
 ```
 
-2. Run `cargo shuttle deploy`, this will create the shared database.
+2. Run `shuttle deploy`, this will create the shared database.
 
 3. We want to dump the RDS database, for which we'll need the `psql` CLI installed.
 
@@ -27,7 +28,7 @@ async fn main(
 sudo apt-get install postgresql-client-15
 ```
 
-4. Run `cargo shuttle resource list --show-secrets` to get the connection strings of both
+4. Run `shuttle resource list --show-secrets` to get the connection strings of both
 databases, we'll need these to dump the RDS database and restore it as a shared database.
 
 5. We can use the `psql` CLI we installed in step 3 to run some queries against the RDS
@@ -91,5 +92,5 @@ async fn main(
 10. When you are satisfied with the migration, you can delete your RDS instance.
 
 ```bash
-cargo shuttle resource delete database::aws_rds::postgres
+shuttle resource delete database::aws_rds::postgres
 ```

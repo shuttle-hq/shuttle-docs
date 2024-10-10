@@ -6,10 +6,10 @@ In this guide you'll learn the basics of how to write a competent Axum HTTP REST
 
 ### Getting Started
 
-To get started, you'll want to initialise a Shuttle project with Axum (you can find more about getting started [here](https://docs.shuttle.rs/introduction/installation)).
+To get started, you'll want to initialise a Shuttle project with Axum (you can find more about getting started [here](https://docs.shuttle.dev/introduction/installation)).
 
 ```rust
-cargo shuttle init --template axum
+shuttle init --template axum
 ```
 
 This will initialise a project with a basic router and basic configuration so that it can be deployed immediately.
@@ -347,6 +347,6 @@ Router::new().layer(cors)
 
 ### Deployment
 
-With Shuttle, you can deploy your app with `cargo shuttle deploy` and then it'll deploy your app to a live URL (assuming there's no errors). No Docker containerisation required!
+With Shuttle, you can deploy your app with `shuttle deploy` and then it'll deploy your app to a live URL (assuming there's no errors). No Docker containerisation required!
 
-If you're migrating to Shuttle, you need to wrap your entry point function with the Shuttle runtime macro and then add relevant code annotations, and it'll work without needing to do anything else. You can read more about this [here](https://docs.shuttle.rs/migration/migrating-to-shuttle).
+If you're migrating to Shuttle, you need to wrap your entry point function with the Shuttle runtime macro and then add relevant code annotations, and it'll work without needing to do anything else. You can read more about this [here](https://docs.shuttle.dev/migration/migrating-to-shuttle).

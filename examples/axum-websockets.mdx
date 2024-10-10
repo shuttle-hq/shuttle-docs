@@ -14,7 +14,7 @@ There are a few routes available:
 You can clone the example below by running the following (you'll need `cargo-shuttle` installed):
 
 ```bash
-cargo shuttle init --from shuttle-hq/shuttle-examples \
+shuttle init --from shuttle-hq/shuttle-examples \
   --subfolder axum/websocket
 ```
 
@@ -49,7 +49,7 @@ struct State {
 }
 
 const PAUSE_SECS: u64 = 15;
-const STATUS_URI: &str = "https://api.shuttle.rs";
+const STATUS_URI: &str = "https://api.shuttle.dev";
 
 #[derive(Serialize)]
 struct Response {
@@ -279,7 +279,7 @@ assets = ["static/*"]
 
 ## Usage
 
-Once you've cloned the example, launch it locally using `cargo shuttle run` and then go to `http://localhost:8000`. You should be able to see a status page and if you go to your Inspect/Chrome Devtools (depending on what browser you're using), if you go to the Network tab you'll see that your browser received a HTTP status code of 101. 
+Once you've cloned the example, launch it locally using `shuttle run` and then go to `http://localhost:8000`. You should be able to see a status page and if you go to your Inspect/Chrome Devtools (depending on what browser you're using), if you go to the Network tab you'll see that your browser received a HTTP status code of 101. 
 
 ---
 

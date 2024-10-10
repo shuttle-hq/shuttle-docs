@@ -4,7 +4,7 @@ title: "Chat app with React & Rust"
 
 Source code can be found [here](https://github.com/joshua-mo-143/react-websocket-chat-rust).
 
-A live deployment link can be found [here](https://websocket-chat-react-rust-example.shuttleapp.rs/) if you'd like to see the end result before we start.
+A live deployment link can be found [here](https://websocket-chat-react-rust-example.shuttle.app/) if you'd like to see the end result before we start.
 
 With Rust going from strength to strength within the web development space, it is clear why many developers and big names are starting to take notice. As one example of this, Meta has recently [recommended Rust](https://engineering.fb.com/2022/07/27/developer-tools/programming-languages-endorsed-for-server-side-use-at-meta/#:~:text=Meta's%20primary%20supported%20server%2Dside,new%20addition%20to%20this%20list.) as a server-side language. If that won't make people sit up and look, then it's hard to know what will - Rust's current offering easily stands on par with most other languages that you could use in a back-end API or microservice, and it will only get better with time.
 
@@ -234,7 +234,7 @@ The installation may take a while depending on your Internet connection, so feel
 Once the installation is done, you can start a Shuttle project with the following command below (run this in your React project at the packages.json level):
 
 ```bash
-cargo shuttle init --template axum
+shuttle init --template axum
 ```
 
 This will prompt you to input a project name - once you've inputted a project name, this will scaffold a project for you that uses Axum, which is a Rust web framework that is easy to build on with simple syntax. The project will be built in a folder within the current working directory with the name you chose. **For this article, we will simply refer to the folder as "API" for clarity.**
@@ -276,7 +276,7 @@ Now we can write an npm script to run both our front and back ends in one comman
 
 ```json
   "scripts": {
-    "dev": "concurrently new \"vite\" \"cargo shuttle run --working-directory API\"",
+    "dev": "concurrently new \"vite\" \"shuttle run --working-directory API\"",
 // ... your other scripts  
   },
 ```
@@ -364,7 +364,7 @@ async fn handle_socket(stream: WebSocket, state: Users) {
 
 As you may have noticed in this function, we spawn a thread to await messages and send them back. We'll need a method of safely transporting messages across the thread we've created, which is why an Arc with a reader-writer lock is used.
 
-If you use `cargo shuttle run` to locally run this project and send "Hello" to the WebSocket connection from a front-end web app, on your terminal with the Rust project deployment should return `Some("Hello")`, which means we've successfully received a WebSocket message. Now we just need to figure out how we're going to send it back!
+If you use `shuttle run` to locally run this project and send "Hello" to the WebSocket connection from a front-end web app, on your terminal with the Rust project deployment should return `Some("Hello")`, which means we've successfully received a WebSocket message. Now we just need to figure out how we're going to send it back!
 
 Let's create a function that will broadcast messages along every connected WebSocket:
 
@@ -574,9 +574,9 @@ Now we're pretty much done and ready to deploy! We can call our deploy script at
 ```rust
   "scripts": {
   // ...your other scripts
-    "dev": "concurrently new \"vite\" \"cargo shuttle run --working-directory ./API\"",
+    "dev": "concurrently new \"vite\" \"shuttle run --working-directory ./API\"",
     "build": "tsc && vite build --emptyOutDir",
-    "deploy": "npm run build && cargo shuttle deploy --working-directory ./API"
+    "deploy": "npm run build && shuttle deploy --working-directory ./API"
   // ...your other scripts
   }
 ```
@@ -585,4 +585,4 @@ Now if we run `npm run deploy`, it should build all of our assets into the requi
 
 If you would like to change the name of your folder while keeping the deployment name the same, you can do so by simply creating a file called `Shuttle.toml` at the `Cargo.toml` level and creating a variable for the `name` key like in a .env file (so for example if I wanted to call my project `keyboard-cat`, I'd type "name='keyboard-cat'" into the file).
 
-If you need to check the status of your Shuttle project at any time, you can do so by using `cargo shuttle status` at the `Cargo.toml` file, or you can add the `--name` flag followed by the project's name to use it from any directory.
+If you need to check the status of your Shuttle project at any time, you can do so by using `shuttle status` at the `Cargo.toml` file, or you can add the `--name` flag followed by the project's name to use it from any directory.

@@ -1,11 +1,13 @@
 ---
 title: "Installation"
-icon: "wrench"
+description: "How to install the Shuttle Command Line Interface (CLI)"
+icon: "download"
 ---
 
-## Install Shuttle
+The Shuttle CLI can be installed with a pre-built binary or compiled from source with cargo.
+There is also an install script that helps you choose the best option.
 
-The `cargo-shuttle` CLI can be installed with a pre-built binary, from source with cargo, or with the install script.
+<Snippet file="binaries.mdx" />
 
 ### Install script
 
@@ -14,22 +16,21 @@ The install script finds the optimal alternative below for installing the latest
 Run it on Linux and macOS with:
 
 ```sh
-curl -sSfL https://www.shuttle.rs/install | bash
+curl -sSfL https://www.shuttle.dev/install | bash
 ```
 
 Or on Windows with:
 
 ```powershell
-iwr https://www.shuttle.rs/install-win | iex
+iwr https://www.shuttle.dev/install-win | iex
 ```
 
 ### Pre-built binary
 
-Pre-built binaries of the `cargo-shuttle` CLI for most platforms can be found on [our GitHub](https://github.com/shuttle-hq/shuttle/releases/latest).
+Pre-built binaries of the Shuttle CLI for most platforms can be found on [our GitHub](https://github.com/shuttle-hq/shuttle/releases/latest).
 
 The binaries can also be installed using [cargo-binstall](https://github.com/cargo-bins/cargo-binstall),
-which will automatically download the correct binary for your system.
-To install with `cargo-binstall`, run:
+which will automatically download the correct binary for your system:
 
 ```sh
 cargo binstall cargo-shuttle
@@ -37,7 +38,7 @@ cargo binstall cargo-shuttle
 
 ### From source
 
-Although a bit slower, you can also install directly with cargo:
+Although compiling the source code is a bit slower, you can do so with cargo:
 
 ```sh
 cargo install cargo-shuttle
@@ -45,28 +46,23 @@ cargo install cargo-shuttle
 
 ### Distro packages (unofficial)
 
-`cargo-shuttle` is also packaged by community members for some distros:
+Shuttle CLI is also packaged by community members for some distros:
+
+<AccordionGroup>
+  <Accordion title="Arch Linux">
+    Available in the [community repository](https://archlinux.org/packages/extra/x86_64/cargo-shuttle/).
+
+    ```sh
+    pacman -S cargo-shuttle
+    ```
+  </Accordion>
+  <Accordion title="Alpine Linux">
+    Available on [Alpine Edge](https://pkgs.alpinelinux.org/packages?name=cargo-shuttle&branch=edge) after enabling the [testing repository](https://wiki.alpinelinux.org/wiki/Repositories).
+
+    ```sh
+    apk add cargo-shuttle
+    ```
+  </Accordion>
+</AccordionGroup>
 
 [![Packaging status](https://repology.org/badge/vertical-allrepos/cargo-shuttle.svg)](https://repology.org/project/cargo-shuttle/versions)
-
-Arch Linux: available on the [community repository](https://archlinux.org/packages/extra/x86_64/cargo-shuttle/).
-
-```sh
-pacman -S cargo-shuttle
-```
-
-Alpine Linux: available on [Alpine Edge](https://pkgs.alpinelinux.org/packages?name=cargo-shuttle&branch=edge) after enabling the [testing repository](https://wiki.alpinelinux.org/wiki/Repositories).
-
-```sh
-apk add cargo-shuttle
-```
-
-## Login
-
-After installing, log in with:
-
-```sh
-cargo shuttle login
-```
-
-To get up and running, proceed to our [Quick Start](./quick-start) page!

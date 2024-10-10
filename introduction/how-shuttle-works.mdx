@@ -5,7 +5,7 @@ icon: "puzzle-piece"
 
 The simplest way to build and deploy a web app on Shuttle looks like this:
 
-```rust
+```rust src/main.rs
 use axum::{routing::get, Router};
 
 async fn hello_world() -> &'static str {
@@ -20,24 +20,27 @@ async fn main() -> shuttle_axum::ShuttleAxum {
 }
 ```
 
-This example spins up a server where the `/` endpoint returns `Hello, world!`.
-But most importantly, the code you see in the snippet above, is all it takes for `cargo shuttle deploy` to deploy it.
+This example starts an HTTP server where the `GET /` endpoint returns `Hello, world!`.
+But most importantly, the code you see in the snippet above, is all it takes for `shuttle deploy` to deploy it.
 
-This is possible due to the `#[shuttle_runtime::main]` procedural macro. The macro wraps your app with Shuttle's runtime. The Shuttle runtime receives commands from the deployers, such as `load`, `start`, and `stop`. The loading phase provisions resources for the app (see below).
+This is possible due to the `#[shuttle_runtime::main]` procedural macro.
+The macro wraps your app with Shuttle's runtime, which handles resource provisioning and initialization for you.
 
 ## Provisioning Resources
 
 ![Shuttle macros](/images/shuttle-macros.png)
 
-In the example above, the 2 annotations in the main function expand to code that makes the Shuttle runtime provision them on our end.
+In the example above, the 2 annotations in the main function expand to code that makes the Shuttle runtime provision them.
 
 Here are the examples on how to use them, once you add the required annotations to your code:
 
 ### Secrets
 
 ```rust
+use shuttle_runtime::SecretStore;
+
 #[shuttle_runtime::main]
-async fn axum(
+async fn main(
     #[shuttle_runtime::Secrets] secrets: SecretStore,
 ) -> shuttle_axum::ShuttleAxum {
     // Get secret defined in `Secrets.toml` file.
@@ -49,26 +52,22 @@ async fn axum(
 
 ```rust
 #[shuttle_runtime::main]
-async fn axum(
+async fn main(
     #[shuttle_shared_db::Postgres] pool: PgPool,
 ) -> shuttle_axum::ShuttleAxum {
-    // We can query our Postgres database with `pool`
+    // Use the connection pool to query the Postgres database
     pool.execute(include_str!("../schema.sql"))
         .await
         .map_err(CustomError::new)?;
 }
 ```
 
-For more info on resources, head on over to our [Resources](/resources/overview) section.
+For more info on resources, head on over to our [Resources](/resources/resources) section.
 
 ## Deploying your Project
 
-When you run `cargo shuttle deploy`, your project code is archived and sent to our servers where it is compiled. Our codegen in `shuttle_runtime::main` will embed a gRPC server in the binary that will be used to start and stop your service, as well as a `Loader` struct that will provision the resources you request in the arguments to your main function. Your service will then be started on Shuttle's infrastructure in the `eu-west2` region of AWS.
+When you run `shuttle deploy`, your project code is archived and sent to our platform where it is built into a Docker image.
+Your service is then be started on Shuttle's infrastructure on AWS in London (eu-west-2).
+The generated code from `shuttle_runtime::main` handles resource provisioning and initialization, leaving you to focus on what matters.
 
-## More reading
-
-Check out the [files](/configuration/files) and [environment](/configuration/environment) sections for more details.
-
----
-
-If you wish to contribute to Shuttle and learn more about how Shuttle works under the hood, check out our [Contributing Guide](/community/contribute).
+{/* TODO? ## More reading */}

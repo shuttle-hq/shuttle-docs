@@ -1,0 +1,115 @@
+---
+title: Platform migration guide
+description: How to migrate projects from shuttle.rs to shuttle.dev
+icon: dove
+---
+
+This guide is for migration old projects from **shuttle.rs** to the new **shuttle.dev** platform.
+If you are a new Shuttle user, you can ignore this document and start from [Installation](/getting-started/installation).
+
+## 1. Check platform features & policies
+
+<Warning>
+Due to the large re-write of the Shuttle platform, some features have been dropped or moved to the feature roadmap.
+
+Make sure you have read the [Platform Update Changelog](/introduction/platform-update#changelog) to verify that it is currently possible to migrate your project.
+Notably:
+
+- Migrating **Shuttle Persist** is not currently possible as there is no drop-in replacement yet.
+We plan to add one soon.
+
+- Migrating **Shared MongoDB** is not possible since the feature has been dropped.
+
+- If you use a **Shuttle AWS RDS** on **shuttle.rs** and want to migrate, please reach out to us.
+</Warning>
+
+<Snippet file="project-gc.mdx" />
+
+## 2. Update CLI
+
+Follow [Installation](/getting-started/installation) to install the latest Shuttle CLI.
+
+<Snippet file="binaries.mdx" />
+
+<Note>
+The same Shuttle API key is used on both platforms. If you are already logged in, you don't need to `shuttle login` again.
+</Note>
+
+To verify that your new CLI is installed and working correctly, try the new account command:
+
+```sh
+shuttle account
+```
+
+If the command does not error, you are ready to use **shuttle.dev**.
+
+## 3. Access the new Console
+
+The Shuttle Console for **shuttle.dev** is now accessed at [console.shuttle.dev](https://console.shuttle.dev/).
+
+The Shuttle Console for **shuttle.rs** is still accessed at [console.shuttle.rs](https://console.shuttle.rs/).
+
+## 4. Update Code
+
+Most Shuttle projects should run on the new platform with minimal code changes.
+This is the list of required changes.
+
+### Cargo.toml
+
+Update to the latest version of Shuttle dependencies:
+
+```toml Cargo.toml
+shuttle-runtime = "0.48.0"
+# do the same for all other shuttle crates
+# for example, if you use `shuttle-axum`:
+shuttle-axum = "0.48.0"
+```
+
+### Shuttle.toml
+
+The `name` field is now unused.
+
+The `assets` field has been renamed to `deploy.include` ([docs](/docs/files#include-ignored-files)).
+
+If you want the deploy command to keep blocking dirty deployments, add the `deploy.deny_dirty` field ([docs](/docs/files#block-dirty-deployments)).
+
+If your project uses static assets at runtime, you need to declare them in `build.assets` to have them copied from the builder to the runtime image ([docs](/docs/files#build-assets)).
+
+## 5. Local Run
+
+Check that your project builds and runs locally with
+
+```sh
+shuttle run
+```
+
+## 6. Deploy
+
+Time to deploy!
+
+```sh
+shuttle deploy
+```
+
+Note your project URL: project subdomains are now under `*.shuttle.app` instead of `*.shuttleapp.rs`.
+
+## 7. (Optional) Migrate Shared Postgres data
+
+<Note>
+We are currently working on a way to dump the data in a shared Postgres, so that it can be restored in a shared Postgres on the shuttle.dev platform.
+Stay tuned!
+</Note>
+
+## 8. (Optional) Update GitHub Action
+
+If you are using [deploy-action](https://github.com/shuttle-hq/deploy-action), check the new v2 branch for renamed and new required fields:
+
+- Use `shuttle-hq/deploy-action@v2` instead of `shuttle-hq/deploy-action@main`
+- Rename `deploy-key` to `shuttle-api-key`
+- Add a `project-id` value
+- Any other args can be added in `extra-args`
+
+## 9. (Optional) Custom domains
+
+Once you have moved resources, deployed your app to shuttle.dev, and want to move your custom domain, update your DNS records according to [Domain names](/docs/domain-names) and use the new `shuttle certificate` command to add SSL certificates.
+HTTPS traffic should then be enabled for your custom domain.

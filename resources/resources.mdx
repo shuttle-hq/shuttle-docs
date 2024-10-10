@@ -1,6 +1,6 @@
 ---
-title: "Overview"
-icon: "face-monocle"
+title: "Resources"
+icon: "boxes-stacked"
 ---
 
 This section covers the resources currently supported by Shuttle. In broad terms, for the resource needed, simply mark up your code with the appropriate annotation. This is very powerful and brings several benefits:
@@ -10,33 +10,26 @@ This section covers the resources currently supported by Shuttle. In broad terms
 - enables quick prototyping, there is no need for extensive setup, management consoles/tools, etc.
 
 ## Resources
-
+{/*
 ### Amazon Web Services Relational Database Service (AWS RDS)
 
 This plugin allows applications to leverage AWS RDS for database needs, instead of a shared database. This will result in improved availability and reliability given the "managed" nature of the service and its increased resources. It can be a good choice if the database backing the application requires the performance increase that results from improved isolation.
+*/}
 
 ### Shared Databases
 
-The Shared Databases plugin can give you your own Postgres or MongoDB database inside an instance which is shared with other users. This is the option to choose if total database isolation isn't a concern. It's great starting point for prototyping applications on Shuttle.
+The Shared Databases plugin can give you your own Postgres database inside a cluster shared with other users. This is the option to choose if total database isolation isn't a concern. It's great starting point for prototyping applications on Shuttle.
 
-### Persist
+## Integrations
 
-This plugin allows data that implements `serde` serialization and deserialization to be saved in files in a key-value store fashion. It is useful for saving data that is not desirable to be hard coded. An example is saved settings for a Discord bot that need to remain the same between updates.
-
-### Turso
-
-This plugin allows services to connect to a Turso database. Turso is an edge-hosted distributed database based on libSQL, which is a fork of SQLite.
-
-### Secrets
-
-The Shuttle Secrets plugin provides a place to store variables which are sensitive and cannot be committed into version control.
+Apps on Shuttle can integrate with many external services. For some, we provide official wrapper plugins to get you started quickly. Check out the [Integrations](/integrations) section for the full list.
 
 ## Commands
 
 To check which resources are linked to your project, use
 
 ```bash
-cargo shuttle resource list
+shuttle resource list
 ```
 
 ### Deleting resources
@@ -44,7 +37,7 @@ cargo shuttle resource list
 You can delete database resources with
 
 ```bash
-cargo shuttle resource delete [TYPE]
+shuttle resource delete [TYPE]
 ```
 
 To know what to put in the TYPE parameter, use the list command above.

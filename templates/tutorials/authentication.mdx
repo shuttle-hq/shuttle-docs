@@ -28,7 +28,7 @@ This isn't verified to be secure, use it at your own risk!!
 
 ### Let's get started
 
-First, we will install Shuttle for creating the project (and later for deployment). If you don't already have it you can install it with `cargo install cargo-shuttle`. We will first go to a new directory for our project and create a new Axum app with `cargo shuttle init --template axum`.
+First, we will install Shuttle for creating the project (and later for deployment). If you don't already have it you can install it with `cargo install cargo-shuttle`. We will first go to a new directory for our project and create a new Axum app with `shuttle init --template axum`.
 
 You should see the following in `src/main.rs`:
 
@@ -183,7 +183,7 @@ let router = Router::new()
     .layer(Extension(Arc::new(tera)));
 ```
 
-With our main service we can now test it locally with `cargo shuttle run`.
+With our main service we can now test it locally with `shuttle run`.
 
 Nice!
 
@@ -216,7 +216,7 @@ Now back in the code we add a parameter with
 `#[shuttle_shared_db::Postgres] pool: Database`. The
 `#[shuttle_shared_db::Postgres]` annotation tells shuttle to provision a
 Postgres database using the
-[infrastructure from code design](https://www.shuttle.rs/blog/2022/05/09/ifc).
+[infrastructure from code design](https://www.shuttle.dev/blog/2022/05/09/ifc).
 
 ```rust
 type Database = sqlx::PgPool;
@@ -513,7 +513,7 @@ pub(crate) async fn new_session(
 ```
 
 In the full demo, we use the
-[new type pattern](https://www.shuttle.rs/blog/2022/07/28/patterns-with-rust-types#the-new-type-pattern)over
+[new type pattern](https://www.shuttle.dev/blog/2022/07/28/patterns-with-rust-types#the-new-type-pattern)over
 a u128 to make this easier, but we will stick with a u128 type here.
 
 Now we have our token, we need to package it into a cookie value. We will do it
@@ -594,7 +594,7 @@ let session_token = req
 ### Auth middleware
 
 In the last post, we went into detail about middleware.
-[You can read more about it in more detail there](https://www.shuttle.rs/blog/2022/08/04/middleware).
+[You can read more about it in more detail there](https://www.shuttle.dev/blog/2022/08/04/middleware).
 
 In our middleware, we will get a little fancy and make the user pulling lazy.
 This is so that requests that don't need user data don't have to make a database
@@ -772,7 +772,7 @@ async fn post_login(
 ```
 
 Then we refer back to the
-[signup section](https://docs.shuttle.rs/guide/authentication-tutorial.html#using-html-forms)
+[signup section](https://docs.shuttle.dev/guide/authentication-tutorial.html#using-html-forms)
 and replicate the same HTML form and handler that renders the Tera template as
 seen before but for a login screen. At the end of that we can add two new routes
 with three handlers completing the demo:
@@ -800,7 +800,7 @@ This is great, we now have a site with signup and login functionality. But we
 have no users, our friends can't log in on our localhost. We want it live on the
 interwebs. Luckily we are using Shuttle, so it is as simple as:
 
-`cargo shuttle deploy`
+`shuttle deploy`
 
 Because of our `#[shuttle_runtime::main]` annotation and out-the-box Axum
 support our deployment doesn't need any prior config, it is instantly live!

@@ -1,0 +1,87 @@
+---
+title: "Deployment files"
+description: "How to handle files and folder for deployment"
+icon: "files"
+---
+
+This page answers:
+
+- Which files are uploaded to Shuttle when I deploy?
+- How do I change which files are uploaded?
+- How to serve static frontend assets on Shuttle?
+- What happens to files after I deploy?
+- What happens to files that I write to disk?
+
+## Files uploaded in deployment
+
+When you run `shuttle deploy`, all source files in your cargo workspace that are not ignored by `.gitignore` or `.ignore` rules are packed into a zip archive and uploaded to Shuttle, where they are then extracted, built, and hosted.
+
+<Info>The deployment POST request (after archive compression) has a size limit of 100 MB.</Info>
+
+### Ignore files
+
+Ignoring files can be done by adding rules to `.gitignore` or `.ignore` files, depending on if you want to exclude them from version control or not.
+
+### Include ignored files
+
+If you have ignored files that you want to include in the deployment upload, declare those files in the `Shuttle.toml` file in the root of your workspace:
+
+```toml Shuttle.toml
+# Declare ignored files that should be included in deployment:
+[deploy]
+include = [
+  "file.txt", # include file.txt
+  "frontend/dist/*", # include all files and subdirs in frontend/dist/
+  "static/*", # include all files and subdirs in static/
+]
+```
+
+<Note>Specifying only a folder name, like `"static"`, does not work. Use `"static/*"` instead to include its contents.</Note>
+
+### Debug deployment files
+
+You can double check which files are included in your deployment by turning on detailed logging:
+
+```bash
+shuttle deploy --debug
+```
+
+or inspect the archive after writing it to disk:
+
+```bash
+shuttle deploy --output-archive deployment.zip
+```
+
+### Block dirty deployments
+
+If you want the `deploy` command to exit if there are uncommitted git changes:
+
+```toml Shuttle.toml
+[deploy]
+deny_dirty = true
+```
+
+## Build assets
+
+Serving a web project often means that there are static HTML, CSS, or JavaScript files to serve.
+
+To serve them on Shuttle, make sure they are included in the deployment (if they are gitignored, see above).
+Then, add `[build]` configuration in `Shuttle.toml` to copy them from the builder to the final runtime image:
+
+```toml Shuttle.toml
+# Declare files that should be moved to the runtime container:
+[build]
+assets = [
+  "file.txt", # include file.txt
+  "frontend/dist/*", # include all files and subdirs in frontend/dist/
+  "static/*", # include all files and subdirs in static/
+]
+```
+
+Lastly, set up your project's web framework to serve them from their directory.
+
+An example on how to do this with Axum can be found [here](https://github.com/shuttle-hq/shuttle-examples/tree/main/axum/static-files).
+
+## Files at runtime
+
+You app can use the file system like normal, but files in the deployment container are deleted after the deployment shuts down.

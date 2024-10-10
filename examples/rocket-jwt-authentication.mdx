@@ -6,7 +6,7 @@ description: "Learn how you can secure your Rocket web application by using JWT 
 ## Description
 
 This example shows how to use [Rocket request guards](https://rocket.rs/v0.5-rc/guide/requests/#request-guards) for authentication with [JSON Web Tokens](https://jwt.io/) (JWT for short).
-The idea is that all requests authenticate first at https://authentication-rocket-app.shuttleapp.rs/login to get a JWT.
+The idea is that all requests authenticate first at https://authentication-rocket-app.shuttle.app/login to get a JWT.
 Then the JWT is sent with all requests requiring authentication using the HTTP header `Authorization: Bearer <token>`.
 
 This example uses the [`jsonwebtoken`](https://github.com/Keats/jsonwebtoken) which supports symmetric and asymmetric secret encoding, built-in validations, and most JWT algorithms.
@@ -14,7 +14,7 @@ However, this example only makes use of symmetric encoding and validation on the
 
 You can clone the example below by running the following (you'll need `cargo-shuttle` installed):
 ```bash
-cargo shuttle init --from shuttle-hq/shuttle-examples \
+shuttle init --from shuttle-hq/shuttle-examples \
  --subfolder rocket/jwt-authentication
 ```
 
@@ -270,7 +270,7 @@ mod tests {
 
 ## Usage
 
-Once you've cloned this example, launch it locally by using `cargo shuttle run`. Once you've verified that it's up, you'll now be able to go to `http://localhost:8000` and start trying the example out!
+Once you've cloned this example, launch it locally by using `shuttle run`. Once you've verified that it's up, you'll now be able to go to `http://localhost:8000` and start trying the example out!
 
 First, we should be able to access the public endpoint without any authentication using:
 

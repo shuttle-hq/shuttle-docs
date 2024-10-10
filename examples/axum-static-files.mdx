@@ -12,7 +12,7 @@ Note that static assets are declared in the `Shuttle.toml` file.
 You can clone the example below by running the following (you'll need `cargo-shuttle` installed):
 
 ```bash
-cargo shuttle init --from shuttle-hq/shuttle-examples \
+shuttle init --from shuttle-hq/shuttle-examples \
   --subfolder axum/static-files
 ```
 
@@ -71,7 +71,7 @@ assets = ["assets/*"]
 
 ## Usage
 
-After you clone the example, launch it locally by using `cargo shuttle run` then visit the home route at `http://localhost:8000` - you should see a homepage that shows our included HTML file. 
+After you clone the example, launch it locally by using `shuttle run` then visit the home route at `http://localhost:8000` - you should see a homepage that shows our included HTML file. 
 
 You can extend this example by adding more routes that serve other files.
 

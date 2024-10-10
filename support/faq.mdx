@@ -7,26 +7,22 @@ This section is aimed at collecting common questions users have to provide docum
 
 <AccordionGroup>
   <Accordion title="How secure is Shuttle?">
-    We build and deploy every project in its own container.
+    We deploy every project in its own Fargate VM.
     This gives you safe isolation from other users,
     and also across all the projects that are owned by your account.
   </Accordion>
-  <Accordion title="What happens when I create a project?">
-    The `cargo shuttle project start` command starts a Docker container.
-    Read more about the deployment environment [here](/configuration/environment).
-  </Accordion>
   <Accordion title="What happens when I deploy to Shuttle?">
     Your code is built and hosted on our servers. The first time you introduce additional resources in your code, like the first time you use a database, we will add that resource to your project and wire it automatically to your deployment.
-    Read about what happens to deployment files [here](/configuration/files).
+    Read about what happens to deployment files [here](/docs/files).
   </Accordion>
   <Accordion title="Which version of Rust will my project be compiled with?">
-    See [Deployment environment](/configuration/environment).
+    See [Deployment environment](/docs/deployment-environment).
   </Accordion>
   <Accordion title="Can I use frontend frameworks with Shuttle?">
-    Of course! When you deploy a project on Shuttle, your app becomes available at a URL of the form `${project_name}.shuttleapp.rs`.
+    Of course! When you deploy a project on Shuttle, your app becomes available at a public URL.
 
     With this, you can build a server that serves pretty much any frontend project.
-    For details on how to serve static files with Shuttle, check out our [Deployment files docs](/configuration/files).
+    For details on how to serve static files with Shuttle, check out our [Deployment files docs](/docs/files).
 
     You can also just use it for an API, and host your frontend on any of the common frontend hosting solutions (Vercel, Netlify, etc), you just have to make your API calls to the URL of your project, and you're up.
 
@@ -39,11 +35,11 @@ This section is aimed at collecting common questions users have to provide docum
     Yes, you can create a SeaORM connection from the sqlx pool Shuttle passes to you when you provision a SQL database. You can take a look at the example [here](https://github.com/shuttle-hq/shuttle/issues/179#issuecomment-1203536025).
   </Accordion>
   <Accordion title="Can I rename my Shuttle project?">
-    A project can't yet be renamed in place, but you can create a `Shuttle.toml` file to deploy it to a new name. Read more [here](/configuration/project-name).
+    A project can't yet be renamed in place, but you can create a new project and deploy it again.
   </Accordion>
   <Accordion title="Where geographically are deployments hosted?">
-    Currently, all deployments are in the eu-west2 region (London).
-    We do plan to support multiple regions, but we can't give a precise ETA yet.
+    Currently, all deployments are in the AWS eu-west-2 region (London).
+    We do plan to support multiple regions in the future.
   </Accordion>
   <Accordion title="Can I self-host Shuttle?">
     See [this issue](https://github.com/shuttle-hq/shuttle/issues/1584) for the latest status and discussion on this topic.

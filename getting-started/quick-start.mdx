@@ -1,41 +1,46 @@
 ---
 title: "Quick Start"
-icon: "rabbit-running"
+description: "Fire upp your first project after installation 🚀"
+icon: "circle-play"
 ---
 
-We will assume that you have already installed Shuttle and logged in.
-If you haven't, you should check out our [installation](./installation) section.
+<Note>
+This page assumes that you have installed the Shuttle CLI.
+If you haven't, go to the [installation](./installation) guide.
+</Note>
 
-**Creating your first project**
+## Login
 
-To initialize your project, simply write:
+The login command opens the [Shuttle Console](https://console.shuttle.dev/) where you can copy your API key:
 
 ```sh
-cargo shuttle init
+shuttle login
 ```
 
-![Shuttle Scaffolding](/images/actix-scaffold-demo.gif)
+## Create your first project
 
-You can then `cd` into the folder and try the app locally:
+The init command lets you generate a Hello World project or one of our [examples](/examples) or [templates](/templates).
+For your first project, try a Hello World template.
 
 ```sh
-cargo shuttle run
+shuttle init
 ```
 
-In case you didn't create the project environment in the `init` command, run:
+You can then `cd` into the created folder and run your app locally. Check out the [local run](/docs/local-run) page for more.
 
 ```sh
-cargo shuttle project start
+shuttle run
 ```
 
 Then, the app can be deployed with:
 
 ```sh
-cargo shuttle deploy --allow-dirty
+shuttle deploy
 ```
 
-<Info>`--allow-dirty` or `--ad` allows deploying with uncommitted git changes.</Info>
+This uploads your code and builds it.
+After that, the resulting Docker image is launched and hosted, and can start receiving HTTPS traffic.
 
-You can also run your project locally for development, check out our [local run](./local-run) section.
+<Snippet file="project-gc.mdx" />
 
-Feel free to build on top of the generated "Hello, World!" project or check out one of our [examples](/examples) or [templates](/templates).
+To learn more about available deployment configuration, check out [Deployment files](/docs/files).
