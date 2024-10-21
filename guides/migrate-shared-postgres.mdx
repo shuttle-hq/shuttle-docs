@@ -8,7 +8,7 @@ This guide shows how to dump schemas and table data from a [Shared Postgres](/re
 
 If you stumble upon issues, feel free to [contact us](/support/support) for help.
 
-## Get psql CLI
+## Prerequisites
 
 To run the data upload against the new database, you need a Postgres Client.
 In this guide, we will use `psql`.
@@ -18,13 +18,13 @@ On Debian/Ubuntu, you can install it with:
 sudo apt install postgresql-client
 ```
 
-## Deploy and provision Shared Postgres on shuttle.dev
+## 1. Deploy and provision Shared Postgres on shuttle.dev
 
 Follow [Platform Migration](/introduction/platform-migration) to deploy your app to **shuttle.dev**, including the provisioning of the database resource.
 
 If you want the restore step to restore both the schema and data, you can temporarily disable migration logic in your app during this phase.
 
-## Upgrade container on shuttle.rs
+## 2. Upgrade container on shuttle.rs
 
 To use the dump command, your deployer needs to be v0.48.x or higher.
 Restarting will upgrade it to the latest version.
@@ -33,7 +33,7 @@ Restarting will upgrade it to the latest version.
 cargo shuttle project restart
 ```
 
-## (Optional) Stop running service on shuttle.rs
+## 3. (Optional) Stop running service on shuttle.rs
 
 If your app is frequently writing to the tables, and you don't want data to go missing after the migration, it is recommended to stop the current deployment while you perform the database maintenance.
 
@@ -43,7 +43,7 @@ cargo shuttle stop
 
 If you need to cancel the migration and start the service, do so by deploying again.
 
-## Dump data from shuttle.rs
+## 4. Dump data from shuttle.rs
 
 Since the Shared Postgres cluster has strict permissions, running `pg_dump` against your connection string is not possible.
 Instead, you can use the `resource dump` command that runs `pg_dump` with `--no-owner --no-privileges` for you.
@@ -62,7 +62,7 @@ The max size for the dump is 50 MB. If you get errors about request limits, reac
 You can inspect the file and edit it to your liking.
 If you already let your schema migrations run in the new db, you could for instance remove the `CREATE TABLE`, `ALTER TABLE` etc, and only keep the table data `COPY` statements and so on.
 
-## Restore data on shuttle.dev
+## 5. Restore data on shuttle.dev
 
 Use the following command to get the connection string for the new database:
 
