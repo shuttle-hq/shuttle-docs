@@ -6,7 +6,7 @@ icon: dove
 
 This guide shows how to dump schemas and table data from a [Shared Postgres](/resources/shuttle-shared-db) database on **shuttle.rs**, and upload them to **shuttle.dev**.
 
-If you stumble upon issues, feel free to [contact us](/support/support) for help.
+If you encounter issues, feel free to [contact us](/support/support) for help.
 
 ## Prerequisites
 
@@ -17,6 +17,10 @@ On Debian/Ubuntu, you can install it with:
 ```sh
 sudo apt install postgresql-client
 ```
+
+<Warning>
+The shared database on shuttle.dev has Postgres version 16, so `psql` versions older than 16 might not work.
+</Warning>
 
 ## 1. Deploy and provision Shared Postgres on shuttle.dev
 
@@ -41,17 +45,23 @@ If your app is frequently writing to the tables, and you don't want data to go m
 cargo shuttle stop
 ```
 
-If you need to cancel the migration and start the service, do so by deploying again.
+<Info>
+If you for any reason need to cancel the migration and start the service, do so by deploying again.
+</Info>
 
 ## 4. Dump data from shuttle.rs
 
 Since the Shared Postgres cluster has strict permissions, running `pg_dump` against your connection string is not possible.
 Instead, you can use the `resource dump` command that runs `pg_dump` with `--no-owner --no-privileges` for you.
 
+<Note>
+Dumping the database data extracts a copy of all data, and the database is left unmodified.
+</Note>
+
 The command writes a dump in SQL format to stdout, so you can use it to write to a file like so:
 
 ```sh
-# dump db into /tmp/dump.sql
+# dump database into /tmp/dump.sql
 cargo shuttle resource dump database::shared::postgres > /tmp/dump.sql
 ```
 
@@ -73,15 +83,17 @@ shuttle resource list --show-secrets
 Use psql to run the dump file against it:
 
 ```sh
-psql -d '<connection string>' -f /tmp/dump.sql
+psql -d <connection string> -f /tmp/dump.sql
 ```
 
 You might see various errors about tables, rows, or constraints already existing in the new database.
-In most cases this is fine, but you can verify that everything looks good by connecting:
+In most cases this is fine, but you can verify that everything looks good by connecting to the database, and testing the app.
 
 ```sh
 psql <connection string>
 ```
+
+If something has gone wrong, you can cancel the migration for now and deploy the service on **shuttle.rs** again.
 
 ## Final steps
 
@@ -91,4 +103,4 @@ If you are happy with the migration to the new platform, you can shut down the o
 cargo shuttle project stop
 ```
 
-If you don't want to keep the SQL dump file, remember to delete it.
+If you don't want to keep the SQL dump file on disk, remember to delete it.
