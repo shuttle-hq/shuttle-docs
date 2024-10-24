@@ -137,7 +137,8 @@
       "pages": [
         "guides/cli",
         "guides/upgrade",
-        "guides/migrating-to-shuttle"
+        "guides/migrating-to-shuttle",
+        "guides/migrate-shared-postgres"
       ]
     },
     {
