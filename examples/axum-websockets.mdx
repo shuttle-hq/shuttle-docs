@@ -11,11 +11,10 @@ There are a few routes available:
 - `/` - the homepage route where you can find the `index.html` page.
 - `/ws` - the route that handles websockets.
 
-You can clone the example below by running the following (you'll need `cargo-shuttle` installed):
+You can clone the example below by running the following (you'll need `shuttle` CLI installed):
 
 ```bash
-shuttle init --from shuttle-hq/shuttle-examples \
-  --subfolder axum/websocket
+shuttle init --from shuttle-hq/shuttle-examples --subfolder axum/websocket
 ```
 
 ## Code
@@ -49,7 +48,7 @@ struct State {
 }
 
 const PAUSE_SECS: u64 = 15;
-const STATUS_URI: &str = "https://api.shuttle.dev";
+const STATUS_URI: &str = "https://api.shuttle.dev/.healthz";
 
 #[derive(Serialize)]
 struct Response {
@@ -60,7 +59,7 @@ struct Response {
 }
 
 #[shuttle_runtime::main]
-async fn axum() -> ShuttleAxum {
+async fn main() -> ShuttleAxum {
     let (tx, rx) = watch::channel(Message::Text("{}".to_string()));
 
     let state = Arc::new(Mutex::new(State {
@@ -74,8 +73,9 @@ async fn axum() -> ShuttleAxum {
         let duration = Duration::from_secs(PAUSE_SECS);
 
         loop {
-            let is_up = reqwest::get(STATUS_URI).await;
-            let is_up = is_up.is_ok();
+            let is_up = reqwest::get(STATUS_URI)
+                .await
+                .is_ok_and(|r| r.status().is_success());
 
             let response = Response {
                 clients_count: state_send.lock().await.clients_count,
@@ -273,7 +273,10 @@ tower-http = { version = "0.5.0", features = ["fs"] }
 ```
 
 ```toml Shuttle.toml
-assets = ["static/*"]
+[build]
+assets = [
+    "static",
+]
 ```
 </CodeGroup>
 
