@@ -16,11 +16,10 @@ Three Axum routes are registered in this file:
 - `/login`: a route for posting a JSON object with a username and password to get a JWT.
 - `/private`: a route that can only be accessed with a valid JWT.
 
-You can clone the example below by running the following (you'll need `cargo-shuttle` installed):
+You can clone the example below by running the following (you'll need `shuttle` CLI installed):
 
 ```bash
-shuttle init --from shuttle-hq/shuttle-examples \
-  --subfolder axum/jwt-authentication
+shuttle init --from shuttle-hq/shuttle-examples --subfolder axum/jwt-authentication
 ```
 
 ## Code
@@ -235,28 +234,26 @@ Once you've cloned this example, launch it locally by using `shuttle run`. Once 
 First, we should be able to access the public endpoint without any authentication using:
 
 ```sh
-$ curl http://localhost:8000/public
+curl http://localhost:8000/public
 ```
 
 But trying to access the private endpoint will fail with a 403 forbidden:
 
 ```sh
-$ curl http://localhost:8000/private
+curl http://localhost:8000/private
 ```
 
 So let's get a JWT from the login route first:
 
 
 ```sh
-$ curl --header "Content-Type: application/json" --request POST \
- --data '{"client_id": "foo", "client_secret": "bar"}' \
- http://localhost:8000/login
+curl -X POST --header "Content-Type: application/json" --data '{"client_id": "foo", "client_secret": "bar"}' http://localhost:8000/login
 ```
 
 Accessing the private endpoint with the token will now succeed:
 
 ```sh
-$ curl --header "Authorization: Bearer <token>" http://localhost:8000/private
+curl --header "Authorization: Bearer <token>" http://localhost:8000/private
 ```
 
 The token is set to expire in 5 minutes, so wait a while and try to access the private endpoint again. Once the token has expired, a user will need to get a new token from login.
