@@ -59,7 +59,7 @@ struct Response {
 }
 
 #[shuttle_runtime::main]
-async fn axum() -> ShuttleAxum {
+async fn main() -> ShuttleAxum {
     let (tx, rx) = watch::channel(Message::Text("{}".to_string()));
 
     let state = Arc::new(Mutex::new(State {
@@ -73,7 +73,9 @@ async fn axum() -> ShuttleAxum {
         let duration = Duration::from_secs(PAUSE_SECS);
 
         loop {
-            let is_up = reqwest::get(STATUS_URI).await.is_ok_and(|r| r.status.is_success());
+            let is_up = reqwest::get(STATUS_URI)
+                .await
+                .is_ok_and(|r| r.status().is_success());
 
             let response = Response {
                 clients_count: state_send.lock().await.clients_count,
@@ -271,7 +273,10 @@ tower-http = { version = "0.5.0", features = ["fs"] }
 ```
 
 ```toml Shuttle.toml
-assets = ["static/*"]
+[build]
+assets = [
+    "static",
+]
 ```
 </CodeGroup>
 

@@ -33,7 +33,7 @@ use std::{
 use tokio::sync::{mpsc, watch};
 
 const PAUSE_SECS: u64 = 15;
-const STATUS_URI: &str = "https://api.shuttle.dev";
+const STATUS_URI: &str = "https://api.shuttle.dev/.healthz";
 
 type AppState = (
     mpsc::UnboundedSender<WsState>,
@@ -119,12 +119,11 @@ async fn websocket(
 async fn index() -> impl Responder {
     NamedFile::open_async("./static/index.html")
         .await
-        .map_err(|e| actix_web::error::ErrorInternalServerError(e))
+        .map_err(actix_web::error::ErrorInternalServerError)
 }
 
 #[shuttle_runtime::main]
-async fn actix_web(
-) -> ShuttleActixWeb<impl FnOnce(&mut ServiceConfig) + Send + Clone + 'static> {
+async fn main() -> ShuttleActixWeb<impl FnOnce(&mut ServiceConfig) + Send + Clone + 'static> {
     // We're going to use channels to communicate between threads.
     // api state channel
     let (tx_api_state, rx_api_state) = watch::channel(ApiStateMessage::default());
@@ -186,7 +185,7 @@ async fn actix_web(
 
             if let Err(e) = shared_tx_api_state2.send(ApiStateMessage {
                 client_count,
-                origin: format!("ws_update"),
+                origin: "ws_update".to_string(),
                 date_time: Utc::now(),
                 is_up,
             }) {
@@ -210,7 +209,7 @@ async fn actix_web(
 
 async fn get_api_status(client: &reqwest::Client) -> bool {
     let response = client.get(STATUS_URI).send().await;
-    response.is_ok()
+    response.is_ok_and(|r| r.status().is_success())
 }
 ```
 
@@ -413,7 +412,10 @@ tracing = "0.1"
 ```
 
 ```toml Shuttle.toml
-assets = ["static/*"]
+[build]
+assets = [
+    "static/*",
+]
 ```
 </CodeGroup>
 
