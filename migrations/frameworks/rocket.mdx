@@ -1,0 +1,49 @@
+---
+title: "Rocket"
+description: "How to migrate a web service that uses Rocket to Shuttle"
+---
+
+## Reference
+
+### Quickstart
+Shuttle has a native integration for Rocket by default with the `shuttle-rocket` crate.
+
+See the following code comparison below:
+
+<CodeGroup>
+```rust main.rs (before)
+#[launch]
+fn rocket() -> _ {
+    rocket::build()
+}
+```
+```rust main.rs (after)
+#[shuttle_runtime::main]
+async fn rocket() -> shuttle_rocket::ShuttleRocket {
+    let rocket = rocket::build();
+
+    Ok(rocket.into())
+}
+```
+```toml Cargo.toml (before)
+[dependencies]
+rocket = 0.5
+tokio = 1
+```
+```toml Cargo.toml (after)
+[dependencies]
+rocket = 0.5
+tokio = 1
+
+shuttle-runtime = 0.48
+shuttle-rocket = 0.48
+```
+</CodeGroup>
+
+
+## How does it work?
+The Shuttle runtime exposes a trait, `shuttle_runtime::Service`, that services are required to implement before being able to run on Shuttle.
+
+The `shuttle-rocket` crate exposes an aliased Result type (`shuttle_rocket::ShuttleRocket`) which simply wraps your router and implements `From<T>` which allows use of `.into()` on your Router. This integration includes serving the router itself.
+
+If you want more custom behavior that is not supported by the native Shuttle integration, you can create a struct with your own custom implementation of `shuttle_runtime::Service`. You can find more about this [here](/migrations/frameworks/rocket)

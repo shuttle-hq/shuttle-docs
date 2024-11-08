@@ -1,0 +1,54 @@
+---
+title: "How to migrate to Shuttle"
+description: "Four simple steps to migrate to Shuttle"
+---
+
+## Introduction
+If you are migrating from another platform to Shuttle (or simply want to add the Shuttle runtime to your project), here are four simple steps you can take to fully migrate your project over to Shuttle.
+
+Note that this page assumes you've already installed the `cargo-shuttle` CLI - if you haven't yet, you can learn how to do so [here.](/getting-started/installation)
+
+## How to Migrate
+### 1. Check your service can be migrated
+Before investing any time into migrating your project, you may find it helpful to have a checklist on hand for what can be migrated. Check out our [migration checklist](/migrations/migrating-checklist) for more details.
+### 2. Add the Shuttle runtime
+Adding the Shuttle runtime is as easy as adding `shuttle_runtime` to your project and the additional Shuttle framework integration if your project uses it, then using the given macro.
+
+To use, simply add the `#[shuttle_runtime::main]` macro on top of your main function. This macro abstracts over `#[tokio::main]` and can be used in exactly the same way - just replace it and add the type annotation from your integration crate:
+
+```rust main.rs
+#[shuttle_runtime::main]
+async fn main() -> shuttle_axum::ShuttleAxum {
+    // .. your code goes here
+}
+```
+
+For more in depth explanations, check out out the migration documentation for your framework.
+
+For frameworks that don't currently have migration examples, check out our [examples](/examples) where we have examples for all supported frameworks.
+
+Note that if the framework you want to use isn't listed here or you want custom launch behavior, you will need to [create a custom service.](/migrations/frameworks/custom-service)
+
+### 3. Add your infrastructure annotations
+Now we need to add our infrastructure. You can do this by passing in macros as function parameters into your new main function. An example has been provided below:
+```rust main.rs
+#[shuttle_runtime::main]
+async fn main(
+    #[shuttle_shared_db::Postgres] conn_string: String,
+    #[shuttle_runtime::Secrets] secrets: SecretStore,
+) -> shuttle_axum::ShuttleAxum {
+    // .. your code goes here
+}
+```
+In the above snippet, we have a main function where we get a database and secrets (that can be turned into environment variables), all from code (pulling in `shuttle_shared_db` with the `postgres` feature as a crate dependency).
+
+For more information, check out the following documentation:
+- [Postgres](/migrations/resources/postgres)
+- [Secrets](/migrations/resources/secrets)
+
+If there is a resource you want that we don't support, feel free to reach out and let us know [on Discord](https://discord.gg/shuttle) or [via our contact form](https://shuttle.dev/contact)!
+
+### 4. Deploy
+Now we need to deploy. Simply use `shuttle deploy` (with `--allow-dirty` flag if on a dirty Git branch) and watch the magic happen!
+
+Once deployed, the deployment will output a URL link to where your newly deployed web service now lives. You will also receive the database connection string and list of secrets that your web service has access to - which you can view again with `shuttle resource list` should you need it.

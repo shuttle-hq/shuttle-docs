@@ -16,12 +16,12 @@
     "href": "https://www.shuttle.dev/"
   },
   "layout": "topnav",
-  "sidebar": {"items": "border"},
+  "sidebar": { "items": "border" },
   "versions": [
-    {"name": "🚀 shuttle.dev (NEW)", "url": "https://docs.shuttle.dev/"},
-    {"name": "⚪ shuttle.rs", "url": "https://docs.shuttle.rs/"}
+    { "name": "🚀 shuttle.dev (NEW)", "url": "https://docs.shuttle.dev/" },
+    { "name": "⚪ shuttle.rs", "url": "https://docs.shuttle.rs/" }
   ],
-  "background": {"style": "windows"},
+  "background": { "style": "windows" },
   "favicon": "/favicon.png",
   "colors": {
     "background": {
@@ -33,9 +33,11 @@
     "dark": "#f91"
   },
   "topbarLinks": [
-    {"name": "Support", "url": "https://docs.shuttle.dev/support/support"}
+    { "name": "Support", "url": "https://docs.shuttle.dev/support/support" }
   ],
-  "topbarCtaButton": {"style": "roundedRectangle","type": "link",
+  "topbarCtaButton": {
+    "style": "roundedRectangle",
+    "type": "link",
     "name": "Log In",
     "url": "https://console.shuttle.dev/"
   },
@@ -77,16 +79,45 @@
         "introduction/docs",
         "introduction/what-is-shuttle",
         "introduction/how-shuttle-works",
-        "introduction/platform-update",
-        "introduction/platform-migration"
+        {
+          "group": "Platform Update",
+          "icon": "layer-group",
+          "pages": [
+            "platform-update/platform-update",
+            "platform-update/migration"
+          ]
+        },
+        {
+          "group": "Migrating to Shuttle",
+
+          "icon": "dove",
+          "pages": [
+            "migrations/introduction",
+            "migrations/migrating-checklist",
+            "migrations/migrating-to-shuttle",
+            {
+              "group": "Frameworks",
+              "pages": [
+                "migrations/frameworks/axum",
+                "migrations/frameworks/actix-web",
+                "migrations/frameworks/rocket",
+                "migrations/frameworks/custom-service"
+              ]
+            },
+            {
+              "group": "Infrastructure/Resources",
+              "pages": [
+                "migrations/resources/postgres",
+                "migrations/resources/secrets"
+              ]
+            }
+          ]
+        }
       ]
     },
     {
       "group": "Getting Started",
-      "pages": [
-        "getting-started/installation",
-        "getting-started/quick-start"
-      ]
+      "pages": ["getting-started/installation", "getting-started/quick-start"]
     },
     {
       "group": "Shuttle",
@@ -109,9 +140,7 @@
         {
           "group": "Databases",
           "icon": "database",
-          "pages": [
-            "resources/shuttle-shared-db"
-          ]
+          "pages": ["resources/shuttle-shared-db"]
         }
       ]
     },
@@ -134,19 +163,11 @@
     },
     {
       "group": "Guides",
-      "pages": [
-        "guides/cli",
-        "guides/upgrade",
-        "guides/migrating-to-shuttle"
-      ]
+      "pages": ["guides/cli", "guides/upgrade"]
     },
     {
       "group": "Support",
-      "pages": [
-        "support/support",
-        "support/faq",
-        "support/troubleshooting"
-      ]
+      "pages": ["support/support", "support/faq", "support/troubleshooting"]
     },
     {
       "group": "Community",
