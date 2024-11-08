@@ -79,12 +79,22 @@
         "introduction/docs",
         "introduction/what-is-shuttle",
         "introduction/how-shuttle-works",
-        "introduction/platform-update",
+        {
+          "group": "Platform Update",
+          "icon": "layer-group",
+          "pages": [
+            "platform-update/platform-update",
+            "platform-update/migration"
+          ]
+        },
         {
           "group": "Migrating to Shuttle",
 
           "icon": "dove",
           "pages": [
+            "migrations/introduction",
+            "migrations/migrating-checklist",
+            "migrations/migrating-to-shuttle",
             {
               "group": "Frameworks",
               "pages": [
@@ -100,10 +110,7 @@
                 "migrations/resources/postgres",
                 "migrations/resources/secrets"
               ]
-            },
-            "migrations/migrating-checklist",
-            "migrations/migrating-to-shuttle",
-            "migrations/platform-migration"
+            }
           ]
         }
       ]
