@@ -12,7 +12,7 @@ Deployments to different Shuttle projects run in their own ECS service (Fargate 
 ## Project Limits
 
 <Info>
-In the free Community Tier, you are limited to a single project.
+In the free Community Tier, you are limited to 3 projects.
 See [Pricing](https://www.shuttle.dev/pricing) for Pro tier benefits, such as more projects.
 </Info>
 
@@ -31,6 +31,14 @@ You can view your project IDs and names with:
 
 ```sh
 shuttle project list
+```
+
+You can rename a project with the following command.
+Note: This also updates the default subdomain name.
+Custom domains remain unchanged.
+
+```sh
+shuttle project update name <new-name>
 ```
 
 ## Project Linking

@@ -1,10 +1,9 @@
 ---
 title: Transfer to the new platform
 description: How to transfer projects from shuttle.rs to shuttle.dev
-
 ---
 
-This guide is for transferring old projects from **shuttle.rs** to the new **shuttle.dev** platform.
+This guide is for transferring projects from **shuttle.rs** to the new **shuttle.dev** platform.
 If you are a new Shuttle user, you can ignore this document and start from [Installation](/getting-started/installation).
 
 ## 1. Check platform features & policies
@@ -59,10 +58,10 @@ This is the list of required changes.
 Update to the latest version of Shuttle dependencies:
 
 ```toml Cargo.toml
-shuttle-runtime = "0.48.0"
+shuttle-runtime = "0.49.0"
 # do the same for all other shuttle crates
 # for example, if you use `shuttle-axum`:
-shuttle-axum = "0.48.0"
+shuttle-axum = "0.49.0"
 ```
 
 ### Shuttle.toml
@@ -73,7 +72,9 @@ The `assets` field has been renamed to `deploy.include` ([docs](/docs/files#incl
 
 If you want the deploy command to keep blocking dirty deployments, add the `deploy.deny_dirty` field ([docs](/docs/files#block-dirty-deployments)).
 
+<Warning>
 If your project uses static assets at runtime, you need to declare them in `build.assets` to have them copied from the builder to the runtime image ([docs](/docs/files#build-assets)).
+</Warning>
 
 ### Secrets.toml
 
