@@ -6,12 +6,24 @@ icon: "box"
 
 ## Infrastructure
 
+### Deployments
+
 Deployments run in AWS ECS with Fargate VMs.
 The default compute configuration is 0.25 vCPU and 0.5 GB RAM.
 This will soon be made configurable.
 If you need more compute out of the gate, reach out to us.
 
-{/* HTTPS traffic is proxied to your */}
+**Rolling deployments**:
+When a new deployment is made, it will be started alongside the previous one until it is considered healthy.
+After that, the previous deployment will start shutting down.
+This means that there is a window of time where there are two instances running in parallel.
+If the new deployment fails to become healthy, it will be retried 3 times while the the previous one will stays up.
+
+### HTTPS traffic
+
+HTTPS traffic is proxied to your app on the project's default subdomain and any [custom domains]() that have been added.
+
+The proxy sets the `X-Forwarded-For` HTTP header on incoming requests to the remote IP address of the request.
 
 ## Environment variables
 
