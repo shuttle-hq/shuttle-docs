@@ -1,0 +1,78 @@
+---
+title: "Postgres"
+description: "How to migrate a web service that uses Postgres to Shuttle"
+
+---
+
+Shuttle has a native resource integration for Postgres by default with the `shuttle-shared-db` crate.
+
+## Reference
+
+### Quickstart
+See the following code comparison below (using Axum and SQLx):
+
+<CodeGroup>
+```rust main.rs (before)
+#[tokio::main]
+async fn main() -> Result<(), Box<dyn std::error::Error>> {
+  let conn_string = std::env::var("DATABASE_URL")
+    .expect("DATABASE_URL env var to be present");
+
+  let pool = sqlx::PgPool::connect(&conn_string).await?;
+  // whatever router you have here
+  let router = axum::Router::new().with_state(pool);
+
+  let tcp_listener = tokio::net::TcpListener::bind("0.0.0.0:8000").await?;
+
+  axum::serve(tcp_listener, router).await?;
+
+  Ok(())
+}
+```
+```rust main.rs (after)
+#[shuttle_runtime::main]
+async fn main(
+  #[shuttle_shared_db::Postgres] conn_string: String,
+) -> shuttle_axum::ShuttleAxum {
+    let pool = sqlx::PgPool::connect(&conn_string).await.unwrap();
+    let router = axum::Router::new();
+
+    Ok(router.into())
+}
+```
+```toml Cargo.toml (before)
+[dependencies]
+axum = 0.7.5
+tokio = 1
+sqlx = 0.8
+```
+```toml Cargo.toml (after)
+[dependencies]
+axum = 0.7.5
+tokio = 1
+sqlx = 0.8
+
+shuttle-runtime = 0.48
+shuttle-axum = 0.48
+shuttle-shared-db = { version = 0.48, features = ["postgres"]}
+```
+</CodeGroup>
+
+### Shared database
+
+You can find out more about shared databases [here.](/resources/shuttle-shared-db)
+
+By default, the resource annotation will output the connection string for your database. You can augment this by adding relevant feature flags:
+- `diesel-async` (enables outputting `diesel_async::AsyncPgConnection` from the resource)
+- `diesel-async-bb8` (enables outputting `diesel_bb8::Pool<diesel_async::AsyncPgConnection>` from the resource)
+- `diesel-async-deadpool`(enables outputting `diesel_deadpool::Pool<diesel_async::AsyncPgConnection>` from the resource)
+- `sqlx` (enables outputting `sqlx::PgPool` from the resource)
+
+Note that the relevant crates will need to be added manually (the relevant Diesel crate as noted in the type signatures, or SQLx if using it).
+
+## How does it work?
+The Shuttle runtime analyzes the given macro annotations and does one of two things:
+- If your service is run locally, attempt to spin up a local Postgres container via Docker (unless `local_addr` is provided then it will use )
+- If your service is deployed, the Shuttle runtime will provision a Postgres database to you.
+
+If you need to view your Postgres connection string, you can do so with `shuttle resource list`.

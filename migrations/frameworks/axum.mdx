@@ -1,0 +1,58 @@
+---
+title: "Axum"
+description: "How to migrate a web service that uses Axum to Shuttle"
+
+---
+
+## Reference
+
+### Quickstart
+Shuttle has a native integration for Axum by default with the `shuttle-axum` crate.
+
+See the following code comparison below:
+
+<CodeGroup>
+```rust main.rs (before)
+#[tokio::main]
+async fn main() -> Result<(), Box<dyn std::error::Error>> {
+  // whatever router you have here
+  let router = axum::Router::new();
+
+  let tcp_listener = tokio::net::TcpListener::bind("0.0.0.0:8000").await?;
+
+  axum::serve(tcp_listener, router).await?;
+
+  Ok(())
+}
+```
+```rust main.rs (after)
+#[shuttle_runtime::main]
+async fn main() -> shuttle_axum::ShuttleAxum {
+    let router = axum::Router::new();
+
+    Ok(router.into())
+}
+```
+```toml Cargo.toml (before)
+[dependencies]
+axum = 0.7.5
+tokio = 1
+```
+```toml Cargo.toml (after)
+[dependencies]
+axum = 0.7.5
+tokio = 1
+
+shuttle-runtime = 0.48
+shuttle-axum = 0.48
+```
+</CodeGroup>
+
+
+
+## How does it work?
+The Shuttle runtime exposes a trait, `shuttle_runtime::Service`, that services are required to implement before being able to run on Shuttle.
+
+The `shuttle-axum` crate exposes an aliased Result type (`shuttle_axum::ShuttleAxum`) which simply wraps your router and implements `From<axum::Router>` which allows use of `.into()` on your Router. This integration includes serving the router itself.
+
+If you want more custom behavior that is not supported by the native Shuttle integration, you can create a struct with your own custom implementation of `shuttle_runtime::Service`.

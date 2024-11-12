@@ -62,10 +62,10 @@ Here are some small tips and tricks to boost your productivity when developing l
 To live reload your Shuttle app when you save a file, you can use [cargo-watch](https://github.com/watchexec/cargo-watch):
 
 ```bash
-# This will e(x)ecute `shuttle run` when you save a file.
-cargo watch -x 'shuttle run'
+# This will execute `shuttle run` when you save a file.
+cargo watch -s 'shuttle run'
 # This will also (q)uietly (c)lear the console between runs.
-cargo watch -qcx 'shuttle run'
+cargo watch -qcs 'shuttle run'
 
 # There are many other helpful options, see `cargo watch --help`
 ```

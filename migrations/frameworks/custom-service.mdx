@@ -1,0 +1,105 @@
+---
+title: "Custom"
+description: "How to migrate a service to Shuttle without a native integration"
+
+---
+
+## Reference
+
+### Quickstart
+
+To get started, you can use the following code below:
+
+<CodeGroup>
+```rust data.rs
+pub struct DataStruct;
+
+impl shuttle_runtime::Service for DataStruct {
+  async fn bind(
+    mut self,
+    addr: std::net::SocketAddr
+  ) -> Result<(), shuttle_runtime::Error> {
+    // whatever code you want goes here
+    Ok(())
+  }
+}
+```
+
+```rust main.rs
+mod data;
+use data::DataStruct;
+
+#[shuttle_runtime::main]
+async fn main() -> Result<DataStruct, shuttle_runtime::Error> {
+  Ok(DataStruct)
+}
+```
+</CodeGroup>
+
+Note that you can add fields to your struct for any annotation macros you'd like to add as extra data (for example: adding a Postgres connection or pool to your application).
+
+### Run a non-HTTP framework service
+Note that the code that goes in the `bind()` function **must** eventually use a looping mechanism or be awaiting some kind of HTTP request, otherwise the function will finish and end the service.
+
+<CodeGroup>
+```rust Looping
+loop {
+  // your code goes here
+}
+```
+```rust Looping with time intervals
+// Note that although you can use `sleep()` here, it is not as accurate
+// as using tokio::time::interval because the interval will stick to a strict time
+let mut interval = tokio::time::interval(std::Duration::from_millis(10));
+
+loop {
+  interval.tick().await;
+}
+```
+</CodeGroup>
+
+### Run multiple tasks at once
+If you want to run multiple services at once, it is relatively easy to do so. We store the variable without awaiting the future.
+```rust data.rs
+pub struct DataStruct;
+
+async fn loop() {
+  let mut interval = tokio::time::interval(std::Duration::from_secs(10));
+
+  loop {
+    println!("Hello world from the loop function!");
+    interval.tick().await;
+  }
+}
+
+impl shuttle_runtime::Service for DataStruct {
+  async fn bind(
+    mut self,
+    addr: std::net::SocketAddr
+  ) -> Result<(), shuttle_runtime::Error> {
+    let router = axum::Router::new();
+    let tcp_listener = tokio::net::TcpListener::bind(&addr).await.unwrap();
+
+    let serve = axum::serve(tcp_listener, router);
+
+    tokio::join!(
+      serve,
+      loop()
+    );
+
+    Ok(())
+  }
+}
+```
+The advantage of this over simply spawning a `tokio::Task` in a service with a Shuttle integration is primarily that both functions run concurrently on the same task.
+
+## How does it work?
+
+The Shuttle runtime exposes a trait `shuttle_runtime::Service` which you can implement on a struct you own to be able to augment the runtime behavior of your application.
+
+You may find this useful in the following cases:
+- You need custom launch behavior for your web application
+- You need to run multiple things at the same time (ie, a Discord bot and an Actix Web server) in a Tokio task
+- You need to run a HTTP client but don't need a web server (ie, a cron job that uses `serenity` with only the HTTP feature enabled to send some requests to Discord)
+
+Note that only one HTTP service can be bound at a time - if you require more than one address per project, feel free to reach out and let us know!

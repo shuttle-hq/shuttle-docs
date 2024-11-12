@@ -12,10 +12,9 @@ Then the JWT is sent with all requests requiring authentication using the HTTP h
 This example uses the [`jsonwebtoken`](https://github.com/Keats/jsonwebtoken) which supports symmetric and asymmetric secret encoding, built-in validations, and most JWT algorithms.
 However, this example only makes use of symmetric encoding and validation on the expiration claim.
 
-You can clone the example below by running the following (you'll need `cargo-shuttle` installed):
+You can clone the example below by running the following (you'll need `shuttle` CLI installed):
 ```bash
-shuttle init --from shuttle-hq/shuttle-examples \
- --subfolder rocket/jwt-authentication
+shuttle init --from shuttle-hq/shuttle-examples --subfolder rocket/jwt-authentication
 ```
 
 Three Rocket routes are registered in this file:
@@ -275,26 +274,26 @@ Once you've cloned this example, launch it locally by using `shuttle run`. Once 
 First, we should be able to access the public endpoint without any authentication using:
 
 ```sh
-$ curl https://<host>/public
+curl https://<host>/public
 ```
 
 But trying to access the private endpoint will fail with a 403 forbidden:
 
 ```sh
-$ curl https://<host>/private
+curl https://<host>/private
 ```
 
 So let's get a JWT from the login route first:
 
 
 ```sh
-$ curl --request POST --data '{"username": "username", "password": "password"}' https://<host>/login
+curl -X POST --data '{"username": "username", "password": "password"}' https://<host>/login
 ```
 
 Accessing the private endpoint with the token will now succeed:
 
 ```sh
-$ curl --header "Authorization: Bearer <token>" https://<host>/private
+curl --header "Authorization: Bearer <token>" https://<host>/private
 ```
 
 The token is set to expire in 5 minutes, so wait a while and try to access the private endpoint again. Once the token has expired, a user will need to get a new token from login.

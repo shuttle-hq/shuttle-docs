@@ -8,10 +8,9 @@ description: "Explore how you can secure your Actix Web application by using coo
 This example shows how to use authentication within actix-web with cookies, assisted by actix-identity and actix-session.
 The idea is that all requests authenticate first at the login route to get a cookie, then the cookie is sent with all requests requiring authentication using the HTTP cookie header.
 
-You can clone the example below by running the following (you'll need `cargo-shuttle` installed):
+You can clone the example below by running the following (you'll need `shuttle` CLI installed):
 ```bash
-shuttle init --from shuttle-hq/shuttle-examples \
- --subfolder actix-web/cookie-authentication
+shuttle init --from shuttle-hq/shuttle-examples --subfolder actix-web/cookie-authentication
 ```
 
 Three Actix Web routes are registered in this file:
@@ -33,8 +32,8 @@ edition = "2021"
 actix-identity = "0.6.0"
 actix-session = { version = "0.8.0", features = ["cookie-session"] }
 actix-web = "4.3.1"
-shuttle-actix-web = "0.27.0"
-shuttle-runtime = "0.27.0"
+shuttle-actix-web = "0.48.0"
+shuttle-runtime = "0.48.0"
 tokio = "1.26.0"
 ```
 Your `main.rs` should look like this:
@@ -127,25 +126,25 @@ Once you've cloned this example, launch it locally by using `shuttle run`. Once 
 First, we should be able to access the public endpoint without any authentication using:
 
 ```sh
-$ curl http://localhost:8000/public
+curl http://localhost:8000/public
 ```
 
 But trying to access the private endpoint will return "Hello anonymous":
 
 ```sh
-$ curl http://localhost:8000/private
+curl http://localhost:8000/private
 ```
 
 So let's get a cookie from the login route first:
 
 ```sh
-$ curl http://localhost:8000/login
+curl http://localhost:8000/login
 ```
 
 Accessing the private endpoint with the token will now succeed:
 
 ```sh
-$ curl --header "Authorization: Bearer <token>" http://localhost:8000/private
+curl --header "Authorization: Bearer <token>" http://localhost:8000/private
 ```
 
 The token is set to expire in 5 minutes, so wait a while and try to access the private endpoint again. Once the token has expired, a user will need to get a new token from login.
