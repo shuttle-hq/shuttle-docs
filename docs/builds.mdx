@@ -68,3 +68,31 @@ Create them at the root of your project.
 - `shuttle_prebuild.sh`: Runs before `cargo build`. Can be used to install custom build dependencies.
 - `shuttle_postbuild.sh`: Runs after `cargo build`.
 - `shuttle_setup_container.sh`: Runs in the runtime image before build artifacts are copied into it. Can be used to install custom runtime dependencies.
+
+### Example: Install a custom Rust toolchain
+
+```sh shuttle_prebuild.sh
+rustup default nightly
+```
+
+### Example: Install a build dependency
+
+```sh shuttle_prebuild.sh
+apt update
+apt install -y libopus-dev
+```
+
+### Example: Build a WASM frontend
+
+```sh shuttle_postbuild.sh
+cd frontend
+trunk build --release
+```
+
+### Example: Install a runtime dependency
+
+```sh shuttle_setup_container.sh
+apt update
+apt install -y ffmpeg
+```
+
