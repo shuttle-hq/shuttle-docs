@@ -33,6 +33,14 @@ You can view your project IDs and names with:
 shuttle project list
 ```
 
+You can rename a project with the following command.
+Note: This also updates the default subdomain name.
+Custom domains remain unchanged.
+
+```sh
+shuttle project update name <new-name>
+```
+
 ## Project Linking
 
 For the Shuttle CLI to know which Shuttle Project ID to target, it stores the ID in a gitignored config file in your project.
