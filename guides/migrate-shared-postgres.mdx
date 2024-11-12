@@ -28,10 +28,13 @@ Follow [Platform Migration](/introduction/platform-migration) to deploy your app
 
 If you want the restore step to restore both the schema and data, you can temporarily disable migration logic in your app during this phase.
 
-## 2. Upgrade container on shuttle.rs
+## 2. Upgrade container on shuttle.rs and Shuttle CLI
 
-To use the dump command, your deployer needs to be v0.48.x or higher.
-Restarting will upgrade it to the latest version.
+To use the dump command, your deployer and CLI need to be v0.49.0 or higher.
+
+Upgrade the CLI by following the [upgrading guide](/guides/upgrade).
+
+Restarting the project will upgrade the deployer to the latest version:
 
 ```sh
 cargo shuttle project restart
