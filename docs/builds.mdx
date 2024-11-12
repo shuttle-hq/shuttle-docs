@@ -71,7 +71,10 @@ Create them at the root of your project.
 
 ### Example: Install a custom Rust toolchain
 
+In this example, we install and switch to the `nighlty` toolchain.
+
 ```sh shuttle_prebuild.sh
+rustup update nightly --profile minimal
 rustup default nightly
 ```
 
