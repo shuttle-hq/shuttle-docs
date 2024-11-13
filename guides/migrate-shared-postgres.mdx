@@ -1,0 +1,109 @@
+---
+title: Migrate Shared Postgres
+description: Migrate Postgres data from shuttle.rs to shuttle.dev
+icon: dove
+---
+
+This guide shows how to dump schemas and table data from a [Shared Postgres](/resources/shuttle-shared-db) database on **shuttle.rs**, and upload them to **shuttle.dev**.
+
+If you encounter issues, feel free to [contact us](/support/support) for help.
+
+## Prerequisites
+
+To run the data upload against the new database, you need a Postgres Client.
+In this guide, we will use `psql`.
+On Debian/Ubuntu, you can install it with:
+
+```sh
+sudo apt install postgresql-client
+```
+
+<Warning>
+The shared database on shuttle.dev has Postgres version 16, so `psql` versions older than 16 might not work.
+</Warning>
+
+## 1. Deploy and provision Shared Postgres on shuttle.dev
+
+Follow [Platform Migration](/platform-update/migration) to deploy your app to **shuttle.dev**, including the provisioning of the database resource.
+
+If you want the restore step to restore both the schema and data, you can temporarily disable migration logic in your app during this phase.
+
+## 2. Upgrade container on shuttle.rs and Shuttle CLI
+
+To use the dump command, your deployer and CLI need to be v0.49.0 or higher.
+
+Upgrade the CLI by following the [upgrading guide](/guides/upgrade).
+
+Restarting the project will upgrade the deployer to the latest version:
+
+```sh
+cargo shuttle project restart
+```
+
+## 3. (Optional) Stop running service on shuttle.rs
+
+If your app is frequently writing to the tables, and you don't want data to go missing after the migration, it is recommended to stop the current deployment while you perform the database maintenance.
+
+```sh
+cargo shuttle stop
+```
+
+<Info>
+If you for any reason need to cancel the migration and start the service, do so by deploying again.
+</Info>
+
+## 4. Dump data from shuttle.rs
+
+Since the Shared Postgres cluster has strict permissions, running `pg_dump` against your connection string is not possible.
+Instead, you can use the `resource dump` command that runs `pg_dump` with `--no-owner --no-privileges` for you.
+
+<Note>
+Dumping the database data extracts a copy of all data, and the database is left unmodified.
+</Note>
+
+The command writes a dump in SQL format to stdout, so you can use it to write to a file like so:
+
+```sh
+# dump database into /tmp/dump.sql
+cargo shuttle resource dump database::shared::postgres > /tmp/dump.sql
+```
+
+<Note>
+The max size for the dump is 50 MB. If you get errors about request limits, reach out to us.
+</Note>
+
+You can inspect the file and edit it to your liking.
+If you already let your schema migrations run in the new db, you could for instance remove the `CREATE TABLE`, `ALTER TABLE` etc, and only keep the table data `COPY` statements and so on.
+
+## 5. Restore data on shuttle.dev
+
+Use the following command to get the connection string for the new database:
+
+```sh
+shuttle resource list --show-secrets
+```
+
+Use psql to run the dump file against it:
+
+```sh
+psql -d <connection string> -f /tmp/dump.sql
+```
+
+You might see various errors about tables, rows, or constraints already existing in the new database.
+In most cases this is fine, but you can verify that everything looks good by connecting to the database, and testing the app.
+
+```sh
+psql <connection string>
+```
+
+If something has gone wrong, you can cancel the migration for now and deploy the service on **shuttle.rs** again.
+
+## Final steps
+
+If you are happy with the migration to the new platform, you can shut down the old project's container (no need to delete the project):
+
+```sh
+cargo shuttle project stop
+```
+
+If you don't want to keep the SQL dump file on disk, remember to delete it.

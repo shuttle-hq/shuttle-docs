@@ -73,7 +73,7 @@ The `assets` field has been renamed to `deploy.include` ([docs](/docs/files#incl
 If you want the deploy command to keep blocking dirty deployments, add the `deploy.deny_dirty` field ([docs](/docs/files#block-dirty-deployments)).
 
 <Warning>
-If your project uses static assets at runtime, you need to declare them in `build.assets` to have them copied from the builder to the runtime image ([docs](/docs/files#build-assets)).
+If your project uses static assets or other files at runtime, you need to declare them in `build.assets` to have them copied from the builder to the runtime image ([docs](/docs/files#build-assets)).
 </Warning>
 
 ### Secrets.toml
@@ -102,10 +102,7 @@ Note your project URL: project subdomains are now under `*.shuttle.app` instead 
 
 ## 7. (Optional) Migrate Shared Postgres data
 
-<Note>
-We are currently working on a way to dump the data in a shared Postgres, so that it can be restored in a shared Postgres on the shuttle.dev platform.
-Stay tuned!
-</Note>
+If you use a Shared Postgres database and want to migrate data to the new platform, follow the [migration guide](/guides/migrate-shared-postgres)!
 
 ## 8. (Optional) Update GitHub Action
 
@@ -118,5 +115,5 @@ If you are using [deploy-action](https://github.com/shuttle-hq/deploy-action), c
 
 ## 9. (Optional) Custom domains
 
-Once you have moved resources, deployed your app to shuttle.dev, and want to move your custom domain, update your DNS records according to [Domain names](/docs/domain-names) and use the new `shuttle certificate` command to add SSL certificates.
+Once you have moved resources, deployed your app to shuttle.dev, and want to move your custom domain, update your DNS records according to [Domain names](/docs/domain-names) and use the new `shuttle certificate` command to [add SSL certificates](/docs/domain-names#set-up-ssl-certificate).
 HTTPS traffic should then be enabled for your custom domain.

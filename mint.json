@@ -163,7 +163,11 @@
     },
     {
       "group": "Guides",
-      "pages": ["guides/cli", "guides/upgrade"]
+      "pages": [
+        "guides/cli",
+        "guides/upgrade",
+        "guides/migrate-shared-postgres"
+      ]
     },
     {
       "group": "Support",
@@ -243,6 +247,12 @@
         "templates/tutorials/websocket-chat-app-js",
         "templates/tutorials/custom-service"
       ]
+    }
+  ],
+  "redirects": [
+    {
+      "source": "/introduction/platform-update",
+      "destination": "/platform-update/platform-update"
     }
   ],
   "footerSocials": {
