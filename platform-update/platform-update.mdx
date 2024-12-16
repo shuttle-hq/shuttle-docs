@@ -1,5 +1,5 @@
 ---
-title: Platform Update
+title: Overview & Changelog
 description: In Q4 2024, Shuttle is launching a new and improved platform
 ---
 
@@ -44,7 +44,7 @@ Introducing the new Shuttle platform! We've supercharged what developers love ab
   - `status`: use `deployment status` instead.
   - `stop`: use `deployment stop` instead.
   - `project status`: projects no longer have a state, so `--follow` has no effect.
-  - `project link`: explicitly re-link the project directory to a Shuttle project. (more below)
+  - `login`: automatically gets the API key from the API after an approval in Shuttle Console. No more copy + pasting!
 - Max archive size for deployments is now 100 MB (up from 50MB).
 - Secrets.toml must now be in the root of the cargo workspace (`--secrets <file>` can still be used for a custom location).
 - Shuttle.toml:
@@ -61,9 +61,11 @@ Introducing the new Shuttle platform! We've supercharged what developers love ab
 - CLI commands:
   - Commands that target a project: You will now be prompted to link your project directory to a Shuttle project.
   - In addition to `--name <name>`, you can also use `--id <id>` to target specific projects. This overrides project linking.
-  - A new `certificate` command for adding SSL certificates to custom domains.
+  - `project link`: explicitly re-link the project directory to a Shuttle project.
+  - `certificate` command for adding and managing SSL certificates for custom domains.
   - `deploy --no-follow` to not poll the deployment status until it reaches a running or failed state.
   - `account` to show information about your account.
+  - `project update name` to rename a project.
 
 ### Removed
 

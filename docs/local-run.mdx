@@ -17,7 +17,7 @@ It then starts a local provisioner server that simulates resource provisioning o
 
 The environment variables available in the [deployment environment](/docs/deployment-environment) are also set during a local run.
 
-### Local runs with databases
+## Local runs with databases
 
 If your project uses a database resource, it will default to starting a local [Docker](https://docs.docker.com/get-docker/) container for that database.
 If you'd like to opt out of this behavior and supply your own database URI, simply pass it in as an argument to your resource.
@@ -34,7 +34,7 @@ async fn main(
 
 <Note>**IMPORTANT:** If Docker isn't started, you may receive an "os error 2" error. This is typically related to your Docker installation. If you're using Docker via the CLI, you can use any Docker command to start it up. If you're using Docker Desktop, you will need to start Docker Desktop.</Note>
 
-### Expose your application to your local network
+## Expose your application to your local network
 
 If you'd like to expose your application to you local network, for example if you're serving a static
 website and you'd like to open it on your phone, simply pass in the `--external` flag:
@@ -53,11 +53,11 @@ shuttle run --external --port 8123
 
 <Note>You may need to open the port your app is started on in your firewall.</Note>
 
-### Development Tips
+## Development Tips
 
 Here are some small tips and tricks to boost your productivity when developing locally.
 
-#### Live reload backend with `cargo watch`
+### Live reload backend with `cargo watch`
 
 To live reload your Shuttle app when you save a file, you can use [cargo-watch](https://github.com/watchexec/cargo-watch):
 
@@ -72,7 +72,7 @@ cargo watch -qcs 'shuttle run'
 
 Small caveat: Be aware that ignoring files with `.ignore` will also affect the behaviour of `shuttle deploy`.
 
-#### Live reload frontend with `tower-livereload`
+### Live reload frontend with `tower-livereload`
 
 Using `cargo watch` will only reload the "backend" Shuttle process.
 If you are developing a frontend in the browser that is hosted by your Shuttle app,
@@ -106,7 +106,7 @@ if cfg!(debug_assertions) {
 }
 ```
 
-### Docker engines
+## Docker engines
 
 `cargo-shuttle` uses the [bollard](https://docs.rs/bollard/latest/bollard/index.html) crate to interact with the Docker engine on local runs.
 
@@ -123,13 +123,13 @@ On Unix, bollard defaults to connecting to `unix:///var/run/docker.sock` unless 
 
 If you end up using a `DOCKER_HOST` like below, you can add the `export DOCKER_HOST=...` line to your shell's config file to have it automatically set in new shell sessions.
 
-#### Docker Desktop
+### Docker Desktop
 
 ```bash
 export DOCKER_HOST="unix://$HOME/.docker/run/docker.sock"
 ```
 
-#### Podman
+### Podman
 
 You will need to expose a rootless socket for Podman, and then set the `DOCKER_HOST` environment variable:
 
@@ -138,7 +138,7 @@ podman system service --time=0 unix:///tmp/podman.sock
 export DOCKER_HOST=unix:///tmp/podman.sock
 ```
 
-#### Colima
+### Colima
 
 ```bash
 export DOCKER_HOST="unix://$HOME/.colima/default/docker.sock"
