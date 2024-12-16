@@ -37,8 +37,8 @@ use axum::{routing::get, Router};
 
 async fn hello_world() -> &'static str { "Hello, world!" }
 
-#[shuttle_runtime::main] async fn axum() -> shuttle_axum::ShuttleAxum { 
-    let router = Router::new().route("/hello", get(hello_world)); 
+#[shuttle_runtime::main] async fn axum() -> shuttle_axum::ShuttleAxum {
+    let router = Router::new().route("/hello", get(hello_world));
 
     Ok(router.into())
 }
@@ -46,7 +46,7 @@ async fn hello_world() -> &'static str { "Hello, world!" }
 
 ### Templates
 
-For generating HTML we will be using [Tera](https://tera.netlify.app/docs), so
+For generating HTML we will be using [Tera](https://keats.github.io/tera/docs/), so
 we can go ahead and add this with `cargo add tera`. We will store all our
 `templates` in a template directory in the project root.
 
@@ -594,7 +594,7 @@ let session_token = req
 ### Auth middleware
 
 In the last post, we went into detail about middleware.
-[You can read more about it in more detail there](https://www.shuttle.dev/blog/2022/08/04/middleware).
+[You can read more about it in more detail there](https://www.shuttle.dev/blog/2022/08/04/middleware-in-rust).
 
 In our middleware, we will get a little fancy and make the user pulling lazy.
 This is so that requests that don't need user data don't have to make a database
