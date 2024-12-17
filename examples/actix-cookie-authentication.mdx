@@ -1,5 +1,6 @@
 ---
 title: "Cookie Authentication"
+'og:title': "Cookie Authentication with Actix Web"
 description: "Explore how you can secure your Actix Web application by using cookies."
 ---
 
@@ -110,7 +111,7 @@ async fn actix_web() -> ShuttleActixWeb<impl FnOnce(&mut ServiceConfig) + Send +
                     .build(),
             )
             .wrap(middleware::NormalizePath::trim())
-            .wrap(middleware::Logger::default())			
+            .wrap(middleware::Logger::default())
 	);
 
     };
