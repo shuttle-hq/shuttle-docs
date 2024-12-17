@@ -1,5 +1,6 @@
 ---
 title: "Static Files"
+'og:title': "Static Files with Rocket - Shuttle Docs"
 description: "This article walks you through setting up static files with Rocket, an ergonomic framework for simple web applications."
 ---
 
@@ -15,7 +16,7 @@ shuttle init --from shuttle-hq/shuttle-examples --subfolder rocket/static-files
 ```
 
 ## Code
- 
+
 <CodeGroup>
 ```rust src/main.rs
 use rocket::fs::NamedFile;
@@ -90,7 +91,7 @@ assets = [
 
 ## Usage
 
-After you clone the example, launch it locally by using `shuttle run` then visit the home route at `http://localhost:8000` - you should see a homepage that shows our included HTML file. 
+After you clone the example, launch it locally by using `shuttle run` then visit the home route at `http://localhost:8000` - you should see a homepage that shows our included HTML file.
 
 You can extend this example by adding more routes that serve other files.
 
