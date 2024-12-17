@@ -4,8 +4,6 @@ title: "Chat app with React & Rust"
 
 Source code can be found [here](https://github.com/joshua-mo-143/react-websocket-chat-rust).
 
-A live deployment link can be found [here](https://websocket-chat-react-rust-example.shuttle.app/) if you'd like to see the end result before we start.
-
 With Rust going from strength to strength within the web development space, it is clear why many developers and big names are starting to take notice. As one example of this, Meta has recently [recommended Rust](https://engineering.fb.com/2022/07/27/developer-tools/programming-languages-endorsed-for-server-side-use-at-meta/#:~:text=Meta's%20primary%20supported%20server%2Dside,new%20addition%20to%20this%20list.) as a server-side language. If that won't make people sit up and look, then it's hard to know what will - Rust's current offering easily stands on par with most other languages that you could use in a back-end API or microservice, and it will only get better with time.
 
 Let's explore Rust in everyday usage by creating a Typescript React app and combining it with a Rust API that uses WebSockets. While node.js is quick to set up, doesn't require context switching and is easy to use if you already have Javascript knowledge from learning it for writing front-end web apps, you don't need to have a high level of knowledge in Rust to get started writing competent web services that can easily carry out whatever you need.
@@ -277,7 +275,7 @@ Now we can write an npm script to run both our front and back ends in one comman
 ```json
   "scripts": {
     "dev": "concurrently new \"vite\" \"shuttle run --working-directory API\"",
-// ... your other scripts  
+// ... your other scripts
   },
 ```
 
@@ -452,7 +450,7 @@ async fn disconnect_user(
 Now we can easily set up an admin router within the router function that will allow us to disconnect people manually, given a user ID and an authentication secret which you should write like so:
 
 ```rust
-// write this somewhere in your router function 
+// write this somewhere in your router function
 // RequireAuthorizationLayer dictates we must send a Bearer auth token to authorise the kick/remove
     let admin = Router::new()
     .route("/disconnect/:user_id", get(disconnect_user))
@@ -524,7 +522,7 @@ Now if we run `npm run build`, it should build our assets in the API folder in a
 Before we move on, let's re-write the WebSocket URL so that it will dynamically match whatever the URL of our hosted project will be, instead of a fixed string. Let's change our WebSocket connection in the React front-end like so:
 
 ```ts
-// Set up the websocket URL. 
+// Set up the websocket URL.
 const wsUri = ((window.location.protocol == "https:" && "wss://") || "ws://") +
   window.location.host +
   "/ws";
