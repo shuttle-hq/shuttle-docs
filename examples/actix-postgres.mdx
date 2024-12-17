@@ -1,9 +1,10 @@
 ---
 title: "Postgres Todo App"
+'og:title': "Postgres Todo App with Actix Web - Shuttle Docs"
 description: "This article walks you through how you can easily set up a simple to-do app using Actix Web and SQLx with PostgresQL."
 ---
 
-## Description 
+## Description
 This example shows how to make a simple TODO app using Actix Web and a shared Shuttle Postgres DB.
 
 The following routes are provided:
@@ -33,7 +34,7 @@ use sqlx::{Executor, FromRow, PgPool};
 #[get("/{id}")]
 async fn retrieve(path: web::Path<i32>, state: web::Data<AppState>) -> Result<Json<Todo>> {
 // query database to get data
-// if error, return Bad Request HTTP status code 
+// if error, return Bad Request HTTP status code
     let todo = sqlx::query_as("SELECT * FROM todos WHERE id = $1")
         .bind(*path)
         .fetch_one(&state.pool)
@@ -46,7 +47,7 @@ async fn retrieve(path: web::Path<i32>, state: web::Data<AppState>) -> Result<Js
 #[post("")]
 async fn add(todo: web::Json<TodoNew>, state: web::Data<AppState>) -> Result<Json<Todo>> {
 // query database to create a new record using the request body
-// if error, return Bad Request HTTP status code 
+// if error, return Bad Request HTTP status code
     let todo = sqlx::query_as("INSERT INTO todos(note) VALUES ($1) RETURNING id, note")
         .bind(&todo.note)
         .fetch_one(&state.pool)
