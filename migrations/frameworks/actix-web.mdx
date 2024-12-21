@@ -35,23 +35,23 @@ async fn actix_web() -> shuttle_actix_web::ShuttleActixWeb<impl FnOnce(&mut Serv
 ```
 ```toml Cargo.toml (before)
 [dependencies]
-actix-web = 0.4
-tokio = 1
+actix-web = "*"
+tokio = "*"
 ```
 ```toml Cargo.toml (after)
 [dependencies]
-actix-web = 0.4
-tokio = 1
+actix-web = "*"
+tokio = "*"
 
-shuttle-runtime = 0.48
-shuttle-actix-web = 0.48
+shuttle-runtime = "*"
+shuttle-actix-web = "*"
 ```
 </CodeGroup>
 
 ## How does it work?
 The Shuttle runtime exposes a trait, `shuttle_runtime::Service`, that services are required to implement before being able to run on Shuttle.
 
-The `shuttle-actix-web` crate exposes an aliased Result type (`shuttle_axum::ShuttleActixWeb`) which simply wraps your router and implements `From<actix_web::ServiceConfig>` which allows use of `.into()` on your `ServiceConfig`. This integration includes serving the router itself.
+The `shuttle-actix-web` crate exposes an aliased Result type (`shuttle_actix_web::ShuttleActixWeb`) which simply wraps your router and implements `From<actix_web::ServiceConfig>` which allows use of `.into()` on your `ServiceConfig`. This integration includes serving the router itself.
 
 Normally one would configure an application with Actix Web using the [App](https://docs.rs/actix-web/latest/actix_web/struct.App.html) struct. However, Shuttle needs to move the users configuration across threads to start the server on our backend, and the App struct is !Send and !Sync.
 

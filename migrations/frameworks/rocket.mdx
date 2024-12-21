@@ -27,16 +27,16 @@ async fn rocket() -> shuttle_rocket::ShuttleRocket {
 ```
 ```toml Cargo.toml (before)
 [dependencies]
-rocket = 0.5
-tokio = 1
+rocket = "*"
+tokio = "*"
 ```
 ```toml Cargo.toml (after)
 [dependencies]
-rocket = 0.5
-tokio = 1
+rocket = "*"
+tokio = "*"
 
-shuttle-runtime = 0.48
-shuttle-rocket = 0.48
+shuttle-runtime = "*"
+shuttle-rocket = "*"
 ```
 </CodeGroup>
 
