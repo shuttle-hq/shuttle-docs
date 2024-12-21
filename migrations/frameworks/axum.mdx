@@ -35,16 +35,16 @@ async fn main() -> shuttle_axum::ShuttleAxum {
 ```
 ```toml Cargo.toml (before)
 [dependencies]
-axum = 0.7.5
-tokio = 1
+axum = "*"
+tokio = "*"
 ```
 ```toml Cargo.toml (after)
 [dependencies]
-axum = 0.7.5
-tokio = 1
+axum = "*"
+tokio = "*"
 
-shuttle-runtime = 0.48
-shuttle-axum = 0.48
+shuttle-runtime = "*"
+shuttle-axum = "*"
 ```
 </CodeGroup>
 
