@@ -1,12 +1,13 @@
 ---
 title: "Working with Databases in Rust"
+description: "Learn how to work with databases using Rust."
 ---
 
 In this guide we'll be looking at working with PostgresQL & `shuttle-persist` (Shuttle's key-value data store) and how we can interface with them easily using Rust. By the end of this guide you'll have more of an idea of how to use both and when each one would be better for your use case.
 
 It will be assumed you already have a project initialised - if not, you can always initialise a new project with `shuttle init`.
 
-## SQL 
+## SQL
 Relational databases are the classical way to store data in the backend of web applications when it comes to storing records and persisted data.  Shuttle currently offers free provisioned SQL instances for your applications and currently provides it through an SQLx connection pool. It should be noted that although we're using Postgres for this guide, the same concepts works equally well with both MySQL and MariaDB.
 
 To get started with SQLx (and using our new database), we'll want to add the `sqlx` crate to an initialised Rust program. We will also want to add the `shuttle-shared-db` crate which allows us to use the macro that provisions the database instance to us.
@@ -75,7 +76,7 @@ let query = sqlx::query::_as<_, Message>("SELECT id, message FROM messages")
     .await;
 ```
 
-This is much more convenient for us for gathering information since we already know what we want the outputted data type from the query to be, so when we carry out the query it'll now automatically be converted into a vector of structs. 
+This is much more convenient for us for gathering information since we already know what we want the outputted data type from the query to be, so when we carry out the query it'll now automatically be converted into a vector of structs.
 
 One of SQLx's main strengths in addition to the above is being able to create data for compile-time queries. To do this, we'll want to enable the macros flag for SQLx by adding the `macros` feature flag to SQLx in our Cargo.toml file, though if following this guide from the start you'll probably have it already. If not, you can run this command:
 
@@ -124,12 +125,12 @@ cargo add serde --features derive
 Then you need to add the Serialize derive macro to your structs as required, and then when you return the JSON-serialized data it'll automatically be accepted as a HTTP-compatible response.
 
 ## shuttle-persist
-Shuttle Persist is shuttle's own persistent key-value style store that you can use to store your data in and is great for storing long-term data that you might need on the server but you don't need a relational database for, or you want to be able to store data that's still structured via structs but you also might want to store metadata (ie total number of records, combined value of something from all structs in a vector, or similar). 
+Shuttle Persist is shuttle's own persistent key-value style store that you can use to store your data in and is great for storing long-term data that you might need on the server but you don't need a relational database for, or you want to be able to store data that's still structured via structs but you also might want to store metadata (ie total number of records, combined value of something from all structs in a vector, or similar).
 
 To get started, we'll want to add `shuttle-persist` to an already initialised Rust program by adding the crate:
 
 ```bash
-cargo add shuttle-persist 
+cargo add shuttle-persist
 ```
 
 `shuttle-persist` works by taking a struct or other type and using that as the basis of what we want to save our value as for the key-value store, using the Deserialize & Serialize derive macros from Serde to be able to convert it to/from JSON to make it HTTP response-compatible. We'll want to create a struct that will act as the field type and attach the macros mentioned previously:
@@ -184,10 +185,10 @@ async fn add_record(
     Json(req): Json<Person>,
 ) -> Result<impl IntoResponse, impl IntoResponse> {
     let mut data = state.persist.load::<Data>("data");
-    
+
     data.people.push( Person { name: req.name, age: req.age } );
     data.total_records += 1;
-    
+
     match state.persist.save::<Data>("data", data) {
         Ok(_) => Ok((StatusCode::OK, "Successful!".to_string())),
         Err(e) => Err((StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))
