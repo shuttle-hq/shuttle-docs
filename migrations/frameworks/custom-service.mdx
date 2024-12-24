@@ -14,6 +14,7 @@ To get started, you can use the following code below:
 ```rust data.rs
 pub struct DataStruct;
 
+#[shuttle_runtime::async_trait]
 impl shuttle_runtime::Service for DataStruct {
   async fn bind(
     mut self,
@@ -72,6 +73,7 @@ async fn loop() {
   }
 }
 
+#[shuttle_runtime::async_trait]
 impl shuttle_runtime::Service for DataStruct {
   async fn bind(
     mut self,
