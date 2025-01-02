@@ -11,7 +11,7 @@ icon: "box"
 Deployments run in AWS ECS with Fargate VMs.
 The default compute configuration is 0.25 vCPU and 0.5 GB RAM.
 This will soon be made configurable.
-If you need more compute out of the gate, reach out to us.
+If you need more compute out of the gate, [reach out to us.](https://www.shuttle.dev/contact)
 
 **Rolling deployments**:
 When a new deployment is made, it will be started alongside the previous one until it is considered healthy.
@@ -23,7 +23,27 @@ If the new deployment fails to become healthy, it will be retried 3 times while 
 
 HTTPS traffic is proxied to your app on the project's default subdomain and any [custom domains]() that have been added.
 
-The proxy sets the `X-Forwarded-For` HTTP header on incoming requests to the remote IP address of the request.
+### Rate Limiting
+
+If you wish to implement manual rate limiting, the proxy sets the `X-Forwarded-For` HTTP header on incoming requests to the remote IP address of the request. To use this with your router directly, you can typically use it at the function handler level. See below for an example of usage with the Axum web framework:
+```rust
+async fn handler(headers: HeaderMap) -> impl IntoResponse {
+    // Try to extract the X-Forwarded-For header
+    if let Some(forwarded_for) = headers.get("X-Forwarded-For") {
+        if let Ok(forwarded_for_str) = forwarded_for.to_str() {
+            return format!("X-Forwarded-For: {}", forwarded_for_str);
+        }
+    }
+
+    String::from("No X-Forwarded-For header found")
+}
+```
+
+In terms of crates, the `governor` crate (commonly used for rate limiting) has been used as the base for a number of `*-governor` crates which allow you to easily create your own rate limiting:
+- [`tower-governor`](https://docs.rs/tower_governor/latest/tower_governor/)
+- [`actix-governor`](https://docs.rs/actix-governor/latest/actix_governor/)
+
+If you need to implement your own custom rate limiting, our [blog post on how to write API rate limiting yourself](https://www.shuttle.dev/blog/2024/02/22/api-rate-limiting-rust) may prove useful. You can also additionally implement your own middleware that utilises the `governor` crate itself.
 
 ## Environment variables
 
@@ -44,4 +64,3 @@ See [Shuttle Secrets](/resources/shuttle-secrets)
 ## Customize Runtime container
 
 See [Hook scripts](/docs/builds#experimental-hook-scripts)
-
