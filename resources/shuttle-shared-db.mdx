@@ -25,7 +25,7 @@ Each type of shareable database is behind its own feature flag and macro attribu
 By default, you can get the connection string to the database and connect to it with your preferred library.
 You can also specify other return types to get rid of common boilerplate.
 
-Depending on which type declaration is used as the output type in the macro, you might need to activate additional feature flags:
+Depending on which type declaration is used as the output type in the macro, additional feature flags need to be activated:
 
 | Engine   | Feature flag | Type declaration | Description |
 |----------|--------------|------------------|-------------|
@@ -34,6 +34,8 @@ Depending on which type declaration is used as the output type in the macro, you
 | Postgres | `diesel-async` | `diesel_async::AsyncPgConnection` | An async diesel connection with reasonable defaults |
 | Postgres | `diesel-async-bb8` | `diesel_bb8::Pool<diesel_async::AsyncPgConnection>` | A bb8 connection pool with reasonable defaults |
 | Postgres | `diesel-async-deadpool` | `diesel_deadpool::Pool<diesel_async::AsyncPgConnection>` | A deadpool connection pool with reasonable defaults |
+| Postgres | `opendal-postgres` | `opendal::Operator` | An OpenDAL Operator key-value storage interface |
+| Postgres | `opendal-postgres` | `shuttle_shared_db::SerdeJsonOperator` | A wrapper over Operator with interface for serde types |
 
 Lastly, add a macro annotation to the Shuttle main function. Here are examples for Postgres:
 
