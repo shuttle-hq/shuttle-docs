@@ -14,12 +14,9 @@ Due to the large re-write of the Shuttle platform, some features have been dropp
 Make sure you have read the [Platform Update Changelog](/platform-update/platform-update#changelog) to verify that it is currently possible to migrate your project.
 Notably:
 
-- Migrating **Shuttle Persist** is not currently possible as there is no drop-in replacement yet.
-We plan to add one soon.
+- **Shuttle Persist** is not supported in the same way. Shared Postgres DB with a similar key-value store abstraction exists instead ([`SerdeJsonOperator` in shuttle_shared_db](/resources/shuttle-shared-db)). For help with migrating data, please reach out to us.
 
 - Migrating **Shared MongoDB** is not possible since the feature has been dropped.
-
-- If you use a **Shuttle AWS RDS** on **shuttle.rs** and want to migrate, please reach out to us.
 </Warning>
 
 <Snippet file="project-gc.mdx" />
@@ -60,8 +57,6 @@ Update to the latest version of Shuttle dependencies:
 ```toml Cargo.toml
 shuttle-runtime = "0.51.0"
 # do the same for all other shuttle crates
-# for example, if you use `shuttle-axum`:
-shuttle-axum = "0.51.0"
 ```
 
 ### Shuttle.toml
