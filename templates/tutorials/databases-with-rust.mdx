@@ -3,7 +3,7 @@ title: "Working with Databases in Rust"
 description: "Learn how to work with databases using Rust."
 ---
 
-In this guide we'll be looking at working with PostgresQL & `shuttle-persist` (Shuttle's key-value data store) and how we can interface with them easily using Rust. By the end of this guide you'll have more of an idea of how to use both and when each one would be better for your use case.
+In this guide we'll be looking at working with PostgreSQL using Rust. By the end of this guide you'll have more of an idea of how to use both and when each one would be better for your use case.
 
 It will be assumed you already have a project initialised - if not, you can always initialise a new project with `shuttle init`.
 
@@ -123,79 +123,3 @@ cargo add serde --features derive
 ```
 
 Then you need to add the Serialize derive macro to your structs as required, and then when you return the JSON-serialized data it'll automatically be accepted as a HTTP-compatible response.
-
-## shuttle-persist
-Shuttle Persist is shuttle's own persistent key-value style store that you can use to store your data in and is great for storing long-term data that you might need on the server but you don't need a relational database for, or you want to be able to store data that's still structured via structs but you also might want to store metadata (ie total number of records, combined value of something from all structs in a vector, or similar).
-
-To get started, we'll want to add `shuttle-persist` to an already initialised Rust program by adding the crate:
-
-```bash
-cargo add shuttle-persist
-```
-
-`shuttle-persist` works by taking a struct or other type and using that as the basis of what we want to save our value as for the key-value store, using the Deserialize & Serialize derive macros from Serde to be able to convert it to/from JSON to make it HTTP response-compatible. We'll want to create a struct that will act as the field type and attach the macros mentioned previously:
-
-```rust
-// as you can see this allows for a nested struct
-#[derive(Deserialize, Serialize)]
-pub struct Data {
-    people: Vec<Person>,
-    total_records: i32
-}
-
-#[derive(Deserialize, Serialize)]
-pub struct Person {
-    name: String,
-    age: i32
-}
-
-// add a new() function so the struct can be initialised if it doesn't exist
-impl Data {
-    fn new() -> Self {
-        Self {
-        people: Vec::new(),
-        total_records: 0
-        }
-    }
-}
-```
-
-Now that it's in our dependencies, we can add it to the list of parameters passed into our main entry point function, like so - and then we can attempt to load whatever our data keys are and if they don't exist, we can just create a new one.
-
-```rust
-#[shuttle_runtime::main]
-async fn axum(
-    #[shuttle_persist::Persist] persist: PersistInstance
-) -> shuttle_axum::ShuttleAxum {
-
-if persist.load::<Data>("data").is_err() {
-    persist.save::<Data>("data", Data::new());
-}
-
-// ... etc
-
-}
-```
-
-If you already have a value set in your `persist` instance and you'd like to change something, the main way to do this would be to load the data as a variable, manipulate the data however you want (in this case we're simply running `.push()` to add a new record) and then saving the data back to the key value. Let's see what that would look like:
-
-```rust
-async fn add_record(
-    State(state): State<AppState>,
-    Json(req): Json<Person>,
-) -> Result<impl IntoResponse, impl IntoResponse> {
-    let mut data = state.persist.load::<Data>("data");
-
-    data.people.push( Person { name: req.name, age: req.age } );
-    data.total_records += 1;
-
-    match state.persist.save::<Data>("data", data) {
-        Ok(_) => Ok((StatusCode::OK, "Successful!".to_string())),
-        Err(e) => Err((StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))
-    }
-}
-```
-
-As you can see, one of the main strengths of `shuttle-persist` is that if you have a data set and you want to manipulate the data to produce some new results, it's quite simple to do so as you can pull the data then manipulate the data using Rust methods then save it back - no SQL is required to do it.
-
-You can also extend `shuttle-persist` to include more than one key by simply just saving and loading using a different key - which means we can do things like emulating a NoSQL database like MongoDB by creating multiple nested structs for each key and then using keys like collection names.

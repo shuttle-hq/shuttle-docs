@@ -7,11 +7,13 @@ Introducing the new Shuttle platform! We've supercharged what developers love ab
 
 [*Read the full announcement here!*](https://www.shuttle.dev/blog/2024/10/10/shuttle-redefining-backend-development)
 
-{/* ## Q&A
+## Important Dates
 
-- When is the old platform shutting down?
-- Do I have to migrate my project?
-- etc */}
+- January 2nd, 2025: Deployment freeze on legacy platform
+- January 14th, 2025: Legacy platform shutdown begins (gradual shutdown and removal of all projects)
+- January 31st, 2025: Complete decommissioning of legacy platform infrastructure
+
+Migrate to the new platform for continued deployment capabilities. Check out our [migration docs](/platform-update/migration).
 
 ## Domain and CLI changes
 
@@ -66,6 +68,7 @@ Introducing the new Shuttle platform! We've supercharged what developers love ab
   - `deploy --no-follow` to not poll the deployment status until it reaches a running or failed state.
   - `account` to show information about your account.
   - `project update name` to rename a project.
+- You can now create accounts with Google sign-in and email + password. Accounts on new providers with matching emails are not linked and are treated as separate accounts.
 
 ### Removed
 
@@ -76,7 +79,7 @@ Introducing the new Shuttle platform! We've supercharged what developers love ab
   - `project stop`
   - `project restart`
   - `clean`
-- The **Teams** feature has been temporarily disabled. We plan to enable it after improvements have been made. {/* *(The implementation of teams was very inefficient, and slowed down everyone's experience of using the Shuttle API.)* */}
+- The **Teams** feature has been temporarily disabled. We plan to enable it after improvements have been made.
 
 {/* ## Upcoming features
 
@@ -86,7 +89,6 @@ Not all planned features are implemented yet. Here is a list of planned changes:
 - Feature parity between CLI and Shuttle Console
 - Project idling or other way to reduce compute costs
 - Customising CPU and RAM for the builder and runtime containers
-- Update the Shuttle Deploy GitHub Action
 - Deploying prebuilt shuttle-examples docker images (allows one-click deploys)
 - Streaming logs with `shuttle logs --follow` and during a `deploy` command
-- New resources, such as S3 bucket and a replacement for Shuttle Persist and Shuttle AWS RDS */}
+- New resources, such as S3 bucket */}
