@@ -129,7 +129,8 @@
         "docs/builds",
         "docs/deployment-environment",
         "docs/logs",
-        "docs/domain-names"
+        "docs/domain-names",
+        "docs/account"
       ]
     },
     {
