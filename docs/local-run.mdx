@@ -75,9 +75,6 @@ Bacon works with jobs and this command tells bacon to run a job called `shuttle`
 The job tells bacon to execute `shuttle run` when you save a file.
 There are many other helpful options, see `bacon --help` or the [bacon website](https://dystroy.org/bacon/) for more info.
 
-Small caveat: Be aware that ignoring files with `.ignore` will also affect the behaviour of `shuttle deploy`.
-See the documentation on [including ignored files](https://docs.shuttle.dev/docs/files#include-ignored-files) for more info.
-
 ### Live reload backend with `cargo watch`
 
 <Note>`cargo-watch` is no longer maintained, but still works</Note>
@@ -94,6 +91,7 @@ cargo watch -qcs 'shuttle run'
 ```
 
 Small caveat: Be aware that ignoring files with `.ignore` will also affect the behaviour of `shuttle deploy`.
+See the documentation on [including ignored files](https://docs.shuttle.dev/docs/files#include-ignored-files) for more info.
 
 ### Live reload frontend with `tower-livereload`
 
