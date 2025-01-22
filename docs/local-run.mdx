@@ -57,7 +57,30 @@ shuttle run --external --port 8123
 
 Here are some small tips and tricks to boost your productivity when developing locally.
 
+### Live reload backend with `bacon`
+
+To live reload your Shuttle app when you save a file, you can use [bacon](https://github.com/Canop/bacon):
+
+```bash
+bacon -j shuttle --config-toml '
+[jobs.shuttle]
+command = ["shuttle", "run"]
+need_stdout = true
+allow_warnings = true
+background = false
+on_change_strategy = "kill_then_restart"
+kill = ["pkill", "-TERM", "-P"]'
+```
+Bacon works with jobs and this command tells bacon to run a job called `shuttle` which we define as the other argument within single quotes.
+The job tells bacon to execute `shuttle run` when you save a file.
+There are many other helpful options, see `bacon --help` or the [bacon website](https://dystroy.org/bacon/) for more info.
+
+Small caveat: Be aware that ignoring files with `.ignore` will also affect the behaviour of `shuttle deploy`.
+See the documentation on [including ignored files](https://docs.shuttle.dev/docs/files#include-ignored-files) for more info.
+
 ### Live reload backend with `cargo watch`
+
+<Note>`cargo-watch` is no longer maintained, but still works</Note>
 
 To live reload your Shuttle app when you save a file, you can use [cargo-watch](https://github.com/watchexec/cargo-watch):
 
