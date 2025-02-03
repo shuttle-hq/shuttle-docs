@@ -1,6 +1,6 @@
 ---
 title: Overview & Changelog
-description: In Q4 2024, Shuttle is launching a new and improved platform
+description: In Q4 2024, Shuttle launched a new and improved platform
 ---
 
 Introducing the new Shuttle platform! We've supercharged what developers love about Shuttle, combining our powerful developer experience with enterprise-grade infrastructure. For developers, we've kept it simple and intuitive - no complex configs, just focus on your Rust code. On the production side, we've implemented VM-level isolation, increased reliability and scalability to meet real-world demands. From solo developers to enterprise teams, Shuttle now offers the perfect blend of ease and production-ready robustness.
@@ -23,11 +23,11 @@ Migrate to the new platform for continued deployment capabilities. Check out our
 - New Docs: [docs.shuttle.dev](https://docs.shuttle.dev)
 - Command Line: new `shuttle` command (installed alongside `cargo shuttle`)
 
-### Access the OLD platform (for existing users)
+### ~~Access the OLD platform~~ (no longer available)
 
-- Old Console: [console.shuttle.rs](https://console.shuttle.rs)
-- Old Docs: [docs.shuttle.rs](https://docs.shuttle.rs)
-- Command Line: `cargo shuttle` (unchanged)
+- ~~Old Console: [console.shuttle.rs](https://console.shuttle.rs)~~
+- ~~Old Docs: [docs.shuttle.rs](https://docs.shuttle.rs)~~
+- ~~Command Line: `cargo shuttle`~~
 
 ## Changelog
 
@@ -69,12 +69,13 @@ Migrate to the new platform for continued deployment capabilities. Check out our
   - `account` to show information about your account.
   - `project update name` to rename a project.
 - You can now create accounts with Google sign-in and email + password. Accounts on new providers with matching emails are not linked and are treated as separate accounts.
+- The ability to increase the allocated CPU and RAM limits (contact us).
 
 ### Removed
 
 - **Shuttle Persist** resource and the persistent file volume. *(We plan to implement an S3-based replacement.)*
 - **MongoDB Shared Database** resource. *(Removed due to having very few users.)*
-- **AWS RDS Database** resource. *(We plan to add a replacement later.)*
+- **AWS RDS Database** resource. *(We plan to bring it back.)*
 - CLI commands:
   - `project stop`
   - `project restart`

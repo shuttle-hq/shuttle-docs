@@ -41,9 +41,9 @@ If the command does not error, you are ready to use **shuttle.dev**.
 
 ## 3. Access the new Console
 
-The Shuttle Console for **shuttle.dev** is now accessed at [console.shuttle.dev](https://console.shuttle.dev/).
+The Shuttle Console for **shuttle.dev** is accessed at [console.shuttle.dev](https://console.shuttle.dev/).
 
-The Shuttle Console for **shuttle.rs** is still accessed at [console.shuttle.rs](https://console.shuttle.rs/).
+~~The Shuttle Console for **shuttle.rs** is still accessed at [console.shuttle.rs](https://console.shuttle.rs/).~~
 
 ## 4. Update Code
 
@@ -66,6 +66,8 @@ The `name` field is now unused.
 The `assets` field has been renamed to `deploy.include` ([docs](/docs/files#include-ignored-files)).
 
 If you want the deploy command to keep blocking dirty deployments, add the `deploy.deny_dirty` field ([docs](/docs/files#block-dirty-deployments)).
+
+The new field `build.assets` might need to be added:
 
 <Warning>
 If your project uses static assets or other files at runtime, you need to declare them in `build.assets` to have them copied from the builder to the runtime image ([docs](/docs/files#build-assets)).
@@ -106,7 +108,7 @@ If you are using [deploy-action](https://github.com/shuttle-hq/deploy-action), c
 - Use `shuttle-hq/deploy-action@v2` instead of `shuttle-hq/deploy-action@main`
 - Rename `deploy-key` to `shuttle-api-key`
 - Add a `project-id` value
-- Any other args can be added in `extra-args`
+- Any other args for `shuttle deploy` can be added in `extra-args`
 
 ## 9. (Optional) Custom domains
 
