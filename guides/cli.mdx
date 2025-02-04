@@ -60,9 +60,9 @@ For more tips, see [Local Run](/docs/local-run).
 - `shuttle run --secrets <file>`: Use a non-default secrets file for this run.
 - `shuttle run --release`: Compile with release mode.
 
-### Start and deploy a project
+### Deploy a project
 
-- `shuttle project create`: Start the container for this project on Shuttle.
+- `shuttle project create`: Create a project on Shuttle.
 - `shuttle deploy`: Deploy the project to Shuttle.
 - `shuttle deploy --no-follow`: Don't poll deployment state. Alias: `--nf`.
 - `shuttle deploy --secrets <file>`: Use a non-default secrets file for this deployment. It must be located in the same folder that Secrets.toml should be in.
@@ -80,13 +80,15 @@ All project-related commands can use:
 - `shuttle project status`: Check the state of this project.
 - `shuttle project link`: Link this project folder to a project on Shuttle.
 - `shuttle project delete`: Delete a project.
-- `shuttle project update name <new-name>`: Rename a project.
+- `shuttle project update name <new-name>`: Rename a project and its default subdomain.
 
 ### Manage deployments and logs
 
 - `shuttle deployment list`: List deployments in this project.
 - `shuttle deployment status`: Show status of the currently running deployment.
 - `shuttle deployment stop`: Stop any currently running deployments.
+- `shuttle deployment redeploy`: Redeploy the latest deployment without building.
+- `shuttle deployment redeploy [id]`: Redeploy the specified deployment id without building.
 - `shuttle logs`: Get all logs from the currently running deployment.
 - `shuttle logs --latest`: Get all logs from the latest deployment.
 - `shuttle logs <id>`: Get all logs from a specific deployment.
