@@ -1,0 +1,131 @@
+---
+title: Telemetry overview
+icon: telescope
+description: How Shuttle Telemetry integrations work
+---
+
+{/* TODO: Showcase with GIF or images showing off cool things you can build with this */}
+
+Under the hood, Shuttle runs an OpenTelemetry (OTel) collector alongside your service that, once configured, sends project telemetry like vCPU and RAM usage as well as any custom metrics you define to a supported third-party integration of your choice.
+
+## What's included?
+
+### Community Tier - Export essential system metrics
+
+- CPU usage
+- Memory usage
+- Network I/O
+- Disk I/O
+
+### Pro & Growth Tiers - Export everything
+
+- All system metrics
+- All application metrics
+- All application logs
+- No export limits
+
+## How to get started?
+
+Check out the tutorials for each supported telemetry service:
+
+- [Better Stack](./betterstack)
+
+<Note>
+    We plan to expand the list of supported third party services.
+    Let us know you thoughts and suggestions on [GitHub](https://github.com/shuttle-hq/shuttle/discussions/1980).
+</Note>
+
+---
+
+## Guide: Add custom metrics in tracing events
+
+<Note>Exporting custom metrics and logs is available in the [Shuttle Pro Tier](https://www.shuttle.dev/pricing) and above.</Note>
+
+To use custom metrics in tracing, start by adding the tracing dependency if you haven't yet.
+
+```bash
+cargo add tracing
+```
+
+Then, all you need to do is add some tracing events with fields to the functions you're using, like so:
+
+```rust
+async fn hello_world() -> &'static str {
+    tracing::info!(counter.hello = 1, "Hello world from OTel!");
+    "Hello, world!"
+}
+```
+
+Doing this will send an `info` level log to stdout and the OTel exporter, saying `Hello world from OTel!`.
+The log object produced will then have the custom attribute set. An example is provided below.
+
+The runtime's OTel exporter uses `tracing-opentelemetry` under the hood, which automatically handles three metric types for you: monotonic counters, counters and histograms.
+You can find more about this [on the `tracing-opentelemetry` docs](https://docs.rs/tracing-opentelemetry/latest/tracing_opentelemetry/struct.MetricsLayer.html).
+
+## Default telemetry properties
+
+### Traces
+
+This is an example of what a JSON object for a tracing event looks like:
+
+```json
+{
+    "attributes": {
+        "code.filepath": "src/main.rs",
+        "code.lineno": 4,
+        "code.module_path": "my_project",
+        "counter.hello": 1
+    },
+    "dropped_attributes_count": 0,
+    "dt": "2025-02-04T15:56:27.068644985Z",
+    "message": "Hello world from OTel!",
+    "observed_timestamp": "2025-02-04T15:56:27.068649239Z",
+    "resources": {
+        "service.name": "my-project",
+        "service.version": "0.1.0",
+        "shuttle.deployment.env": "production",
+        "shuttle.project.crate.name": "my_project",
+        "shuttle.project.id": "proj_01JK8SHBZQ0XF0TKW0EDWBJ8NH",
+        "shuttle.project.name": "my-project",
+        "telemetry.sdk.language": "rust",
+        "telemetry.sdk.name": "opentelemetry",
+        "telemetry.sdk.version": "0.27.1"
+    },
+    "severity_number": 9,
+    "severity_text": "INFO",
+    "source_type": "opentelemetry"
+}
+```
+
+### Platform telemetry
+
+Below is a list of container metrics that Shuttle sends by default over the OpenTelemetry export.
+
+| Attribute name | Description |
+| --- | --- |
+| cpu_cores | CPU cores available |
+| cpu_onlines | Number of online/active CPUs |
+| cpu_reserved | Reserved CPU resources (if any) |
+| cpu_usage_kernelmode | CPU time spent in kernel mode (nanos) |
+| cpu_usage_system | System-wide CPU usage (nanos) |
+| cpu_usage_total | Total CPU time usage (nanos) |
+| cpu_usage_usermode | CPU time spent in user mode (nanos) |
+| cpu_usage_vcpu | vCPU usage |
+| cpu_utilized | Percentage of CPU utilized |
+| memory_reserved | Memory reserved (bytes) |
+| memory_usage | Memory used (bytes) |
+| memory_usage_limit | Memory limit (bytes) |
+| memory_usage_max | The max amount of memory used by your application (bytes) |
+| memory_utilized | Memory being utilised (bytes) |
+| network_io_usage_rx_bytes | Network ingress (bytes) |
+| network_io_usage_rx_packets | Network ingress packet count |
+| network_io_usage_rx_dropped | Network ingress dropped packet count |
+| network_io_usage_rx_errors | Network ingress errored packet count |
+| network_io_usage_tx_bytes | Network egress (bytes) |
+| network_io_usage_tx_packets | Network egress packet count |
+| network_io_usage_tx_dropped | Network egress dropped packet count |
+| network_io_usage_tx_errors | Network egress errored packet count |
+| network_rate_rx | Network ingress rate (bytes/s) |
+| network_rate_tx | Network egress rate (bytes/s) |
+| storage_read_bytes | Bytes read from disk |
+| storage_write_bytes | Bytes written to disk |
