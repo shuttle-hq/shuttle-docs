@@ -17,10 +17,6 @@
   },
   "layout": "topnav",
   "sidebar": { "items": "border" },
-  "versions": [
-    { "name": "🚀 shuttle.dev (NEW)", "url": "https://docs.shuttle.dev/" },
-    { "name": "⚪ shuttle.rs", "url": "https://docs.shuttle.rs/" }
-  ],
   "background": { "style": "windows" },
   "favicon": "/favicon.png",
   "colors": {
@@ -130,6 +126,14 @@
         "docs/deployment-environment",
         "docs/logs",
         "docs/domain-names",
+        {
+          "group": "Telemetry",
+          "icon": "telescope",
+          "pages": [
+            "docs/telemetry/overview",
+            "docs/telemetry/betterstack"
+          ]
+        },
         "docs/account"
       ]
     },
