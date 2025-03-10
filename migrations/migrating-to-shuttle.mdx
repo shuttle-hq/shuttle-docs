@@ -84,7 +84,11 @@ pub async fn axum (
 }
 ```
 
-If you need more than a simple router, you'll want to create a custom struct that holds all of your required app state information inside and then create an `impl` for the struct - you can find more about that [here.](https://docs.shuttle.dev/tutorials/custom-service) Anything outside of your entry point function (the function that uses the `shuttle_runtime::main` macro) doesn't need to be changed. If you are using secrets as well as a database connection, you may wish to create a struct that holds both of these values and then pass it into the function that generates the router.
+If you need more than custom set up behavior, you'll need to [create a custom service.](https://docs.shuttle.dev/tutorials/custom-service)
+
+Anything outside of your entry point function (the function that uses the `shuttle_runtime::main` macro) doesn't need to be changed.
+
+If you need to share variables between your handlers (for example, a database connection), the best way to do this is typically creating a struct that holds all of them - in the Rust web ecosystem this is commonly referred to as [application state](https://www.shuttle.dev/blog/2023/12/06/using-axum-rust#app-state-in-axum) (or app state).
 
 ## Local run
 
