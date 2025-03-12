@@ -13,6 +13,14 @@ The default compute configuration is 0.25 vCPU and 0.5 GB RAM.
 This will soon be made configurable.
 If you need more compute out of the gate, reach out to us.
 
+<Warning>
+Community tier workloads run on Fargate SPOT capacity providers, and are
+subject to spontaneous interruptions when AWS claims capacity in the region.
+Community tier workloads are automatically rescheduled to a running state when
+capacity is made available. If your workload is affected by a SPOT
+interruption, Shuttle will send an email notification.
+</Warning>
+
 **Rolling deployments**:
 When a new deployment is made, it will be started alongside the previous one until it is considered healthy.
 After that, the previous deployment will start shutting down.
