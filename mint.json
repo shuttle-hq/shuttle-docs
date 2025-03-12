@@ -49,9 +49,9 @@
       "url": "https://discord.gg/shuttle"
     },
     {
-      "name": "Crate Docs",
+      "name": "Releases and Changelog",
       "icon": "rust",
-      "url": "https://docs.rs/shuttle-runtime/latest/shuttle_runtime/"
+      "url": "https://github.com/shuttle-hq/shuttle/releases"
     }
   ],
   "tabs": [
