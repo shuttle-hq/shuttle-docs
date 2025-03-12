@@ -76,14 +76,6 @@
         "introduction/what-is-shuttle",
         "introduction/how-shuttle-works",
         {
-          "group": "Platform Update",
-          "icon": "layer-group",
-          "pages": [
-            "platform-update/platform-update",
-            "platform-update/migration"
-          ]
-        },
-        {
           "group": "Migrating to Shuttle",
 
           "icon": "dove",
@@ -171,7 +163,15 @@
       "pages": [
         "guides/cli",
         "guides/upgrade",
-        "guides/migrate-shared-postgres"
+        "guides/migrate-shared-postgres",
+        {
+          "group": "Platform Update",
+          "icon": "layer-group",
+          "pages": [
+            "platform-update/platform-update",
+            "platform-update/migration"
+          ]
+        }
       ]
     },
     {
