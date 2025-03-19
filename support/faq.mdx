@@ -8,7 +8,7 @@ This section is aimed at collecting common questions users have to provide docum
 
 <AccordionGroup>
   <Accordion title="How secure is Shuttle?">
-    We deploy every project in its own Fargate VM.
+    We deploy every project in its own AWS Fargate VM.
     This gives you safe isolation from other users,
     and also across all the projects that are owned by your account.
   </Accordion>
@@ -34,9 +34,6 @@ This section is aimed at collecting common questions users have to provide docum
   </Accordion>
   <Accordion title="Can I use SeaORM with Shuttle?">
     Yes, you can create a SeaORM connection from the sqlx pool Shuttle passes to you when you provision a SQL database. You can take a look at the example [here](https://github.com/shuttle-hq/shuttle/issues/179#issuecomment-1203536025).
-  </Accordion>
-  <Accordion title="Can I rename my Shuttle project?">
-    A project can't yet be renamed in place, but you can create a new project and deploy it again.
   </Accordion>
   <Accordion title="Where geographically are deployments hosted?">
     Currently, all deployments are in the AWS eu-west-2 region (London).
