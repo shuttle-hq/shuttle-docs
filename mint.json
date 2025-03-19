@@ -121,10 +121,7 @@
         {
           "group": "Telemetry",
           "icon": "telescope",
-          "pages": [
-            "docs/telemetry/overview",
-            "docs/telemetry/betterstack"
-          ]
+          "pages": ["docs/telemetry/overview", "docs/telemetry/betterstack"]
         },
         "docs/account"
       ]
@@ -172,6 +169,16 @@
             "platform-update/migration"
           ]
         }
+      ]
+    },
+    {
+      "group": "Pricing",
+      "pages": [
+        "pricing/overview",
+        "pricing/billing",
+        "pricing/scaling",
+        "pricing/upgrading",
+        "pricing/faq"
       ]
     },
     {

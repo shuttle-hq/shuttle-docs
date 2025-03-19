@@ -1,0 +1,89 @@
+---
+title: FAQ
+description: Frequently Asked Pricing Questions
+icon: comment-dollar
+---
+
+## Common Pricing Questions
+
+**Is payment information required to start using Shuttle?**
+
+No, you can begin immediately with our Community tier without providing any payment information. You'll get a complete development environment with 512MB RAM and 0.25 vCPU to explore Shuttle and build your projects.
+
+**How does usage-based pricing work?**
+
+Base tiers include generous resource allocations. When you exceed these allocations, additional resources are available at fixed rates: database storage at \$0.12/GB,
+build minutes at \$0.025/minute,
+and network egress at \$0.10/GB.
+
+## Support
+
+**What is community support?**
+
+Community support provides access to our public help threads where you can get assistance from both the community and the Shuttle team. The Shuttle team will help when available, making this tier best suited for developers who are comfortable with self-service and community-based troubleshooting.
+
+**What is priority support?**
+
+Priority support customers receive enhanced assistance, including white glove migration help when moving your applications to Shuttle. You'll get guaranteed response times of less than 1 business day, ensuring your questions and issues are addressed promptly.
+
+**What is dedicated support?**
+
+Dedicated support offers our highest level of service, combining all the benefits of priority support with access to a private support channel for direct communication with our team. You'll receive white glove migration assistance, response times under 1 business day, and Enterprise customers additionally benefit from an Uptime SLA.
+
+## Plan Selection
+
+**When should I upgrade from Community to Pro?**
+
+Consider upgrading to Pro when you need reliable production hosting, want to deploy multiple projects, or require enhanced support. The key differences are reserved instances (instead of spot), more projects, and guaranteed support response times.
+
+**Is the Growth tier suitable for my team?**
+
+Growth tier is ideal when you need auto-scaling, multi-zone deployment, or team collaboration features. If you're running production workloads that require high availability or have multiple team members managing deployments, Growth provides the necessary tools and infrastructure.
+
+**Can I use Shuttle for languages other than Rust?**
+
+No, Shuttle is specifically designed for Rust applications. We provide native support for popular Rust frameworks like Axum, Actix-Web, and Rocket, delivering an optimized experience for Rust development.
+
+## Instance Types
+
+**What is the difference between a Spot Instance and a Reserved Instance?**
+
+A Spot Instance is a flexible, cost-effective option available on the Community tier that may be interrupted or terminated based on system demand. These instances run on shared infrastructure and are ideal for development and testing.
+
+A Reserved Instance, available on Pro tier and above, provides dedicated, guaranteed computing resources that won't be interrupted. These instances offer consistent performance and reliability, making them suitable for production workloads and applications that require high availability.
+
+## Resource Limits and Overages
+
+**What happens if I exceed my plan's resource limits?**
+
+We implement both soft and hard limits. You'll receive notifications when approaching soft limits, giving you time to upgrade or adjust usage. Hard limits are enforced on the community tier to maintain service quality. For resources like storage and build minutes, you'll be billed for additional usage at standard rates.
+
+**Can I set custom resource limits?**
+
+Growth tier users can set maximum limits on active container instances to control costs. All users can monitor resource usage through dashboards and receive alerts when approaching limits.
+
+**Can I get additional custom domains without buying an additional project?**
+
+Yes, you can add custom domains at $0.25/domain/month without purchasing an additional project. If you do purchase an additional project, it comes with its own included custom domain allocation. The maximum number of custom domains allowed on the Growth tier is 25, regardless of whether they are included with projects or purchased separately.
+
+**What happens if my application exceeds the max recommended requests per second?**
+
+Your application will continue to function, but you may experience some performance degradation during periods of high traffic. These guidelines exist to help you determine when it's time to consider upgrading to a higher tier. If your project consistently hits limits we will reach out to work with you to find the best way forward.
+
+## Billing and Subscription Management
+
+**Can I change my plan at any time?**
+
+Yes, you can upgrade or downgrade your plan at any time. Upgrades take effect immediately, while downgrades are applied at the start of your next billing cycle.
+
+**How does custom domain billing work?**
+
+Each plan includes a set number of domains (1 for Community, 3 for Pro, 5 for Growth). Additional domains can be added to any plan for $0.25 per domain per month.
+
+**How many Pro accounts can be registered at one organisation?**
+
+Each organization is limited to a maximum of 3 Pro accounts. If your organization needs more than 3 accounts, we recommend upgrading to the Growth tier, which provides centralized account management and shared access to all deployments in a single unified workspace.
+
+**How are team members billed on the Growth tier?**
+
+The Growth tier includes access for up to 10 team members. Additional team members can be added for $25 per user per month.

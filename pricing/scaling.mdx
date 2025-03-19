@@ -1,0 +1,65 @@
+---
+title: Scaling & Limits
+icon: arrows-up-to-line
+---
+
+When scaling your application on Shuttle, you have two main options for increasing computational resources:
+
+- **Vertical scaling:** Increase the vCPU and memory of your existing project(s). This is ideal when you need more power for individual applications. Available to both Pro and Growth.
+- **Horizontal scaling:** Deploy replicas of your application to distribute load and increase availability. Available exclusively to Growth tier.
+
+Both options are billed as detailed in the sections below:
+
+## Vertical scaling
+
+Simply upgrade your instance size and pay the difference. Each instance size comes with a base amount of included vCPU (0.25 vCPU), and you only pay for the additional (billable) vCPU usage per hour.
+
+| Instance Size | vCPU | Memory (GB) | Included vCPU | Billable vCPU |
+| --- | --- | --- | --- | --- |
+| **Basic** | 0.25 | 512 | 0.25 | 0 |
+| **Small** | 0.5 | 1 | 0.25 | 0.25 |
+| **Medium** | 1 | 2 | 0.25 | 0.75 |
+| **Large** | 2 | 4 | 0.25 | 1.75 |
+| **X Large** | 4 | 8 | 0.25 | 3.75 |
+| **XX Large** | 8 | 16 | 0.25 | 7.75 |
+
+*For example, if you upgrade from Basic (0.25 vCPU) to Medium (1 vCPU), you'll only be charged for the additional 0.75 vCPU since 0.25 vCPU is included in your plan.*
+
+## Horizontal scaling
+
+Growth tier users can create replicas of their applications to distribute traffic and increase availability. Each replica is billed based on its instance size and vCPU usage per hour.
+
+## Purchase additional projects
+
+Pro, Growth and Enterprise users can purchase additional projects beyond their included projects. The minimum instance for each additional project is 0.5 vCPU and is billed according to the table below.
+
+| Instance Size | vCPU | Memory GB | Included vCPU | Billable vCPU |
+| --- | --- | --- | --- | --- |
+| **Small** | 0.5 | 1 | 0 | 0.5 |
+| **Medium** | 1 | 2 | 0 | 1 |
+| **Large** | 2 | 3 | 0 | 2 |
+| **X Large** | 4 | 8 | 0 | 4 |
+| **XX Large** | 8 | 16 | 0 | 8 |
+
+*Note: The vCPU allocations for additional projects do not include any "included vCPU" - you'll be billed for the full vCPU amount of the instance size you select.*
+
+### How many additional projects can you add on each tier?
+
+| Tier | Included projects | Additional projects | Total project limit |
+| --- | --- | --- | --- |
+| **Community** | 1 | 0 | 1 |
+| **Pro** | 3 | 7 | 10 |
+| **Growth** | 10 | 40 | 50 |
+| **Enterprise** | Custom | Custom | Custom |
+
+## Request Rate Guidelines
+
+Shuttle provides flexible request rate guidelines to ensure optimal performance for all users and projects across our tiers. These guidelines help you determine which tier best suits your application's needs:
+
+- **Community**: Up to 10 requests per second
+- **Pro**: Up to 50 requests per second
+- **Growth**: Up to 1,000 requests per second
+
+These limits are not strictly enforced as hard caps but serve as performance guidance. Applications may experience performance degradation when consistently exceeding the recommended request rates for their tier.
+
+If your application regularly exceeds the recommended request rate for your current tier, our team may reach out to suggest an upgrade to a more suitable tier. This helps ensure your application maintains optimal performance and doesn't impact the overall platform experience.
