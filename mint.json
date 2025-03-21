@@ -123,7 +123,8 @@
           "icon": "telescope",
           "pages": ["docs/telemetry/overview", "docs/telemetry/betterstack"]
         },
-        "docs/account"
+        "docs/account",
+        "docs/teams"
       ]
     },
     {
