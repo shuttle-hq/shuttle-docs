@@ -21,7 +21,7 @@ First, you need to enable telemetry export in your project. Add the `setup-otel-
 cargo add shuttle-runtime -F setup-otel-exporter
 ```
 
-Your `Cargo.toml` should include:
+The `shuttle-runtime` entry in your project's `Cargo.toml` should now look something like:
 
 ```toml
 shuttle-runtime = { version = "0.53.0", features = ["setup-otel-exporter"] }
