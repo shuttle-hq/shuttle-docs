@@ -1,6 +1,6 @@
 ---
-title: Telemetry overview
-icon: telescope
+title: Overview
+icon: chart-mixed
 description: How Shuttle Telemetry integrations work
 ---
 
@@ -16,14 +16,9 @@ To get started with telemetry in your Shuttle project, follow our [step-by-step 
 
 ### Community Tier - Container Metrics
 
-The Community tier includes essential container metrics that help you monitor your application's resource usage:
+The Community tier provides essential container metrics to help you monitor your application's resource usage. You'll have access to key metrics across CPU, memory, network, and storage performance.
 
-| Category | Metrics |
-| --- | --- |
-| **CPU** | - CPU cores available<br>- Online/active CPUs<br>- Reserved CPU resources<br>- CPU usage in kernel/user mode<br>- System-wide CPU usage<br>- vCPU usage and utilization |
-| **Memory** | - Reserved memory<br>- Memory usage and limits<br>- Maximum memory usage<br>- Memory utilization |
-| **Network** | - Ingress/egress bytes and packets<br>- Dropped packets<br>- Error counts<br>- Network rates (bytes/s) |
-| **Storage** | - Bytes read from disk<br>- Bytes written to disk |
+For detailed information about specific metrics, see the [Default Platform Metrics](#default-platform-metrics) section below.
 
 ### Pro & Growth Tiers - Everything
 
@@ -52,35 +47,35 @@ Currently, Shuttle supports the following telemetry providers:
 
 Learn how to add custom metrics and tracing events to your application in our [Custom Metrics Guide](./custom-metrics).
 
-## Example Trace Output
+## Default Platform Metrics
 
-Here's what a tracing event looks like when exported:
+The following table lists all container metrics that Shuttle automatically collects and exports via OpenTelemetry for every deployment.
 
-```json
-{
-    "attributes": {
-        "code.filepath": "src/main.rs",
-        "code.lineno": 4,
-        "code.module_path": "my_project",
-        "counter.hello": 1
-    },
-    "dropped_attributes_count": 0,
-    "dt": "2025-02-04T15:56:27.068644985Z",
-    "message": "Hello world from OTel!",
-    "observed_timestamp": "2025-02-04T15:56:27.068649239Z",
-    "resources": {
-        "service.name": "my-project",
-        "service.version": "0.1.0",
-        "shuttle.deployment.env": "production",
-        "shuttle.project.crate.name": "my_project",
-        "shuttle.project.id": "proj_01JK8SHBZQ0XF0TKW0EDWBJ8NH",
-        "shuttle.project.name": "my-project",
-        "telemetry.sdk.language": "rust",
-        "telemetry.sdk.name": "opentelemetry",
-        "telemetry.sdk.version": "0.27.1"
-    },
-    "severity_number": 9,
-    "severity_text": "INFO",
-    "source_type": "opentelemetry"
-}
-```
+| Attribute name | Description |
+| --- | --- |
+| cpu_cores | CPU cores available |
+| cpu_onlines | Number of online/active CPUs |
+| cpu_reserved | Reserved CPU resources (if any) |
+| cpu_usage_kernelmode | CPU time spent in kernel mode (nanos) |
+| cpu_usage_system | System-wide CPU usage (nanos) |
+| cpu_usage_total | Total CPU time usage (nanos) |
+| cpu_usage_usermode | CPU time spent in user mode (nanos) |
+| cpu_usage_vcpu | vCPU usage |
+| cpu_utilized | Percentage of CPU utilized |
+| memory_reserved | Memory reserved (bytes) |
+| memory_usage | Memory used (bytes) |
+| memory_usage_limit | Memory limit (bytes) |
+| memory_usage_max | The max amount of memory used by your application (bytes) |
+| memory_utilized | Memory being utilised (bytes) |
+| network_io_usage_rx_bytes | Network ingress (bytes) |
+| network_io_usage_rx_packets | Network ingress packet count |
+| network_io_usage_rx_dropped | Network ingress dropped packet count |
+| network_io_usage_rx_errors | Network ingress errored packet count |
+| network_io_usage_tx_bytes | Network egress (bytes) |
+| network_io_usage_tx_packets | Network egress packet count |
+| network_io_usage_tx_dropped | Network egress dropped packet count |
+| network_io_usage_tx_errors | Network egress errored packet count |
+| network_rate_rx | Network ingress rate (bytes/s) |
+| network_rate_tx | Network egress rate (bytes/s) |
+| storage_read_bytes | Bytes read from disk |
+| storage_write_bytes | Bytes written to disk |
