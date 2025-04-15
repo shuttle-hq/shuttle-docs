@@ -1,0 +1,67 @@
+---
+title: Getting Started
+icon: rocket
+description: Step-by-step guide to setting up telemetry in your Shuttle project
+---
+
+This guide will walk you through setting up telemetry for your Shuttle project. We'll cover the basic setup that applies to all telemetry providers, and then point you to provider-specific guides.
+
+## Prerequisites
+
+Before you begin, make sure you have:
+1. A Shuttle project deployed
+2. Access to the Shuttle Console
+3. An account with your chosen telemetry provider (e.g. Better Stack)
+
+## Step 1: Enable the OpenTelemetry Exporter
+
+First, you need to enable telemetry export in your project. Add the `setup-otel-exporter` feature to your `shuttle-runtime` dependency:
+
+```bash
+cargo add shuttle-runtime -F setup-otel-exporter
+```
+
+The `shuttle-runtime` entry in your project's `Cargo.toml` should now look something like:
+
+```toml
+shuttle-runtime = { version = "0.53.0", features = ["setup-otel-exporter"] }
+```
+> **Note:** Your specific entry may not be *identical*, that's OK. The important part is that `"setup-otel-exporter"` appears in the `features` array.
+
+## Step 2: Choose Your Telemetry Provider
+
+Shuttle supports several telemetry providers. Each has its own setup process:
+
+- [Better Stack](./betterstack) - Recommended for most users
+- More providers coming soon!
+
+<Note>
+    We plan to expand the list of supported third party services.
+    Let us know you thoughts and suggestions on [GitHub](https://github.com/shuttle-hq/shuttle/discussions/1980).
+</Note>
+
+## Step 3: Configure Your Provider
+
+Follow the specific guide for your chosen provider to:
+1. Create a telemetry source in your provider's dashboard
+2. Get your provider's connection details (usually an API key and endpoint)
+3. Configure these details in the Shuttle Console
+
+## Step 4: Redeploy Your Project
+
+<Warning>
+    **Important**: After configuring telemetry, you **_must_** redeploy your project for the changes to take effect.
+    You can do this by selecting your latest deployment in the Shuttle Console and clicking "Redeploy".
+</Warning>
+
+## Next Steps
+
+Once your telemetry is set up, you can:
+- [Add custom metrics](./custom-metrics) to your application
+- Create dashboards in your provider's interface
+- Monitor your application's performance and health
+
+<Note>
+    Need help? Check out our [telemetry overview](./overview) for more details about what metrics are available,
+    or join our [Discord community](https://discord.gg/shuttle) for support.
+</Note> 

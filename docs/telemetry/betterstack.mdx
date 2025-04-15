@@ -1,70 +1,86 @@
 ---
-title: Better Stack
+title: Better Stack Integration
 icon: layer-group
 description: How to set up Better Stack monitoring with Shuttle
 ---
 
-To get started, you'll need a Better Stack account.
-If you don't have one, you can sign up [here](https://betterstack.com/).
+This guide will walk you through setting up Better Stack as your telemetry provider for Shuttle.
 
-## Add a telemetry source in Better Stack
+## Prerequisites
 
-Click on the **Sources** section, then **Connect Source**.
+1. A [Better Stack account](https://betterstack.com/) (sign up if you don't have one)
+2. A Shuttle project with the OpenTelemetry exporter enabled (see [Getting Started](./getting-started))
+
+## Step 1: Create a Telemetry Source in Better Stack
+
+1. Log in to your Better Stack account
+2. Navigate to the **Sources** section
+3. Click **Connect Source**
+4. Choose a name for your telemetry source
+5. Select the OpenTelemetry option in the "platform" section
+6. Click "Connect Source" at the bottom of the page
 
 ![image.png](/images/telemetry/betterstack1.png)
-
-Once you've chosen a name for your new telemetry source, click the OpenTelemetry option in the "platform" section:
-
 ![image.png](/images/telemetry/betterstack2.png)
 
-Then, scroll *all the way* to the bottom of the page and hit the "connect source" button.
+## Step 2: Configure Shuttle Project
 
-## Configure a Shuttle project
-
-Locate the source token and ingestion host on the Source configuration page (click on a field to copy the value).
+1. On the Source configuration page, locate and copy:
+   - Your source token
+   - The ingestion host URL
 
 ![image.png](/images/telemetry/betterstack3.png)
 
-Next, navigate to your Shuttle project you want to enable telemetry for in the Shuttle Console, then the "Telemetry" tab, then click to enable Better Stack.
-Paste your source token and ingestion host, then click "Apply".
+2. In the Shuttle Console:
+   - Navigate to your project
+   - Go to the "Telemetry" tab
+   - Click to enable Better Stack
+   - Paste your source token and ingestion host
+   - Click "Apply"
 
 <Warning>
-    **Reminder**: If your project was already running when you clicked "Apply", you'll need to redeploy it before telemetry will start to flow.
-    This is easiest to do by selecting the latest deployment and clicking "Redeploy".
+    **Important**: If your project was already running, you must redeploy it for telemetry to start flowing.
+    To redeploy, select your latest deployment in the Shuttle Console and click "Redeploy".
 </Warning>
 
-## Configure the runtime telemetry exporter
+## Step 3: Create Dashboards
 
-The Shuttle runtime by default sets up a `tracing_subscriber` that prints logs to stdout.
-To enable exporting telemetry and metrics, add the `setup-otel-exporter` feature to `shuttle-runtime`.
-You can do this by running the following command:
+Once telemetry data starts flowing, you can create custom dashboards in Better Stack:
 
-```bash
-cargo add shuttle-runtime -F setup-otel-exporter
-```
+1. Go to the Dashboards section
+2. A new dashboard will be created automatically for your project
+3. Click the dots on any widget and select "Configure" to customize it
 
-When done, your dependency should look something like this:
+Better Stack offers several ways to visualize your data:
+- SQL queries
+- Visual drag-and-drop interface
+- PromQL (beta)
 
-```toml Cargo.toml
-shuttle-runtime = { version = "0.53.0", features = ["setup-otel-exporter"] }
-```
+### Example: Creating a CPU Usage Graph
 
-## Create dashboards from OTel data
-
-When the exporter is working and Better Stack starts receiving data, we can create some dashboards.
-In the Dashboards section, a new dashboard will have been created for you automatically.
-
-![image.png](/images/telemetry/betterstack4.png)
-
-The dashboard will have some default widgets that will likely show "empty" (they're generic and assume the metrics being visualized are actually the *internal* metrics of an OpenTelemetry collector instance, which your project is obviously not 😅).
-
-Click the dots, then Configure, to edit a widget.
-The default view for configuring widgets is [SQL](https://betterstack.com/docs/logs/dashboards/sql-queries/), but Better Stack also offers:
-
-- A visual drag-and-drop interface
-- Log filtering
-- [promql (beta)](https://betterstack.com/docs/logs/using-logtail/simplified-promql/)
-
-To get started, we're showing how to use the drag-and-drop interface to create a graph of CPU usage by adding in `cpu_usage_vcpu` against our project name. We've also set the Y axis to use "vCPU" as the unit.
+1. Click the dots on a widget and select "Configure"
+2. Switch to the visual interface
+3. Add `cpu_usage_vcpu` as your metric
+4. Set the Y-axis unit to "vCPU"
+5. Group by your project name
 
 ![image.png](/images/telemetry/betterstack5.png)
+
+## Available Metrics
+
+Better Stack will receive all the standard Shuttle telemetry metrics, including:
+- CPU usage and utilization
+- Memory usage and limits
+- Network I/O statistics
+- Disk I/O statistics
+- Custom metrics from your application
+
+For a complete list of available metrics, see our [telemetry overview](./overview#default-platform-metrics).
+
+## Troubleshooting
+
+If you don't see data in Better Stack:
+1. Verify your source token and ingestion host are correct
+2. Check that your project has the `setup-otel-exporter` feature on `shuttle-runtime` enabled
+3. Ensure you've redeployed your project after enabling telemetry
+4. Contact [Better Stack support](https://betterstack.com/contact) or join our [Discord community](https://discord.gg/shuttle) for help

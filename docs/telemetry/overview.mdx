@@ -1,6 +1,6 @@
 ---
-title: Telemetry overview
-icon: telescope
+title: Overview
+icon: chart-mixed
 description: How Shuttle Telemetry integrations work
 ---
 
@@ -8,27 +8,33 @@ description: How Shuttle Telemetry integrations work
 
 Under the hood, Shuttle runs an OpenTelemetry (OTel) collector alongside your service that, once configured, sends project telemetry like vCPU and RAM usage as well as any custom metrics you define to a supported third-party integration of your choice.
 
-## What's included?
+## Quick Start
 
-### Community Tier - Export essential system metrics
+To get started with telemetry in your Shuttle project, follow our [step-by-step guide](./getting-started).
 
-- CPU usage
-- Memory usage
-- Network I/O
-- Disk I/O
+## Available Telemetry
 
-### Pro & Growth Tiers - Export everything
+### Community Tier - Container Metrics
 
-- All system metrics
-- All application metrics
-- All application logs (tracing/log events, not stdout/stderr output)
-- No export limits
+The Community tier provides essential container metrics to help you monitor your application's resource usage. You'll have access to key metrics across CPU, memory, network, and storage performance.
 
-## How to get started?
+For detailed information about specific metrics, see the [Default Platform Metrics](#default-platform-metrics) section below.
 
-Check out the tutorials for each supported telemetry service:
+### Pro & Growth Tiers - Everything
 
-- [Better Stack](./betterstack)
+Upgrade to Pro or Growth tier to unlock:
+
+1. **All Container Metrics** - Everything from the Community tier
+2. **Application Metrics** - Track your application's behavior with [custom metrics](./custom-metrics)
+3. **Application Logs** - Export tracing events and logs (not stdout/stderr)
+4. **No Export Limits** - Send as much data as you need
+
+## Supported Providers
+
+Currently, Shuttle supports the following telemetry providers:
+
+- [Better Stack](./betterstack) - Recommended for most users
+- More providers coming soon!
 
 <Note>
     We plan to expand the list of supported third party services.
@@ -37,69 +43,13 @@ Check out the tutorials for each supported telemetry service:
 
 ---
 
-## Guide: Add custom metrics in tracing events
+## Custom Metrics and Tracing
 
-<Note>Exporting custom metrics and logs is available in the [Shuttle Pro Tier](https://www.shuttle.dev/pricing) and above.</Note>
+Learn how to add custom metrics and tracing events to your application in our [Custom Metrics Guide](./custom-metrics).
 
-To use custom metrics in tracing, start by adding the tracing dependency if you haven't yet.
+## Default Platform Metrics
 
-```bash
-cargo add tracing
-```
-
-Then, all you need to do is add some tracing events with fields to the functions you're using, like so:
-
-```rust
-async fn hello_world() -> &'static str {
-    tracing::info!(counter.hello = 1, "Hello world from OTel!");
-    "Hello, world!"
-}
-```
-
-Doing this will send an `info` level log to stdout and the OTel exporter, saying `Hello world from OTel!`.
-The log object produced will then have the custom attribute set. An example is provided below.
-
-The runtime's OTel exporter uses `tracing-opentelemetry` under the hood, which automatically handles three metric types for you: monotonic counters, counters and histograms.
-You can find more about this [on the `tracing-opentelemetry` docs](https://docs.rs/tracing-opentelemetry/latest/tracing_opentelemetry/struct.MetricsLayer.html).
-
-## Default telemetry properties
-
-### Traces
-
-This is an example of what a JSON object for a tracing event looks like:
-
-```json
-{
-    "attributes": {
-        "code.filepath": "src/main.rs",
-        "code.lineno": 4,
-        "code.module_path": "my_project",
-        "counter.hello": 1
-    },
-    "dropped_attributes_count": 0,
-    "dt": "2025-02-04T15:56:27.068644985Z",
-    "message": "Hello world from OTel!",
-    "observed_timestamp": "2025-02-04T15:56:27.068649239Z",
-    "resources": {
-        "service.name": "my-project",
-        "service.version": "0.1.0",
-        "shuttle.deployment.env": "production",
-        "shuttle.project.crate.name": "my_project",
-        "shuttle.project.id": "proj_01JK8SHBZQ0XF0TKW0EDWBJ8NH",
-        "shuttle.project.name": "my-project",
-        "telemetry.sdk.language": "rust",
-        "telemetry.sdk.name": "opentelemetry",
-        "telemetry.sdk.version": "0.27.1"
-    },
-    "severity_number": 9,
-    "severity_text": "INFO",
-    "source_type": "opentelemetry"
-}
-```
-
-### Platform telemetry
-
-Below is a list of container metrics that Shuttle sends by default over the OpenTelemetry export.
+The following table lists all container metrics that Shuttle automatically collects and exports via OpenTelemetry for every deployment.
 
 | Attribute name | Description |
 | --- | --- |

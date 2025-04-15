@@ -136,7 +136,9 @@
                 "icon": "telescope",
                 "pages": [
                   "docs/telemetry/overview",
-                  "docs/telemetry/betterstack"
+                  "docs/telemetry/getting-started",
+                  "docs/telemetry/betterstack",
+                  "docs/telemetry/custom-metrics"
                 ]
               },
               "docs/account",

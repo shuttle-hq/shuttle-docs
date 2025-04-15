@@ -1,0 +1,118 @@
+---
+title: Custom Metrics Guide
+icon: chart-line
+description: How to add custom metrics and tracing events to your Shuttle application
+---
+
+<Note>Exporting custom metrics and logs is available in the [Shuttle Pro Tier](https://www.shuttle.dev/pricing) and above.</Note>
+
+This guide will show you how to add custom metrics and tracing events to your Shuttle application using the `tracing` crate.
+
+## Getting Started
+
+First, add the `tracing` dependency to your project:
+
+```bash
+cargo add tracing
+```
+
+## Basic Usage
+
+Add tracing events with fields to your functions to create custom metrics. Here's a simple example:
+
+```rust
+async fn hello_world() -> &'static str {
+    tracing::info!(counter.hello = 1, "Hello world from OTel!");
+    "Hello, world!"
+}
+```
+
+This will:
+1. Send an `info` level log to stdout
+2. Export the metric to your configured telemetry provider
+3. Include the custom attribute `counter.hello` with value `1`
+
+## Metric Types
+
+The runtime's OTel exporter uses `tracing-opentelemetry` under the hood, which automatically handles three metric types:
+
+1. **Monotonic Counters**: Values that only increase (e.g., total requests)
+   ```rust
+   tracing::info!(monotonic_counter.requests = 1, "New request received");
+   ```
+
+2. **Counters**: Values that can increase or decrease
+   ```rust
+   tracing::info!(counter.active_users = 1, "User logged in");
+   tracing::info!(counter.active_users = -1, "User logged out");
+   ```
+
+3. **Histograms**: For measuring distributions of values
+   ```rust
+   tracing::info!(histogram.request_duration_ms = 150.0, "Request completed");
+   ```
+
+## Example Trace Output
+
+Here's what a tracing event looks like when exported:
+
+```json
+{
+    "attributes": {
+        "code.filepath": "src/main.rs",
+        "code.lineno": 4,
+        "code.module_path": "my_project",
+        "counter.hello": 1
+    },
+    "dropped_attributes_count": 0,
+    "dt": "2025-02-04T15:56:27.068644985Z",
+    "message": "Hello world from OTel!",
+    "observed_timestamp": "2025-02-04T15:56:27.068649239Z",
+    "resources": {
+        "service.name": "my-project",
+        "service.version": "0.1.0",
+        "shuttle.deployment.env": "production",
+        "shuttle.project.crate.name": "my_project",
+        "shuttle.project.id": "proj_01JK8SHBZQ0XF0TKW0EDWBJ8NH",
+        "shuttle.project.name": "my-project",
+        "telemetry.sdk.language": "rust",
+        "telemetry.sdk.name": "opentelemetry",
+        "telemetry.sdk.version": "0.27.1"
+    },
+    "severity_number": 9,
+    "severity_text": "INFO",
+    "source_type": "opentelemetry"
+}
+```
+
+## Best Practices
+
+1. **Use Meaningful Names**: Choose clear, descriptive names for your metrics
+   ```rust
+   // Good
+   tracing::info!(counter.user_sessions = 1, "User session started");
+   
+   // Bad
+   tracing::info!(counter.us = 1, "Session");
+   ```
+
+2. **Include Context**: Add relevant context to your metrics
+   ```rust
+   tracing::info!(
+       counter.api_calls = 1,
+       api.endpoint = "/users",
+       api.method = "GET",
+       "API call completed"
+   );
+   ```
+
+3. **Use Appropriate Metric Types**:
+   - Use `monotonic_counter` for values that only increase
+   - Use `counter` for values that can go up and down
+   - Use `histogram` for measuring distributions
+
+## Learn More
+
+- [tracing documentation](https://docs.rs/tracing/latest/tracing/)
+- [tracing-opentelemetry documentation](https://docs.rs/tracing-opentelemetry/latest/tracing_opentelemetry/)
+- [OpenTelemetry metrics specification](https://opentelemetry.io/docs/specs/otel/metrics/semantic_conventions/) 
