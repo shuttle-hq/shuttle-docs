@@ -81,36 +81,9 @@
         "tab": "Documentation",
         "groups": [
           {
-            "group": "Introduction",
+            "group": "Welcome",
             "pages": [
-              "introduction/docs",
-              "introduction/what-is-shuttle",
-              "introduction/how-shuttle-works",
-              {
-                "group": "Migrating to Shuttle",
-                "icon": "dove",
-                "pages": [
-                  "migrations/introduction",
-                  "migrations/migrating-checklist",
-                  "migrations/migrating-to-shuttle",
-                  {
-                    "group": "Frameworks",
-                    "pages": [
-                      "migrations/frameworks/axum",
-                      "migrations/frameworks/actix-web",
-                      "migrations/frameworks/rocket",
-                      "migrations/frameworks/custom-service"
-                    ]
-                  },
-                  {
-                    "group": "Infrastructure/Resources",
-                    "pages": [
-                      "migrations/resources/postgres",
-                      "migrations/resources/secrets"
-                    ]
-                  }
-                ]
-              }
+              "welcome/introduction"
             ]
           },
           {
@@ -118,6 +91,14 @@
             "pages": [
               "getting-started/installation",
               "getting-started/quick-start"
+            ]
+          },
+          {
+            "group": "Migrate to Shuttle",
+            "icon": "dove",
+            "pages": [
+              "migrations/migrating-checklist",
+              "migrations/migration-guide"
             ]
           },
           {

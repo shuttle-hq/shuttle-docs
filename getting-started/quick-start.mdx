@@ -1,46 +1,131 @@
 ---
 title: "Quick Start"
-description: "Fire upp your first project after installation 🚀"
+description: "Get started with your first Shuttle project and deploy it to the cloud 🚀"
 icon: "circle-play"
 ---
 
 <Note>
-This page assumes that you have installed the Shuttle CLI.
-If you haven't, go to the [installation](./installation) guide.
+This guide assumes you have installed the Shuttle CLI. If you haven't, please visit the [installation guide](./installation) first.
 </Note>
 
-## Login
+## Getting Started
 
-The login command opens the [Shuttle Console](https://console.shuttle.dev/) to authenticate your CLI:
+This guide will walk you through:
+1. Logging into your Shuttle account
+2. Creating your first project
+3. Running it locally
+4. Deploying it to the cloud
+
+## Login to Your Account
+
+First, you'll need to authenticate with Shuttle. The login command will open your browser to the [Shuttle Console](https://console.shuttle.dev/) where you can authenticate:
 
 ```sh
 shuttle login
 ```
 
-## Create your first project
+<Info>You can use your Google account, GitHub account or email to authenticate with Shuttle.</Info>
 
-The init command lets you generate a Hello World project or clone one of our [examples](/examples) or [templates](/templates).
-For your first project, try a Hello World template.
+## Create Your First Project
+
+The `init` command helps you create a new Shuttle project. You can choose from:
+- A simple Hello World template
+- One of our [example projects](/examples)
+- A [pre-built template](/templates)
+
+For your first project, we recommend starting with the Hello World template:
 
 ```sh
 shuttle init
 ```
 
-You can then `cd` into the created folder and run your app locally. Check out the [local run](/docs/local-run) page for more.
+The CLI will guide you through:
+1. Choosing a project name
+2. Selecting a template
+3. Setting up your project structure
+
+<Info>Your project name will be used as part of the deployment URL. Choose something unique and descriptive.</Info>
+
+## Project Structure
+
+After initialization, you'll have a new directory with the following structure:
+
+```
+your-project/
+├── Cargo.toml
+├── src/
+│   └── main.rs
+└── Shuttle.toml
+```
+
+- `Cargo.toml`: Your Rust project's manifest file
+- `src/main.rs`: Your application code
+- `Shuttle.toml`: Shuttle-specific configuration
+
+## Run Your Project Locally
+
+Before deploying, you can run your project locally to test it:
 
 ```sh
 shuttle run
 ```
 
-Then, the app can be deployed with:
+This will:
+1. Start a local development server
+2. Build your project
+3. Make it available at `http://localhost:8000`
+
+<Note>Local development includes hot-reloading, so changes to your code will automatically update the running application.</Note>
+
+## Deploy Your Project
+
+When you're ready to deploy your project to the cloud:
 
 ```sh
 shuttle deploy
 ```
 
-This uploads your code and builds it.
-After that, the resulting Docker image is launched and hosted, and can start receiving HTTPS traffic.
+This will:
+1. Package your code
+2. Upload it to Shuttle's platform
+3. Build it into a Docker image
+4. Deploy it to our infrastructure in AWS (eu-west-2)
+5. Provide you with a public HTTPS URL
 
-<Snippet file="project-gc.mdx" />
+<Info>The first deployment might take a few minutes as it builds your project and sets up the infrastructure.</Info>
 
-To learn more about available deployment configuration, check out [Deployment files](/docs/files).
+## Next Steps
+
+Now that you've deployed your first project, you might want to:
+
+- Add a [database](/resources/shuttle-shared-db) to your project
+- Set up [environment variables](/resources/shuttle-secrets)
+- Explore more [examples](/examples)
+- Check out our [templates](/templates)
+
+<CardGroup>
+  <Card
+    title="Examples"
+    icon="book"
+    href="/examples"
+    color="#f8b5F2"
+  >
+    Explore more example projects
+  </Card>
+  <Card
+    title="Resources"
+    icon="database"
+    href="/resources/resources"
+    color="#33f"
+  >
+    Learn about available resources
+  </Card>
+  <Card
+    title="Templates"
+    icon="sparkles"
+    href="/templates"
+    color="#ffdf54"
+  >
+    Start from a pre-built template
+  </Card>
+</CardGroup>

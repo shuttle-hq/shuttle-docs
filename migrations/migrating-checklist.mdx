@@ -1,32 +1,76 @@
 ---
-title: "Will my project run on Shuttle?"
-description: "How to know if your project will migrate to Shuttle"
-
+title: "Migration Checklist"
+description: "Check if your project is compatible with Shuttle before migrating"
+icon: "list-check"
 ---
 
-## Types of services Shuttle supports
-Shuttle currently supports any kind of service that carries out HTTP traffic. This includes but is not limited to:
-- HTTP frameworks (Axum, Actix Web, Rocket...)
+## Service Compatibility
+
+Before starting your migration, check if your project meets these requirements:
+
+### ✅ Supported Service Types
+- HTTP web services using:
+  - [Axum](/migrations/frameworks/axum)
+  - [Actix Web](/migrations/frameworks/actix-web)
+  - [Rocket](/migrations/frameworks/rocket)
+  - Other HTTP frameworks (via [custom service](/migrations/frameworks/custom-service))
 - Discord bots
 - Telegram bots
-- Web services that connect to RPC nodes
+- Web services connecting to RPC nodes
+- Services with scheduled tasks (cronjobs)
 
-We also additionally support hosted services that can carry out scheduled tasks (or cronjobs).
+### ✅ Runtime Requirements
+- Your service must be able to:
+  - Bind to a network socket
+  - Handle HTTP traffic (for web services)
+  - Run as a long-lived process
+  - Be packaged as a Rust binary
 
-If there is a service you'd like to run but there is no native Shuttle integration service, you can [create your own custom service](/migrations/frameworks/custom-service) to run it on Shuttle.
+### ⚠️ Potential Limitations
+- Services that require:
+  - Multiple network ports
+  - Custom system-level configurations
+  - Specific hardware requirements
+  - Root/system-level access
 
-## Supported resources
-Natively speaking, we also support the following resources/infrastructure:
-- Postgres
-- Secrets (which you can set as environment variables during runtime)
+## Resource Compatibility
 
-Note that resources will be provisioned **at runtime** - you will need to account for this when running on Shuttle. If your web service is spawned from a CLI command (or a method that does not allow spawning directly from `async fn main()`), you may want to consider adding a standalone binary for specifically spawning your web server. You can check out our example that shows how to do that [here.](https://github.com/shuttle-hq/shuttle-examples/tree/main/other/standalone-binary)
+### ✅ Supported Resources
+- [Postgres databases](/migrations/resources/postgres)
+- [Secrets and environment variables](/migrations/resources/secrets)
+- External services (with your credentials):
+  - [Turso](/integrations/shuttle-turso)
+  - [Qdrant](/integrations/shuttle-qdrant)
+  - [Apache OpenDAL](/integrations/shuttle-opendal)
+  - [OpenAI](/integrations/shuttle-openai)
 
-We also additionally support the following resources (although not natively, so you will still need to provide your own credentials):
-- [Turso](/integrations/shuttle-turso)
-- [Qdrant](/integrations/shuttle-qdrant)
-- [Apache OpenDAL](/integrations/shuttle-opendal)
-- [OpenAI](/integrations/shuttle-openai)
+### ⚠️ Resource Considerations
+- Database migrations need to be handled separately
+- Secrets must be migrated to `Secrets.toml`
+- External service credentials need to be provided
+- Resource provisioning happens at runtime
 
-## My resource isn't listed!
-If your listed resource isn't here, you can still connect to it normally through HTTP. If there is anything you'd like to see officially supported, reach out to us!
+## Migration Readiness
+
+### ✅ Project Structure
+- Your project should:
+  - Use Cargo for dependency management
+  - Have a clear entry point (main.rs)
+  - Follow Rust best practices
+  - Have tests that can be run locally
+
+### ✅ Dependencies
+- Check that your dependencies:
+  - Are compatible with the latest Rust version
+  - Don't require system-level libraries
+  - Can be built in a containerized environment
+
+## Next Steps
+
+If your project meets these requirements:
+
+1. [Start the migration process](/migrations/migration-guide)
+2. [Choose your framework guide](/migrations/frameworks)
+3. [Migrate your resources](/migrations/resources)
+
+<Info>If you're unsure about any compatibility requirements, join our [Discord community](https://discord.gg/shuttle) for help!</Info>

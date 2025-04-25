@@ -4,49 +4,61 @@ description: "How to install the Shuttle Command Line Interface (CLI)"
 icon: "download"
 ---
 
-The Shuttle CLI can be installed with a pre-built binary or compiled from source with cargo.
-There is also an install script that helps you choose the best option.
+## Prerequisites
 
-<Snippet file="binaries.mdx" />
+Before installing Shuttle, make sure you have:
 
-### Install script
+- [Rust](https://www.rust-lang.org/tools/install) installed (version 1.70 or later)
 
-The install script finds the optimal alternative below for installing the latest version on your OS, architecture and distro.
+## Installation Methods
 
-Run it on Linux and macOS with:
+The Shuttle CLI can be installed in several ways and you can choose the method that best suits your needs.
+
+### Install Script (Recommended)
+
+The install script automatically detects your system and installs the appropriate version. It's the easiest way to get started.
+
+#### Linux and macOS
 
 ```sh
 curl -sSfL https://www.shuttle.dev/install | bash
 ```
 
-Or on Windows with:
+#### Windows (PowerShell)
 
 ```powershell
 iwr https://www.shuttle.dev/install-win | iex
 ```
 
-### Pre-built binary
+<Info>The install script will automatically detect your system architecture and install the appropriate binary. It also adds the Shuttle CLI to your PATH.</Info>
 
-Pre-built binaries of the Shuttle CLI for most platforms can be found on [our GitHub](https://github.com/shuttle-hq/shuttle/releases/latest).
+### Alternative Installation Methods
 
-The binaries can also be installed using [cargo-binstall](https://github.com/cargo-bins/cargo-binstall),
-which will automatically download the correct binary for your system:
+#### Using cargo-binstall
+
+If you prefer using Cargo's package manager, you can use [cargo-binstall](https://github.com/cargo-bins/cargo-binstall):
 
 ```sh
 cargo binstall cargo-shuttle
 ```
 
-### From source
+#### From Source
 
-Although compiling the source code is a bit slower, you can do so with cargo:
+For those who prefer building from source:
 
 ```sh
 cargo install cargo-shuttle
 ```
 
-### Distro packages (unofficial)
+<Note>Building from source requires a Rust toolchain and may take longer than other installation methods.</Note>
 
-Shuttle CLI is also packaged by community members for some distros:
+#### Pre-built Binaries
+
+Pre-built binaries for various platforms are available on [our GitHub releases page](https://github.com/shuttle-hq/shuttle/releases/latest).
+
+### Community Packages
+
+Shuttle CLI is also available through community-maintained packages for some Linux distributions:
 
 <AccordionGroup>
   <Accordion title="Arch Linux">
@@ -66,3 +78,39 @@ Shuttle CLI is also packaged by community members for some distros:
 </AccordionGroup>
 
 [![Packaging status](https://repology.org/badge/vertical-allrepos/cargo-shuttle.svg)](https://repology.org/project/cargo-shuttle/versions)
+
+## Verifying Your Installation
+
+After installation, verify that the Shuttle CLI is properly installed by running:
+
+```sh
+shuttle --version
+```
+
+You should see the current version number displayed.
+
+## Next Steps
+
+Now that you have Shuttle installed, you can:
+- [Login to your account](./quick-start#login)
+- [Create your first project](./quick-start#create-your-first-project)
+- [Deploy your application](./quick-start#deploy-your-application)
+
+<CardGroup>
+  <Card
+    title="Quick Start Guide"
+    icon="circle-play"
+    color="#3d3"
+    href="./quick-start"
+  >
+    Get started with your first Shuttle project
+  </Card>
+  <Card
+    title="Examples"
+    icon="book"
+    href="/examples"
+    color="#f8b5F2"
+  >
+    Explore our example projects
+  </Card>
+</CardGroup>
