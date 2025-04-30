@@ -9,9 +9,10 @@ There is also an install script that helps you choose the best option.
 
 <Snippet file="binaries.mdx" />
 
-### Install script
+### Install script (Recommended)
 
-The install script finds the optimal alternative below for installing the latest version on your OS, architecture and distro.
+The install script finds the optimal alternative for installing the latest version on your OS, architecture and distro.
+It also helps you to install Rust if you don't have it.
 
 Run it on Linux and macOS with:
 
@@ -19,11 +20,20 @@ Run it on Linux and macOS with:
 curl -sSfL https://www.shuttle.dev/install | bash
 ```
 
-Or on Windows with:
+Or on Windows (Powershell) with:
 
 ```powershell
 iwr https://www.shuttle.dev/install-win | iex
 ```
+
+<Info>
+The install script collects anonymous telemetry data to help improve the product. You can opt out by setting any of these environment variables to `1` or `true`:
+
+- `DO_NOT_TRACK`
+- `DISABLE_TELEMETRY`
+- `SHUTTLE_DISABLE_TELEMETRY`
+- `CI`
+</Info>
 
 ### Pre-built binary
 

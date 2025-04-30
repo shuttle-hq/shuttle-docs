@@ -54,6 +54,10 @@
     {
       "source": "/introduction/platform-update",
       "destination": "/platform-update/platform-update"
+    },
+    {
+      "source": "/install-script",
+      "destination": "/getting-started/installation#install-script-recommended"
     }
   ],
   "navigation": {
