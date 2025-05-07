@@ -24,8 +24,8 @@ Before starting your migration, check if your project meets these requirements:
 
 ### ⚠️ Other Considerations
 
+- External resources can still be used by connecting to them
 - Database migrations need to be handled separately
-- Secrets must be migrated to `Secrets.toml`
 - Check that your project:
   - Is compatible with the latest Rust version
   - Can be built and run in a Docker container
@@ -33,6 +33,8 @@ Before starting your migration, check if your project meets these requirements:
 <Info>If you're unsure about any compatibility requirements, join our [Discord community](https://discord.gg/shuttle) for help!</Info>
 
 ## Migration Steps
+
+<Info>Remember to install the [Shuttle CLI](/getting-started/installation) if you haven't yet!</Info>
 
 ### 1. Add Shuttle Dependencies
 
@@ -42,174 +44,71 @@ Add the required Shuttle dependencies to your `Cargo.toml`:
 # Add the Shuttle runtime
 cargo add shuttle-runtime
 
-# Add your framework integration (e.g., for Axum)
+# Add your framework integration if supported (e.g., for Axum)
 cargo add shuttle-axum
 
-# Add any resources you need (e.g., Postgres)
+# Add any Shuttle resources you need (e.g., Postgres)
 cargo add shuttle-shared-db --features postgres,sqlx
 ```
 
 ### 2. Update Your Main Function
 
-The main function update varies by framework. Check [examples](/examples/overview) for more. Here are the common patterns:
+Common steps needed for migrating are:
+- Change the main function to use `#[shuttle_runtime::main]`.
+- Change the return type and return the framework's Router or config. This varies by framework, check [examples](/examples/overview) for more.
+- Add a `Secrets.toml` file and use `#[shuttle_runtime::Secrets]` instead of loading environment variables
+- Use `#[shuttle_shared_db::Postgres]` instead of manually connecting to a database
 
-<CodeGroup>
-```rust main.rs (Axum)
-#[shuttle_runtime::main]
-async fn main() -> shuttle_axum::ShuttleAxum {
-    let router = Router::new()
-        .route("/", get(hello_world));
-    Ok(router.into())
+Here is an example of what an Axum service might look like before and after migrating:
+
+```rust main.rs (before)
+#[tokio::main]
+async fn main() {
+    dotenvy::dotenv().ok();
+
+    let db_url = std::env::var("DATABASE_URL").unwrap();
+    let secret = std::env::var("MY_SECRET").unwrap();
+
+    let pool = sqlx::Pool::connect(&db_url).await.unwrap();
+    sqlx::migrate!().run(&pool).await.unwrap();
+
+    // Use secrets for anything that needs them
+
+    let router = create_api_router(pool);
+    let addr = SocketAddr::from(([0, 0, 0, 0], 8000));
+
+    Server::bind(&addr)
+        .serve(router.into_make_service())
+        .await
+        .unwrap()
 }
 ```
-```rust main.rs (Actix Web)
+
+```rust main.rs (after)
 #[shuttle_runtime::main]
-async fn main() -> shuttle_actix_web::ShuttleActixWeb {
-    let config = move |cfg: &mut ServiceConfig| {
-        cfg.service(hello_world);
-    };
-    Ok(config.into())
-}
-```
-```rust main.rs (Rocket)
-#[shuttle_runtime::main]
-async fn main() -> shuttle_rocket::ShuttleRocket {
-    let rocket = rocket::build()
-        .mount("/", routes![hello_world]);
-    Ok(rocket.into())
-}
-```
-</CodeGroup>
-
-### 3. Resource Integration
-
-Shuttle provides several resources that can be integrated into your application:
-
-<CardGroup>
-  <Card
-    title="Postgres"
-    icon="database"
-    href="/migrations/resources/postgres"
-    color="#33f"
-  >
-    Add a database to your application
-  </Card>
-  <Card
-    title="Secrets"
-    icon="key"
-    href="/migrations/resources/secrets"
-    color="#f8b5F2"
-  >
-    Manage environment variables
-  </Card>
-</CardGroup>
-
-#### Database Integration Example
-
-```rust
-#[shuttle_runtime::main]
-async fn main(
-    // Your database is automatically connected
+pub async fn axum (
     #[shuttle_shared_db::Postgres] pool: PgPool,
+    #[shuttle_runtime::Secrets] secrets: shuttle_runtime::SecretStore,
 ) -> shuttle_axum::ShuttleAxum {
-    let router = Router::new()
-        .route("/", get(hello_world))
-        .with_state(pool);
+    sqlx::migrate!().run(&pool).await.unwrap();
+
+    // Use secrets for anything that needs them
+
+    let router = create_api_router(pool);
+
     Ok(router.into())
 }
 ```
 
-#### Secrets Management
-
-1. Create a `Secrets.toml` file in your project root:
-```toml
-MY_SECRET = "your-secret-value"
-```
-
-2. For development, create `Secrets.dev.toml`:
-```toml
-MY_SECRET = "your-dev-secret-value"
-```
-
-3. Access secrets in your code:
-```rust
-#[shuttle_runtime::main]
-async fn main(
-    #[shuttle_runtime::Secrets] secrets: SecretStore,
-) -> shuttle_axum::ShuttleAxum {
-    let secret = secrets.get("MY_SECRET").expect("Secret not found");
-    // Use the secret in your application
-    Ok(router.into())
-}
-```
-
-### 4. Common Migration Patterns
-
-#### State Management
-
-Each framework handles state differently:
-
-<CodeGroup>
-```rust (Axum)
-struct AppState {
-    pool: PgPool,
-    secrets: SecretStore,
-}
-
-#[shuttle_runtime::main]
-async fn main(
-    #[shuttle_shared_db::Postgres] pool: PgPool,
-    #[shuttle_runtime::Secrets] secrets: SecretStore,
-) -> shuttle_axum::ShuttleAxum {
-    let state = AppState { pool, secrets };
-    let router = Router::new()
-        .route("/", get(hello_world))
-        .with_state(state);
-    Ok(router.into())
-}
-```
-```rust (Actix Web)
-#[shuttle_runtime::main]
-async fn main(
-    #[shuttle_shared_db::Postgres] pool: PgPool,
-    #[shuttle_runtime::Secrets] secrets: SecretStore,
-) -> shuttle_actix_web::ShuttleActixWeb {
-    let config = move |cfg: &mut ServiceConfig| {
-        cfg.app_data(web::Data::new(pool.clone()))
-           .app_data(web::Data::new(secrets.clone()))
-           .service(hello_world);
-    };
-    Ok(config.into())
-}
-```
-```rust (Rocket)
-#[shuttle_runtime::main]
-async fn main(
-    #[shuttle_shared_db::Postgres] pool: PgPool,
-    #[shuttle_runtime::Secrets] secrets: SecretStore,
-) -> shuttle_rocket::ShuttleRocket {
-    let rocket = rocket::build()
-        .mount("/", routes![hello_world])
-        .manage(pool)
-        .manage(secrets);
-    Ok(rocket.into())
-}
-```
-</CodeGroup>
-
-### 5. Testing and Deployment
-
-#### Local Testing
-
-Test your application locally:
+### 3. Testing it locally
 
 ```bash
 shuttle run
 ```
 
-#### Deployment
+### 4. Deploy
 
-When ready to deploy:
+If everything is ready to launch:
 
 ```bash
 shuttle deploy
@@ -219,22 +118,11 @@ shuttle deploy
 
 ## Next Steps
 
-- [Check the migration checklist](/migrations/migrating-checklist) to ensure compatibility
-- [Join our Discord](https://discord.gg/shuttle) for help with your migration
-
 <CardGroup>
-  <Card
-    title="Examples"
-    icon="book"
-    href="/examples"
-    color="#f8b5F2"
-  >
-    See more migration examples
-  </Card>
   <Card
     title="Resources"
     icon="database"
-    href="/migrations/resources"
+    href="/resources/resources"
     color="#33f"
   >
     Learn about available resources
@@ -242,9 +130,9 @@ shuttle deploy
   <Card
     title="Custom Service"
     icon="gear"
-    href="/migrations/frameworks/custom-service"
+    href="/templates/tutorials/custom-service"
     color="#ffdf54"
   >
     Create a custom service
   </Card>
-</CardGroup> 
+</CardGroup>
