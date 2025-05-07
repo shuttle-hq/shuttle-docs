@@ -6,8 +6,9 @@ icon: "download"
 
 ## Install Script (Recommended)
 
-The install script automatically detects your system and installs the appropriate version. It's the easiest way to get started.
-It will also help with installing Rust if you don't have it.
+The install script finds the optimal alternative for installing the latest version on your OS, architecture and distro.
+It's the easiest way to get started.
+It also helps you to install Rust if you don't have it.
 
 ### Linux and macOS
 
@@ -21,7 +22,17 @@ curl -sSfL https://www.shuttle.dev/install | bash
 iwr https://www.shuttle.dev/install-win | iex
 ```
 
-<Info>The install script will automatically detect your system architecture and install the appropriate binary. It also adds the Shuttle CLI to your PATH.</Info>
+<Info>
+The install script collects anonymous telemetry data to help improve the product.
+You can opt out by setting any of these environment variables to `1` or `true`:
+
+- `DO_NOT_TRACK`
+- `DISABLE_TELEMETRY`
+- `SHUTTLE_DISABLE_TELEMETRY`
+- `CI`
+</Info>
+
+### Pre-built binary
 
 ## Alternative Installation Methods
 
