@@ -47,7 +47,7 @@ As a platform designed with a focus on providing an exceptional developer experi
 ```rust
 #[shuttle_runtime::main]
 async fn main(
-    // Automaticcally provisions a Postgres database
+    // Automatically provisions a Postgres database
     // and hands you an authenticated connection pool
     #[shuttle_shared_db::Postgres] pool: sqlx::PgPool,
 ) -> ShuttleAxum {
@@ -59,7 +59,6 @@ You can hit the ground running and swiftly transform your ideas into tangible so
 ![infra-from-code](/images/infra-from-code.gif)
 
 <Info>The GIF above demonstrates how easy it is to add resources to your project, visualized with the [Shuttle Console](https://console.shuttle.dev/).</Info>
-
 
 Our mission is aligned with the wider shift of Rust becoming the future of web development, as we strive to deliver cutting-edge solutions that leverage the full potential of [the most loved programming language](https://survey.stackoverflow.co/2024/technology/#admired-and-desired).
 
@@ -190,4 +189,4 @@ The generated code from `shuttle_runtime::main` handles resource provisioning an
   >
     If you are wondering about the best way to get involved, here's how
   </Card>
-</CardGroup> 
+</CardGroup>

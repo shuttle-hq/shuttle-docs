@@ -81,28 +81,16 @@
         "tab": "Documentation",
         "groups": [
           {
-            "group": "Welcome",
-            "pages": [
-              "welcome/introduction"
-            ]
-          },
-          {
             "group": "Getting Started",
             "pages": [
+              "welcome/introduction",
               "getting-started/installation",
-              "getting-started/quick-start"
+              "getting-started/quick-start",
+              "migration/guide"
             ]
           },
           {
-            "group": "Migrate to Shuttle",
-            "icon": "dove",
-            "pages": [
-              "migrations/migrating-checklist",
-              "migrations/migration-guide"
-            ]
-          },
-          {
-            "group": "Shuttle",
+            "group": "Shuttle Docs",
             "pages": [
               "docs/projects",
               "docs/project-configuration",
@@ -237,6 +225,7 @@
                   "examples/rocket-jwt-authentication"
                 ]
               },
+              "examples/loco",
               {
                 "group": "Serenity",
                 "pages": [

@@ -8,14 +8,6 @@ icon: "circle-play"
 This guide assumes you have installed the Shuttle CLI. If you haven't, please visit the [installation guide](./installation) first.
 </Note>
 
-## Getting Started
-
-This guide will walk you through:
-1. Logging into your Shuttle account
-2. Creating your first project
-3. Running it locally
-4. Deploying it to the cloud
-
 ## Login to Your Account
 
 First, you'll need to authenticate with Shuttle. The login command will open your browser to the [Shuttle Console](https://console.shuttle.dev/) where you can authenticate:
@@ -46,21 +38,6 @@ The CLI will guide you through:
 
 <Info>Your project name will be used as part of the deployment URL. Choose something unique and descriptive.</Info>
 
-## Project Structure
-
-After initialization, you'll have a new directory with the following structure:
-
-```
-your-project/
-├── Cargo.toml
-├── src/
-│   └── main.rs
-└── Shuttle.toml
-```
-
-- `Cargo.toml`: Your Rust project's manifest file
-- `src/main.rs`: Your application code
-- `Shuttle.toml`: Shuttle-specific configuration
 
 ## Run Your Project Locally
 
@@ -69,13 +46,6 @@ Before deploying, you can run your project locally to test it:
 ```sh
 shuttle run
 ```
-
-This will:
-1. Start a local development server
-2. Build your project
-3. Make it available at `http://localhost:8000`
-
-<Note>Local development includes hot-reloading, so changes to your code will automatically update the running application.</Note>
 
 ## Deploy Your Project
 
@@ -86,22 +56,12 @@ shuttle deploy
 ```
 
 This will:
-1. Package your code
-2. Upload it to Shuttle's platform
-3. Build it into a Docker image
-4. Deploy it to our infrastructure in AWS (eu-west-2)
-5. Provide you with a public HTTPS URL
+1. Upload your code to Shuttle's platform and build it into a Docker image
+2. Deploy it to our infrastructure and assign a public HTTPS URL
 
 <Info>The first deployment might take a few minutes as it builds your project and sets up the infrastructure.</Info>
 
 ## Next Steps
-
-Now that you've deployed your first project, you might want to:
-
-- Add a [database](/resources/shuttle-shared-db) to your project
-- Set up [environment variables](/resources/shuttle-secrets)
-- Explore more [examples](/examples)
-- Check out our [templates](/templates)
 
 <CardGroup>
   <Card

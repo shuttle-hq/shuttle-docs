@@ -1,20 +1,36 @@
 ---
-title: "Migration Guide"
+title: "Migrate to Shuttle"
 description: "A comprehensive guide to migrating your existing Rust project to Shuttle"
 icon: "arrow-right"
 ---
 
-<Note>
-This guide assumes you have installed the Shuttle CLI. If you haven't, please visit the [installation guide](/getting-started/installation) first.
-</Note>
+## Migration checklist
 
-## Overview
+Before starting your migration, check if your project meets these requirements:
 
-This guide will help you migrate your existing Rust project to Shuttle. Before starting, please check our [migration checklist](/migrations/migrating-checklist) to ensure your project is compatible with Shuttle.
+### ✅ Supported Service Types
 
-## Framework Migration
+- HTTP web services using:
+  - [Axum](/examples/axum)
+  - [Actix Web](/examples/actix)
+  - [Rocket](/examples/rocket)
+  - [Loco](/examples/loco)
+  - Other HTTP frameworks (via [custom service](/templates/tutorials/custom-service))
+- Discord bots
+- Telegram bots
+- Web services connecting to RPC nodes
+- Services with scheduled tasks (cronjobs)
+- Other service types (via [custom Service](/templates/tutorials/custom-service))
 
-Shuttle provides native support for several popular Rust web frameworks. See the full list of supported frameworks [here](/introduction/introduction#supported-frameworks).
+### ⚠️ Other Considerations
+
+- Database migrations need to be handled separately
+- Secrets must be migrated to `Secrets.toml`
+- Check that your project:
+  - Is compatible with the latest Rust version
+  - Can be built and run in a Docker container
+
+<Info>If you're unsure about any compatibility requirements, join our [Discord community](https://discord.gg/shuttle) for help!</Info>
 
 ## Migration Steps
 
@@ -35,7 +51,7 @@ cargo add shuttle-shared-db --features postgres,sqlx
 
 ### 2. Update Your Main Function
 
-The main function update varies by framework. Here are the common patterns:
+The main function update varies by framework. Check [examples](/examples/overview) for more. Here are the common patterns:
 
 <CodeGroup>
 ```rust main.rs (Axum)
@@ -93,9 +109,9 @@ Shuttle provides several resources that can be integrated into your application:
 ```rust
 #[shuttle_runtime::main]
 async fn main(
+    // Your database is automatically connected
     #[shuttle_shared_db::Postgres] pool: PgPool,
 ) -> shuttle_axum::ShuttleAxum {
-    // Your database is automatically connected
     let router = Router::new()
         .route("/", get(hello_world))
         .with_state(pool);

@@ -4,27 +4,18 @@ description: "How to install the Shuttle Command Line Interface (CLI)"
 icon: "download"
 ---
 
-## Prerequisites
-
-Before installing Shuttle, make sure you have:
-
-- [Rust](https://www.rust-lang.org/tools/install) installed (version 1.70 or later)
-
-## Installation Methods
-
-The Shuttle CLI can be installed in several ways and you can choose the method that best suits your needs.
-
-### Install Script (Recommended)
+## Install Script (Recommended)
 
 The install script automatically detects your system and installs the appropriate version. It's the easiest way to get started.
+It will also help with installing Rust if you don't have it.
 
-#### Linux and macOS
+### Linux and macOS
 
 ```sh
 curl -sSfL https://www.shuttle.dev/install | bash
 ```
 
-#### Windows (PowerShell)
+### Windows (PowerShell)
 
 ```powershell
 iwr https://www.shuttle.dev/install-win | iex
@@ -32,9 +23,9 @@ iwr https://www.shuttle.dev/install-win | iex
 
 <Info>The install script will automatically detect your system architecture and install the appropriate binary. It also adds the Shuttle CLI to your PATH.</Info>
 
-### Alternative Installation Methods
+## Alternative Installation Methods
 
-#### Using cargo-binstall
+### cargo-binstall
 
 If you prefer using Cargo's package manager, you can use [cargo-binstall](https://github.com/cargo-bins/cargo-binstall):
 
@@ -42,7 +33,7 @@ If you prefer using Cargo's package manager, you can use [cargo-binstall](https:
 cargo binstall cargo-shuttle
 ```
 
-#### From Source
+### From Source
 
 For those who prefer building from source:
 
@@ -52,7 +43,7 @@ cargo install cargo-shuttle
 
 <Note>Building from source requires a Rust toolchain and may take longer than other installation methods.</Note>
 
-#### Pre-built Binaries
+### Pre-built Binaries
 
 Pre-built binaries for various platforms are available on [our GitHub releases page](https://github.com/shuttle-hq/shuttle/releases/latest).
 
@@ -90,11 +81,6 @@ shuttle --version
 You should see the current version number displayed.
 
 ## Next Steps
-
-Now that you have Shuttle installed, you can:
-- [Login to your account](./quick-start#login)
-- [Create your first project](./quick-start#create-your-first-project)
-- [Deploy your application](./quick-start#deploy-your-application)
 
 <CardGroup>
   <Card
