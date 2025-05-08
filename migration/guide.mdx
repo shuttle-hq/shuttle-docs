@@ -56,8 +56,8 @@ cargo add shuttle-shared-db --features postgres,sqlx
 Common steps needed for migrating are:
 - Change the main function to use `#[shuttle_runtime::main]`.
 - Change the return type and return the framework's Router or config. This varies by framework, check [examples](/examples/overview) for more.
-- Add a `Secrets.toml` file and use `#[shuttle_runtime::Secrets]` instead of loading environment variables
-- Use `#[shuttle_shared_db::Postgres]` instead of manually connecting to a database
+- Add a `Secrets.toml` file and use `#[shuttle_runtime::Secrets]` instead of loading environment variables.
+- Use `#[shuttle_shared_db::Postgres]` instead of manually connecting to a database.
 
 Here is an example of what an Axum service might look like before and after migrating:
 
@@ -100,13 +100,18 @@ async fn main(
 }
 ```
 
-### 3. Testing it locally
+### 3. Add Shuttle configuration
+
+If your app uses gitignored files, or uses static files at runtime, you need to add a `Shuttle.toml` file with some file declarations.
+Read more in [Deployment files](/docs/files).
+
+### 4. Testing it locally
 
 ```bash
 shuttle run
 ```
 
-### 4. Deploy
+### 5. Deploy
 
 If everything is ready to launch:
 

@@ -91,7 +91,7 @@ See the documentation on [including ignored files](https://docs.shuttle.dev/docs
 
 ### Live reload frontend with `tower-livereload`
 
-Using `cargo watch` will only reload the "backend" Shuttle process.
+Using `bacon` or `cargo watch` will only reload the "backend" Shuttle process.
 If you are developing a frontend in the browser that is hosted by your Shuttle app,
 you might also want the web page to reload when files change.
 If you are using Axum or other Tower-compatible frameworks, the Tower layer [tower-livereload](https://github.com/leotaku/tower-livereload) can help you.
