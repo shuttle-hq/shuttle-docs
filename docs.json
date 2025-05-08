@@ -177,7 +177,8 @@
               },
               "integrations/shuttle-openai",
               "integrations/custom-resources",
-              "integrations/ci-cd"
+              "integrations/ci-cd",
+              "integrations/mcp-server"
             ]
           },
           {
