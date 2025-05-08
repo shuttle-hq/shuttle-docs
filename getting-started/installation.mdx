@@ -24,12 +24,25 @@ iwr https://www.shuttle.dev/install-win | iex
 
 <Info>
 The install script collects anonymous telemetry data to help improve the product.
+
+<Accordion title="Read more">
+No IP address or similar is collected.
+The collected data is:
+
+- Platform (OS)
+- Installation method used, and whether it is a new install or upgrade
+- Success/Failure outcome, and which step that failed
+- Start and end times of script execution
+
 You can opt out by setting any of these environment variables to `1` or `true`:
 
 - `DO_NOT_TRACK`
 - `DISABLE_TELEMETRY`
 - `SHUTTLE_DISABLE_TELEMETRY`
 - `CI`
+
+The scripts for both platforms are open source [[1]](https://github.com/shuttle-hq/shuttle/blob/main/install.sh) [[2]](https://github.com/shuttle-hq/shuttle/blob/main/install.ps1). Improvements are always welcome!
+</Accordion>
 </Info>
 
 ## Alternative Installation Methods
