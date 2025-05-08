@@ -86,7 +86,7 @@ async fn main() {
 
 ```rust main.rs (after)
 #[shuttle_runtime::main]
-pub async fn axum (
+async fn main(
     #[shuttle_shared_db::Postgres] pool: PgPool,
     #[shuttle_runtime::Secrets] secrets: shuttle_runtime::SecretStore,
 ) -> shuttle_axum::ShuttleAxum {
