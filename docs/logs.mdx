@@ -40,15 +40,13 @@ shuttle logs --raw
 
 {/* TODO document --start-time --end-time / --head --tail --all if implemented */}
 
-{/* TODO document --all-deployments */}
-
 ## Default Tracing Subscriber
 
 By default, Shuttle will set up a global tracing subscriber behind the scenes.
 If you'd rather set up your own tracing or logging, you can opt-out by disabling the default features on `shuttle-runtime`:
 
 ```toml Cargo.toml
-shuttle-runtime = { version = "0.53.0", default-features = false }
+shuttle-runtime = { version = "0.54.0", default-features = false }
 ```
 
 With the default features enabled you can skip the step of initializing your subscriber when implementing [tracing](https://docs.rs/tracing/latest/tracing/)
