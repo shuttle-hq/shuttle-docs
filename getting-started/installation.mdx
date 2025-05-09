@@ -69,19 +69,26 @@ cargo install cargo-shuttle
 
 Pre-built binaries for various platforms are available on [our GitHub releases page](https://github.com/shuttle-hq/shuttle/releases/latest).
 
-### Community Packages
+### Community Packages (unofficial)
 
-Shuttle CLI is also available through community-maintained packages for some Linux distributions:
+Shuttle CLI is also available on other package managers through community-maintained packages:
 
 <AccordionGroup>
-  <Accordion title="Arch Linux">
+  <Accordion title="MacOS (brew)">
+    Available on [Homebrew](https://formulae.brew.sh/formula/cargo-shuttle).
+
+    ```sh
+    brew install cargo-shuttle
+    ```
+  </Accordion>
+  <Accordion title="Arch Linux (pacman)">
     Available in the [community repository](https://archlinux.org/packages/extra/x86_64/cargo-shuttle/).
 
     ```sh
     pacman -S cargo-shuttle
     ```
   </Accordion>
-  <Accordion title="Alpine Linux">
+  <Accordion title="Alpine Linux (apk)">
     Available on [Alpine Edge](https://pkgs.alpinelinux.org/packages?name=cargo-shuttle&branch=edge) after enabling the [testing repository](https://wiki.alpinelinux.org/wiki/Repositories).
 
     ```sh
