@@ -1,0 +1,192 @@
+---
+title: "Introduction to Shuttle"
+description: "Shuttle is a Rust-native cloud development platform that lets you deploy your app while also taking care of all of your infrastructure."
+icon: "hand-wave"
+---
+
+<CardGroup>
+  <Card
+    title="Get Started"
+    icon="circle-play"
+    color="#3d3"
+    href="/getting-started/installation"
+  >
+    Installation and quickstart guide
+  </Card>
+  <Card
+    title="Examples"
+    icon="book"
+    href="/examples"
+    color="#f8b5F2"
+  >
+    Check out some Shuttle examples
+  </Card>
+  <Card
+    title="Templates"
+    icon="sparkles"
+    href="/templates"
+    color="#ffdf54"
+  >
+    Get started from one of many templates
+  </Card>
+  <Card
+    title="Tutorials"
+    icon="list-check"
+    href="/templates/tutorials"
+    color="#a26"
+  >
+    Follow one of our tutorials
+  </Card>
+</CardGroup>
+
+
+## What is Shuttle?
+
+As a platform designed with a focus on providing an exceptional developer experience, our goal is to make building and deploying applications a breeze. Shuttle's **<Tooltip tip="Provisioning resources directly from your code, instead of having to deal with complex consoles and yaml files">Infrastructure from Code</Tooltip>** capabilities make provisioning resources simple and hassle-free. Getting a database is just a matter of asking for one with a macro:
+
+```rust
+#[shuttle_runtime::main]
+async fn main(
+    // Automatically provisions a Postgres database
+    // and hands you an authenticated connection pool
+    #[shuttle_shared_db::Postgres] pool: sqlx::PgPool,
+) -> ShuttleAxum {
+    // Application code
+}
+```
+
+You can hit the ground running and swiftly transform your ideas into tangible solutions. Accelerate your project's progress by rapidly building and deploying prototypes, ensuring you bring your vision to life in record time.
+![infra-from-code](/images/infra-from-code.gif)
+
+<Info>The GIF above demonstrates how easy it is to add resources to your project, visualized with the [Shuttle Console](https://console.shuttle.dev/).</Info>
+
+Our mission is aligned with the wider shift of Rust becoming the future of web development, as we strive to deliver cutting-edge solutions that leverage the full potential of [the most loved programming language](https://survey.stackoverflow.co/2024/technology/#admired-and-desired).
+
+## How Shuttle Works
+
+The simplest way to build and deploy a web app on Shuttle looks like this:
+
+```rust src/main.rs
+use axum::{routing::get, Router};
+
+async fn hello_world() -> &'static str {
+    "Hello, world!"
+}
+
+#[shuttle_runtime::main]
+async fn main() -> shuttle_axum::ShuttleAxum {
+    let router = Router::new().route("/", get(hello_world));
+
+    Ok(router.into())
+}
+```
+
+This example starts an HTTP server where the `GET /` endpoint returns `Hello, world!`.
+But most importantly, the code you see in the snippet above, is all it takes for `shuttle deploy` to deploy it.
+
+This is possible due to the `#[shuttle_runtime::main]` procedural macro.
+The macro wraps your app with Shuttle's runtime, which handles resource provisioning and initialization for you.
+
+## Supported Frameworks
+
+Many types of Rust programs can be deployed on Shuttle.
+
+Shuttle provides all hosted apps with proxied HTTPS web traffic.
+Therefore, the most common use case is to deploy web apps and APIs.
+Any app that can bind to a socket and accept incoming HTTP traffic can run on Shuttle.
+
+To make life easier we have implemented all the boilerplate required for these Rust web frameworks. Get started with just a few lines of code.
+
+- [Axum](/examples/axum)
+- [Actix Web](/examples/actix)
+- [Rocket](/examples/rocket)
+- [Warp](/examples/other)
+- [Tower](/examples/other)
+- [Salvo](/examples/other)
+- [Poem](/examples/other)
+- [Tide](/examples/other)
+- [Thruster](/examples/other)
+
+The Discord Bot building frameworks [Serenity](/examples/serenity) and [Poise](/examples/poise) are also officially supported.
+
+If you need a custom service, you can take a look at our guide [right here](/templates/tutorials/custom-service).
+
+## Resource Provisioning
+
+![Shuttle macros](/images/shuttle-macros.png)
+
+One of the great features of Shuttle is the provisioning of resources through macros.
+With just a few lines of code, you can get access to various resources. Here are some examples:
+
+### Secrets
+
+```rust
+use shuttle_runtime::SecretStore;
+
+#[shuttle_runtime::main]
+async fn main(
+    #[shuttle_runtime::Secrets] secrets: SecretStore,
+) -> shuttle_axum::ShuttleAxum {
+    // Get secret defined in `Secrets.toml` file.
+    let secret = secrets.get("MY_API_KEY").expect("secret was not found");
+}
+```
+
+### Postgres Database
+
+```rust
+#[shuttle_runtime::main]
+async fn main(
+    #[shuttle_shared_db::Postgres] pool: PgPool,
+) -> shuttle_axum::ShuttleAxum {
+    // Use the connection pool to query the Postgres database
+    pool.execute(include_str!("../schema.sql"))
+        .await
+        .map_err(CustomError::new)?;
+}
+```
+
+For more info on resources, head on over to our [Resources](/resources/resources) section.
+
+## Deployment Process
+
+When you run `shuttle deploy`, your project code is archived and sent to our platform where it is built into a Docker image.
+Your service will then be started on Shuttle's infrastructure on AWS in London (eu-west-2).
+The generated code from `shuttle_runtime::main` handles resource provisioning and initialization, leaving you to focus on what matters.
+
+## Get Involved
+
+<CardGroup>
+  <Card
+    title="Give us a star on GitHub"
+    icon="star"
+    color="#fbdf24"
+    href="https://github.com/shuttle-hq/shuttle"
+  >
+    Check us out at shuttle-hq/shuttle
+  </Card>
+  <Card
+    title="Join our Discord server"
+    icon="discord"
+    color="#5865F2"
+    href="https://discord.com/invite/shuttle"
+  >
+    Click to accept invite
+  </Card>
+  <Card
+    title="Follow us on Twitter"
+    icon="twitter"
+    color="#1DA1F2"
+    href="https://x.com/shuttle_dev"
+  >
+    Go to @shuttle_dev on Twitter
+  </Card>
+  <Card
+    title="Get Involved"
+    icon="hand"
+    color="#525"
+    href="/community/get-involved"
+  >
+    If you are wondering about the best way to get involved, here's how
+  </Card>
+</CardGroup>

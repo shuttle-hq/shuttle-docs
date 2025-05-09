@@ -1,0 +1,143 @@
+---
+title: "Migrate to Shuttle"
+description: "A comprehensive guide to migrating your existing Rust project to Shuttle"
+icon: "arrow-right"
+---
+
+## Migration checklist
+
+Before starting your migration, check if your project meets these requirements:
+
+### ✅ Supported Service Types
+
+- HTTP web services using:
+  - [Axum](/examples/axum)
+  - [Actix Web](/examples/actix)
+  - [Rocket](/examples/rocket)
+  - [Loco](/examples/loco)
+  - Other HTTP frameworks (via [custom service](/templates/tutorials/custom-service))
+- Discord bots
+- Telegram bots
+- Web services connecting to RPC nodes
+- Services with scheduled tasks (cronjobs)
+- Other service types (via [custom Service](/templates/tutorials/custom-service))
+
+### ⚠️ Other Considerations
+
+- External resources can still be used by connecting to them
+- Database migrations need to be handled separately
+- Check that your project:
+  - Is compatible with the latest Rust version
+  - Can be built and run in a Docker container
+
+<Info>If you're unsure about any compatibility requirements, join our [Discord community](https://discord.gg/shuttle) for help!</Info>
+
+## Migration Steps
+
+<Info>Remember to install the [Shuttle CLI](/getting-started/installation) if you haven't yet!</Info>
+
+### 1. Add Shuttle Dependencies
+
+Add the required Shuttle dependencies to your `Cargo.toml`:
+
+```bash
+# Add the Shuttle runtime
+cargo add shuttle-runtime
+
+# Add your framework integration if supported (e.g., for Axum)
+cargo add shuttle-axum
+
+# Add any Shuttle resources you need (e.g., Postgres)
+cargo add shuttle-shared-db --features postgres,sqlx
+```
+
+### 2. Update Your Main Function
+
+Common steps needed for migrating are:
+- Change the main function to use `#[shuttle_runtime::main]`.
+- Change the return type and return the framework's Router or config. This varies by framework, check [examples](/examples/overview) for more.
+- Add a `Secrets.toml` file and use `#[shuttle_runtime::Secrets]` instead of loading environment variables.
+- Use `#[shuttle_shared_db::Postgres]` instead of manually connecting to a database.
+
+Here is an example of what an Axum service might look like before and after migrating:
+
+```rust main.rs (before)
+#[tokio::main]
+async fn main() {
+    dotenvy::dotenv().ok();
+
+    let db_url = std::env::var("DATABASE_URL").unwrap();
+    let secret = std::env::var("MY_SECRET").unwrap();
+
+    let pool = sqlx::Pool::connect(&db_url).await.unwrap();
+    sqlx::migrate!().run(&pool).await.unwrap();
+
+    // Use secrets for anything that needs them
+
+    let router = create_api_router(pool);
+    let addr = SocketAddr::from(([0, 0, 0, 0], 8000));
+
+    Server::bind(&addr)
+        .serve(router.into_make_service())
+        .await
+        .unwrap()
+}
+```
+
+```rust main.rs (after)
+#[shuttle_runtime::main]
+async fn main(
+    #[shuttle_shared_db::Postgres] pool: PgPool,
+    #[shuttle_runtime::Secrets] secrets: shuttle_runtime::SecretStore,
+) -> shuttle_axum::ShuttleAxum {
+    sqlx::migrate!().run(&pool).await.unwrap();
+
+    // Use secrets for anything that needs them
+
+    let router = create_api_router(pool);
+
+    Ok(router.into())
+}
+```
+
+### 3. Add Shuttle configuration
+
+If your app uses gitignored files, or uses static files at runtime, you need to add a `Shuttle.toml` file with some file declarations.
+Read more in [Deployment files](/docs/files).
+
+### 4. Testing it locally
+
+```bash
+shuttle run
+```
+
+### 5. Deploy
+
+If everything is ready to launch:
+
+```bash
+shuttle deploy
+```
+
+<Info>The first deployment might take a few minutes as it sets up your infrastructure.</Info>
+
+## Next Steps
+
+<CardGroup>
+  <Card
+    title="Resources"
+    icon="database"
+    href="/resources/resources"
+    color="#33f"
+  >
+    Learn about available resources
+  </Card>
+  <Card
+    title="Custom Service"
+    icon="gear"
+    href="/templates/tutorials/custom-service"
+    color="#ffdf54"
+  >
+    Create a custom service
+  </Card>
+</CardGroup>

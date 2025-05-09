@@ -1,46 +1,83 @@
 ---
 title: "Quick Start"
-description: "Fire upp your first project after installation 🚀"
+description: "Get started with your first Shuttle project and deploy it to the cloud 🚀"
 icon: "circle-play"
 ---
 
 <Note>
-This page assumes that you have installed the Shuttle CLI.
-If you haven't, go to the [installation](./installation) guide.
+This guide assumes you have installed the Shuttle CLI. If you haven't, please visit the [installation guide](./installation) first.
 </Note>
 
-## Login
+## Login to Your Account
 
-The login command opens the [Shuttle Console](https://console.shuttle.dev/) to authenticate your CLI:
+First, you'll need to authenticate with Shuttle. The login command will open your browser to the [Shuttle Console](https://console.shuttle.dev/) where you can authenticate:
 
 ```sh
 shuttle login
 ```
 
-## Create your first project
+<Info>You can use your Google account, GitHub account or email to authenticate with Shuttle.</Info>
 
-The init command lets you generate a Hello World project or clone one of our [examples](/examples) or [templates](/templates).
-For your first project, try a Hello World template.
+## Create Your First Project
+
+The `init` command helps you create a new Shuttle project. You can choose from:
+- A simple Hello World template
+- One of our [example projects](/examples)
+- A [pre-built template](/templates)
+
+For your first project, we recommend starting with the Hello World template:
 
 ```sh
 shuttle init
 ```
 
-You can then `cd` into the created folder and run your app locally. Check out the [local run](/docs/local-run) page for more.
+## Run Your Project Locally
+
+Before deploying, you can run your project locally to test it:
 
 ```sh
 shuttle run
 ```
 
-Then, the app can be deployed with:
+## Deploy Your Project
+
+When you're ready to deploy your project to the cloud:
 
 ```sh
 shuttle deploy
 ```
 
-This uploads your code and builds it.
-After that, the resulting Docker image is launched and hosted, and can start receiving HTTPS traffic.
+This will:
+1. Upload your code to Shuttle's platform and build it into a Docker image
+2. Deploy it to our infrastructure and assign a public HTTPS URL
 
-<Snippet file="project-gc.mdx" />
+<Info>The first deployment might take a few minutes as it builds your project and sets up the infrastructure.</Info>
 
-To learn more about available deployment configuration, check out [Deployment files](/docs/files).
+## Next Steps
+
+<CardGroup>
+  <Card
+    title="Examples"
+    icon="book"
+    href="/examples"
+    color="#f8b5F2"
+  >
+    Explore more example projects
+  </Card>
+  <Card
+    title="Resources"
+    icon="database"
+    href="/resources/resources"
+    color="#33f"
+  >
+    Learn about available resources
+  </Card>
+  <Card
+    title="Templates"
+    icon="sparkles"
+    href="/templates"
+    color="#ffdf54"
+  >
+    Start from a pre-built template
+  </Card>
+</CardGroup>

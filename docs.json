@@ -85,43 +85,12 @@
         "tab": "Documentation",
         "groups": [
           {
-            "group": "Introduction",
-            "pages": [
-              "introduction/docs",
-              "introduction/what-is-shuttle",
-              "introduction/how-shuttle-works",
-              {
-                "group": "Migrating to Shuttle",
-                "icon": "dove",
-                "pages": [
-                  "migrations/introduction",
-                  "migrations/migrating-checklist",
-                  "migrations/migrating-to-shuttle",
-                  {
-                    "group": "Frameworks",
-                    "pages": [
-                      "migrations/frameworks/axum",
-                      "migrations/frameworks/actix-web",
-                      "migrations/frameworks/rocket",
-                      "migrations/frameworks/custom-service"
-                    ]
-                  },
-                  {
-                    "group": "Infrastructure/Resources",
-                    "pages": [
-                      "migrations/resources/postgres",
-                      "migrations/resources/secrets"
-                    ]
-                  }
-                ]
-              }
-            ]
-          },
-          {
             "group": "Getting Started",
             "pages": [
+              "welcome/introduction",
               "getting-started/installation",
-              "getting-started/quick-start"
+              "getting-started/quick-start",
+              "migration/guide"
             ]
           },
           {
@@ -260,6 +229,7 @@
                   "examples/rocket-jwt-authentication"
                 ]
               },
+              "examples/loco",
               {
                 "group": "Serenity",
                 "pages": [
