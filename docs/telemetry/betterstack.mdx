@@ -37,13 +37,15 @@ This guide will walk you through setting up Better Stack as your telemetry provi
    - Paste your source token and ingestion host
    - Click "Apply"
 
-## Step 3: Enable OpenTelemetry Exporter (Optional)
+## Step 3: Enable OpenTelemetry Exporter (optional)
 
 <Note>
     This step is only required if you want to emit custom metrics and logs from your application. If you only need the default CPU, network, and memory metrics, you can skip this step.
 </Note>
 
 Follow the [Getting Started guide](./getting-started#step-1-enable-the-opentelemetry-exporter) to enable the OpenTelemetry exporter in your project.
+
+## Step 4: Redeploy Your Project
 
 <Warning>
     **Important**: If your project was already running, you must redeploy it for telemetry to start flowing.
@@ -52,7 +54,7 @@ Follow the [Getting Started guide](./getting-started#step-1-enable-the-opentelem
     - If you haven't made any code changes, you can redeploy from the Shuttle Console by selecting your latest deployment and clicking "Redeploy"
 </Warning>
 
-## Step 4: Create Dashboards
+## Step 5: Create Dashboards
 
 Once telemetry data starts flowing, you can create custom dashboards in Better Stack:
 
