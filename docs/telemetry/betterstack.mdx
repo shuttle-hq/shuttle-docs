@@ -9,11 +9,6 @@ This guide will walk you through setting up Better Stack as your telemetry provi
 ## Prerequisites
 
 1. A [Better Stack account](https://betterstack.com/) (sign up if you don't have one)
-2. A Shuttle project with the OpenTelemetry exporter enabled (see [Getting Started](./getting-started))
-
-<Note>
-    The OpenTelemetry exporter is required if you want to emit custom metrics and logs from your application. If you only need the default CPU, network, and memory metrics, you can skip enabling the exporter.
-</Note>
 
 ## Step 1: Create a Telemetry Source in Better Stack
 
@@ -42,6 +37,14 @@ This guide will walk you through setting up Better Stack as your telemetry provi
    - Paste your source token and ingestion host
    - Click "Apply"
 
+## Step 3: Enable OpenTelemetry Exporter (Optional)
+
+<Note>
+    This step is only required if you want to emit custom metrics and logs from your application. If you only need the default CPU, network, and memory metrics, you can skip this step.
+</Note>
+
+Follow the [Getting Started guide](./getting-started#step-1-enable-the-opentelemetry-exporter) to enable the OpenTelemetry exporter in your project.
+
 <Warning>
     **Important**: If your project was already running, you must redeploy it for telemetry to start flowing.
     
@@ -49,7 +52,7 @@ This guide will walk you through setting up Better Stack as your telemetry provi
     - If you haven't made any code changes, you can redeploy from the Shuttle Console by selecting your latest deployment and clicking "Redeploy"
 </Warning>
 
-## Step 3: Create Dashboards
+## Step 4: Create Dashboards
 
 Once telemetry data starts flowing, you can create custom dashboards in Better Stack:
 
@@ -79,7 +82,7 @@ Better Stack will receive all the standard Shuttle telemetry metrics, including:
 - Memory usage and limits
 - Network I/O statistics
 - Disk I/O statistics
-- Custom metrics from your application (requires code change to add OpenTelemetry exporter)
+- Custom metrics from your application (requires OpenTelemetry exporter from Step 3)
 
 For a complete list of available metrics, see our [telemetry overview](./overview#default-platform-metrics).
 
@@ -87,6 +90,6 @@ For a complete list of available metrics, see our [telemetry overview](./overvie
 
 If you don't see data in Better Stack:
 1. Verify your source token and ingestion host are correct
-2. Check that your project has the `setup-otel-exporter` feature on `shuttle-runtime` enabled
+2. If you're using custom metrics, check that your project has the `setup-otel-exporter` feature on `shuttle-runtime` enabled
 3. Ensure you've redeployed your project after enabling telemetry
 4. Contact [Better Stack support](https://betterstack.com/contact) or join our [Discord community](https://discord.gg/shuttle) for help

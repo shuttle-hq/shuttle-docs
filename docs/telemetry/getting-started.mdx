@@ -51,7 +51,11 @@ Follow the specific guide for your chosen provider to:
 
 <Warning>
     **Important**: After configuring telemetry, you **_must_** redeploy your project for the changes to take effect.
-    You can do this by selecting your latest deployment in the Shuttle Console and clicking "Redeploy".
+    Since you've made code changes in Step 1 (adding the OpenTelemetry exporter), you need to deploy using the Shuttle CLI:
+
+    ```bash
+    shuttle deploy
+    ```
 </Warning>
 
 ## Next Steps
