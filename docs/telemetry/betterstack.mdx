@@ -67,6 +67,31 @@ Better Stack offers several ways to visualize your data:
 - Visual drag-and-drop interface
 - PromQL (beta)
 
+### Import Pre-configured Better Stack Dashboard
+
+To quickly get started with basic resource metrics, follow these steps:
+
+1. Download the Better Stack basic resource metrics JSON file by clicking the download button from our [examples repository](https://github.com/shuttle-hq/shuttle-examples/blob/main/README.md)
+2. Go to your Better Stack dashboard through the Dashboards section
+3. Click the three dots (⋮) in the top-right corner of your dashboard and select "Import" as shown below:
+![Importing a dashboard in Better Stack](/images/telemetry/betterstack-import.png)
+
+4. In the import dialog, select the JSON file you downloaded from our examples repository
+5. After importing, you'll see new charts under the "Resource Metrics Charts" section, but they won't display any data yet
+6. To see your data, select your source from the source dropdown at the top of the page:
+![Selecting the data source](/images/telemetry/betterstack-source.png)
+
+7. Click "Save changes" to apply the source selection
+
+Your dashboard will now display the following metrics under the "Resource Metrics Charts" section:
+- Metric points per second (showing successfully pushed vs failed metrics)
+- vCPU Reserved (grouped by project)
+- vCPU Used (grouped by project)
+- Memory Usage (grouped by project)
+- Network Egress in bytes (grouped by project)
+- Network Ingress in bytes (grouped by project)
+- Network Bandwidth showing both egress and ingress rates
+
 ### Example: Creating a CPU Usage Graph
 
 1. Click the dots on a widget and select "Configure"

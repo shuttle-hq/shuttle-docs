@@ -1,0 +1,176 @@
+{
+  "refresh_interval": 15,
+  "date_range_from": "now-3h",
+  "date_range_to": "now",
+  "preset": {
+    "id": 538807,
+    "name": null,
+    "preset_type": "implicit",
+    "preset_variables": [
+      {
+        "name": "source",
+        "variable_type": "source",
+        "values": [
+          ""
+        ]
+      },
+      {
+        "name": "end_time",
+        "variable_type": "datetime",
+        "values": [
+          "now"
+        ]
+      },
+      {
+        "name": "start_time",
+        "variable_type": "datetime",
+        "values": [
+          "now-3h"
+        ]
+      }
+    ]
+  },
+  "charts": [
+    {
+      "chart_type": "line_chart",
+      "name": "Drag & drop query: avg(cpu.usage.vcpu) by shuttle.project.name",
+      "description": null,
+      "x": 0,
+      "y": 1,
+      "w": 6,
+      "h": 8,
+      "transform_with": "// Transform chart data before rendering.\n// Following function is called when new data arrives, and again with `completed = true` after all data arrives.\n// You can transform the data here arbitrarily.\n// Most chart types expect columns 'time', 'value' and optionally 'series' by default.\nasync (existingDataByQuery, newDataByQuery, completed) => {\n  return Object.keys(newDataByQuery).reduce((result, queryIndex) => {\n    result[queryIndex] = result[queryIndex].concat(newDataByQuery[queryIndex]);\n    return result;\n  }, existingDataByQuery);\n}\n",
+      "finalize_with": null,
+      "fake_with": null,
+      "settings": {
+        "unit": "shortened",
+        "fresh": true,
+        "label": "shown_below",
+        "legend": "shown_below",
+        "stacking": "dont_stack",
+        "lat_column": "latitude",
+        "lng_column": "longitude",
+        "time_column": "time",
+        "x_axis_type": "time",
+        "y_axis_scale": "linear",
+        "series_colors": {
+          "level = INFO": "#009fe3",
+          "level = WARN": "#00af79",
+          "level = null": "#55bfc1"
+        },
+        "series_column": "series",
+        "value_columns": [
+          "value"
+        ],
+        "decimal_places": 2,
+        "point_size_column": "size",
+        "treat_missing_values": "connected",
+        "guessed_series_colors": {
+          "shuttle.project.name = test-2": "#d57b16"
+        }
+      },
+      "chart_queries": [
+        {
+          "query_type": "query_builder",
+          "sql_query": "WITH grouped_rate AS (\n  \n  SELECT\n    {{time}} AS time,\n    name,\n    avgMerge(value_avg) AS inner_value,\n    'shuttle.project.name = ' || COALESCE(metricTag('shuttle.project.name'), 'null') AS inner_series\n  FROM {{source}}\n  WHERE\n    name IN ('cpu.usage.vcpu')\n    AND time BETWEEN {{start_time}} AND {{end_time}}\n  GROUP BY time, name, inner_series, series_id\n  \n),\narrayJoin([\n  (inner_series, avgIf(inner_value, name = 'cpu.usage.vcpu'))\n]) AS arrayJoinValues\nSELECT\n  time,\n  arrayJoinValues.1 AS series,\n  arrayJoinValues.2 AS value\nFROM grouped_rate\nGROUP BY time, inner_series",
+          "group_by": [
+            {
+              "type": "string",
+              "value": "shuttle.project.name"
+            }
+          ],
+          "where_condition": null,
+          "y_axis": [
+            {
+              "type": "float",
+              "value": "cpu.usage.vcpu",
+              "measure": "avg",
+              "value_type": "value"
+            }
+          ],
+          "filters": [
+
+          ],
+          "static_text": null,
+          "default_group_by": "everything"
+        }
+      ],
+      "chart_alerts": [
+
+      ]
+    },
+    {
+      "chart_type": "line_chart",
+      "name": "Your chart",
+      "description": null,
+      "x": 0,
+      "y": 9,
+      "w": 6,
+      "h": 8,
+      "transform_with": "// Transform chart data before rendering.\n// Following function is called when new data arrives, and again with `completed = true` after all data arrives.\n// You can transform the data here arbitrarily.\n// Most chart types expect columns 'time', 'value' and optionally 'series' by default.\nasync (existingDataByQuery, newDataByQuery, completed) => {\n  return Object.keys(newDataByQuery).reduce((result, queryIndex) => {\n    result[queryIndex] = result[queryIndex].concat(newDataByQuery[queryIndex]);\n    return result;\n  }, existingDataByQuery);\n}\n",
+      "finalize_with": null,
+      "fake_with": null,
+      "settings": {
+        "unit": "shortened",
+        "fresh": true,
+        "label": "shown_below",
+        "legend": "shown_below",
+        "stacking": "dont_stack",
+        "lat_column": "latitude",
+        "lng_column": "longitude",
+        "time_column": "time",
+        "x_axis_type": "time",
+        "y_axis_scale": "linear",
+        "series_colors": {
+          "shuttle.project.name = test-2": "#009fe3"
+        },
+        "series_column": "series",
+        "value_columns": [
+          "value"
+        ],
+        "decimal_places": 2,
+        "point_size_column": "size",
+        "treat_missing_values": "connected",
+        "guessed_series_colors": {
+          "shuttle.project.name = test-2": "#d57b16"
+        }
+      },
+      "chart_queries": [
+        {
+          "query_type": "query_builder",
+          "sql_query": "WITH grouped_rate AS (\n  \n  SELECT\n    {{time}} AS time,\n    name,\n    avgMerge(value_avg) AS inner_value,\n    'shuttle.project.name = ' || COALESCE(metricTag('shuttle.project.name'), 'null') AS inner_series\n  FROM {{source}}\n  WHERE\n    name IN ('memory.usage')\n    AND time BETWEEN {{start_time}} AND {{end_time}}\n  GROUP BY time, name, inner_series, series_id\n  \n),\narrayJoin([\n  (inner_series, avgIf(inner_value, name = 'memory.usage'))\n]) AS arrayJoinValues\nSELECT\n  time,\n  arrayJoinValues.1 AS series,\n  arrayJoinValues.2 AS value\nFROM grouped_rate\nGROUP BY time, inner_series",
+          "group_by": [
+            {
+              "type": "string",
+              "value": "shuttle.project.name"
+            }
+          ],
+          "where_condition": null,
+          "y_axis": [
+            {
+              "type": "float",
+              "value": "memory.usage",
+              "measure": "avg",
+              "value_type": "value"
+            }
+          ],
+          "filters": [
+
+          ],
+          "static_text": null,
+          "default_group_by": "everything"
+        }
+      ],
+      "chart_alerts": [
+
+      ]
+    }
+  ],
+  "sections": [
+    {
+      "name": "Basic Charts",
+      "collapsed": false,
+      "y": 0
+    }
+  ]
+} 
