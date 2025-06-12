@@ -95,3 +95,19 @@ If you don't see data in Better Stack:
 2. If you're using custom metrics, check that your project has the `setup-otel-exporter` feature on `shuttle-runtime` enabled
 3. Ensure you've redeployed your project after enabling telemetry
 4. Contact [Better Stack support](https://betterstack.com/contact) or join our [Discord community](https://discord.gg/shuttle) for help
+
+## Default Resource Metrics (Dashboard Template)
+
+To quickly monitor basic resource metrics like CPU, memory, and network egress, you can import a predefined dashboard into Better Stack.
+
+1. **Download the template**
+   
+   Download the template JSON from [our examples repository](https://github.com/shuttle-hq/shuttle-examples/blob/main/telemetry-betterstack/default-resource-metrics-dashboard.json).
+
+2. **Upload the JSON in the Better Stack Dashboard UI**
+   
+   Open your dashboard, click the three dots in the top right corner, choose **Import** and select the downloaded JSON file. You won't see any data until you set the source.
+
+3. **Update the source of your Better Stack Dashboard**
+   
+   After importing, use the **Source** dropdown on the top left of the dashboard to select your data source and you're ready to go.
