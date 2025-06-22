@@ -11,7 +11,7 @@ icon: "box"
 Deployments run in AWS ECS with Fargate VMs.
 The default compute configuration is 0.25 vCPU and 0.5 GB RAM.
 This will soon be made configurable.
-If you need more compute out of the gate, reach out to us.
+If you need more compute out of the gate, [reach out to us.](https://www.shuttle.dev/contact)
 
 <Warning>
 Community tier workloads run on Fargate SPOT capacity providers, and are
@@ -31,7 +31,12 @@ If the new deployment fails to become healthy, it will be retried 3 times while 
 
 HTTPS traffic is proxied to your app on the project's default subdomain and any [custom domains]() that have been added.
 
-The proxy sets the `X-Forwarded-For` HTTP header on incoming requests to the remote IP address of the request.
+### Request Headers
+
+#### X-Forwarded-For
+`X-Forwarded-For` is a header that allows you to get the original IP of the HTTP request. Deployed Shuttle projects sit behind a proxy, meaning that when you try to get the IP address normally you may end up with the proxy IP instead of the requester IP. With the `X-Forwarded-For` header, you can now always get the requester IP by parsing the given header value.
+
+To implement your own custom rate limiting, our [blog post on how to write API rate limiting yourself](https://www.shuttle.dev/blog/2024/02/22/api-rate-limiting-rust) may prove useful. You can also additionally implement your own middleware that utilises the `governor` crate, as seen on [`tower-governor`](https://docs.rs/tower_governor/latest/tower_governor/) and [`actix-governor`](https://docs.rs/actix-governor/latest/actix_governor/).
 
 ## Environment variables
 
@@ -52,4 +57,3 @@ See [Shuttle Secrets](/resources/shuttle-secrets)
 ## Customize Runtime container
 
 See [Hook scripts](/docs/builds#experimental-hook-scripts)
-
