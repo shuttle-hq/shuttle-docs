@@ -111,6 +111,28 @@ Here's what a tracing event looks like when exported:
    - Use `counter` for values that can go up and down
    - Use `histogram` for measuring distributions
 
+## Testing Custom Metrics Locally
+
+Run the OpenTelemetry collector locally in one terminal:
+
+```bash
+docker run \
+  -p 127.0.0.1:4318:4318 \
+  -p 127.0.0.1:55679:55679 \
+  otel/opentelemetry-collector-contrib:0.97.0 \
+  2>&1 | tee collector-output.txt
+```
+
+In another terminal, start your Shuttle project and point it at the local collector:
+
+```bash
+otel_exporter_otlp_endpoint=HTTP://localhost:4318 shuttle run
+```
+
+Hit your service locally (for example `curl http://localhost:8000`) and you should see metrics in `collector-output.txt`.
+
+For more on using OpenTelemetry in Rust see [Working with OpenTelemetry using Rust](https://www.shuttle.dev/blog/2024/04/10/using-opentelemetry-rust).
+
 ## Learn More
 
 - [tracing documentation](https://docs.rs/tracing/latest/tracing/)
