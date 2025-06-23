@@ -1,0 +1,37 @@
+---
+title: Scaling
+description: Adjusting the computational resources allocated to your application
+icon: arrows-up-down
+---
+At Shuttle, you can adjust the vCPU and memory resources allocated to your application’s compute environment. The level of scaling available depends on your [Account Tier](/docs/account#account-tiers). This functionality enables you to **vertically scale** your application to better suit your specific performance requirements and workload demands.
+
+<Warning>
+Changing the compute type or instance size of your application will result in additional charges. These are calculated according to our [usage-based pricing](/pricing/billing#usage-based-pricing) model. Please ensure you review the pricing details before making adjustments.
+</Warning>
+
+### Example
+
+The example below illustrates how to configure your application to use a **medium** instance size:
+
+```rust main.rs
+#[shuttle_runtime::main(instance_size = "m")]
+async fn main(
+) -> shuttle_axum::ShuttleAxum {
+    // Your application logic here
+}
+```
+
+### Available Instance Sizes
+
+The table below lists the available `instance_size` values, along with the corresponding instance type and minimum required Account Tier:
+
+| Instance Size | Value | Account Tier |
+| --- | --- | --- |
+| **Basic** | `xs` | Community+ |
+| **Small** | `s` | Pro+ |
+| **Medium** | `m` | Pro+ |
+| **Large** | `l` | Pro+ |
+| **X Large** | `xl` | Pro+ |
+| **XX Large** | `xxl` | Growth+ |
+
+_Ensure your selected instance size aligns with your application's current and anticipated workload._
