@@ -22,19 +22,19 @@ shuttle <command> --help
 | Command     | Description |
 | ----------- | ----------- |
 | init        | Generate a Shuttle project from a template |
-| run         | Run a Shuttle service locally |
-| deploy      | Deploy a Shuttle service |
-| deployment  | Manage deployments of a Shuttle service [aliases: depl] |
-| logs        | View logs of a Shuttle service |
-| project     | Manage projects on Shuttle [aliases: proj] |
+| run         | Run a project locally |
+| deploy      | Deploy a project |
+| deployment  | Manage deployments [aliases: depl] |
+| logs        | View build and deployment logs |
+| project     | Manage Shuttle projects [aliases: proj] |
 | resource    | Manage resources [aliases: res] |
 | certificate | Manage SSL certificates for custom domains [aliases: cert] |
 | account     | Show info about your Shuttle account [aliases: acc] |
-| login       | Login to the Shuttle platform |
+| login       | Log in to the Shuttle platform |
 | logout      | Log out of the Shuttle platform |
 | generate    | Generate shell completions and man page |
 | feedback    | Open an issue on GitHub and provide feedback |
-| upgrade     | Upgrade the cargo-shuttle binary |
+| upgrade     | Upgrade the Shuttle CLI binary |
 | help        | Print this message or the help of the given subcommand(s) |
 
 ## Cookbook / Cheat Sheet
@@ -102,7 +102,7 @@ All project-related commands can use:
 
 ### Shell completions
 
-Use `shuttle generate shell <shell>` with one of: bash, elvish, fish, powershell, zsh.
+Use `shuttle generate shell <shell>` with one of the supported shells: bash, elvish, fish, powershell, zsh.
 
 Example configuration for Zsh on Linux: add `eval "$(shuttle generate shell zsh)"` to `~/.zshrc`.
 
