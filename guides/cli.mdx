@@ -66,7 +66,7 @@ For more tips, see [Local Run](/docs/local-run).
 - `shuttle project create`: Create a project on Shuttle.
 - `shuttle deploy`: Deploy the project to Shuttle.
 - `shuttle deploy --no-follow`: Don't poll deployment state. Alias: `--nf`.
-- `shuttle deploy --secrets <file>`: Use a non-default secrets file for this deployment. It must be located in the same folder that Secrets.toml should be in.
+- `shuttle deploy --secrets <file>`: Use a non-default secrets file for this deployment.
 
 ### Manage projects
 
@@ -109,5 +109,6 @@ Example configuration for Zsh on Linux: add `eval "$(shuttle generate shell zsh)
 ### Utility
 
 - `shuttle <command> --debug`: Turn on tracing output for Shuttle libraries. (WARNING: can print sensitive data)
+- `shuttle <command> --output json` to get the output from API calls in plain JSON.
 - `shuttle deploy --output-archive <path>`: Dump the deployment archive to disk instead of deploying it. Useful for debugging.
 - `shuttle logout --reset-api-key`: Log out and reset your account's API key.
