@@ -16,28 +16,13 @@ The Shuttle MCP server supercharges your development workflow in two powerful wa
 
 **Powerful Development Tools**: Beyond just documentation, the MCP server gives your AI agent direct access to Shuttle's tooling ecosystem. Your assistant can help you deploy services, fetch logs, manage resources, and interact with the Shuttle console - all through natural conversation. This makes Shuttle development significantly faster and more intuitive.
 
-## Prerequisites
-
-Before we dive in, you'll need to set up Rust's nightly toolchain since the Shuttle MCP server uses some cutting-edge features:
-
-```sh
-rustup toolchain install nightly
-rustup default nightly
-```
-
 ## Installation
 
-Once you have nightly set up, installing the Shuttle MCP server is straightforward:
+The Shuttle MCP server comes with the Shuttle CLI, make sure you have the [Shuttle CLI](https://docs.shuttle.dev/getting-started/installation) installed first.
 
-```sh
-cargo install shuttle-mcp
-```
+## Configuration
 
-That's it! The server is now ready to connect to your preferred AI coding environment.
-
-## IDE Setup
-
-Choose your preferred AI coding environment and add the Shuttle MCP server configuration:
+Choose your preferred AI coding environment and add the Shuttle MCP server configuration.
 
 <CodeGroup>
 
@@ -45,7 +30,7 @@ Choose your preferred AI coding environment and add the Shuttle MCP server confi
 {
   "mcpServers": {
     "shuttle": {
-      "command": "shuttle-mcp"
+      "command": "shuttle mcp start"
     }
   }
 }
@@ -55,7 +40,7 @@ Choose your preferred AI coding environment and add the Shuttle MCP server confi
 {
   "mcpServers": {
     "shuttle": {
-      "command": "shuttle-mcp"
+      "command": "shuttle mcp start"
     }
   }
 }
@@ -66,7 +51,7 @@ Choose your preferred AI coding environment and add the Shuttle MCP server confi
   "servers": {
     "shuttle": {
       "type": "stdio",
-      "command": "shuttle-mcp"
+      "command": "shuttle mcp start"
     }
   }
 }
@@ -76,7 +61,7 @@ Choose your preferred AI coding environment and add the Shuttle MCP server confi
 {
   "mcpServers": {
     "shuttle": {
-      "command": "shuttle-mcp"
+      "command": "shuttle mcp start"
     }
   }
 }
