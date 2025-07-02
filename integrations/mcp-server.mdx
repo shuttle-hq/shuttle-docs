@@ -14,7 +14,7 @@ The Shuttle MCP server supercharges your development workflow in two powerful wa
 
 **Contextual Knowledge**: It acts as a bridge between Shuttle's comprehensive documentation and your AI coding assistant, providing instant access to Shuttle-specific guidance without leaving your editor. No more tab-switching between docs and code!
 
-**Powerful Development Tools**: Beyond just documentation, the MCP server gives your AI agent direct access to Shuttle's tooling ecosystem. Your assistant can help you deploy services, fetch logs, manage resources, and interact with the Shuttle console - all through natural conversation. This makes Shuttle development significantly faster and more intuitive.
+**Powerful Development Tools**: Beyond just documentation, the MCP server gives your AI agent direct access to Shuttle's tooling ecosystem. Your assistant can help you deploy services, fetch logs, and interact with the Shuttle console - all through natural conversation. This makes Shuttle development significantly faster and more intuitive.
 
 ## Installation
 
@@ -29,8 +29,9 @@ Choose your preferred AI coding environment and add the Shuttle MCP server confi
 ```json Cursor
 {
   "mcpServers": {
-    "shuttle": {
-      "command": "shuttle mcp start"
+    "Shuttle": {
+      "command": "shuttle",
+      "args": ["mcp", "start"]
     }
   }
 }
@@ -39,8 +40,9 @@ Choose your preferred AI coding environment and add the Shuttle MCP server confi
 ```json Windsurf
 {
   "mcpServers": {
-    "shuttle": {
-      "command": "shuttle mcp start"
+    "Shuttle": {
+      "command": "shuttle",
+      "args": ["mcp", "start"]
     }
   }
 }
@@ -49,9 +51,10 @@ Choose your preferred AI coding environment and add the Shuttle MCP server confi
 ```json VSCode
 {
   "servers": {
-    "shuttle": {
+    "Shuttle": {
       "type": "stdio",
-      "command": "shuttle mcp start"
+      "command": "shuttle",
+      "args": ["mcp", "start"]
     }
   }
 }
@@ -60,8 +63,9 @@ Choose your preferred AI coding environment and add the Shuttle MCP server confi
 ```json Claude Desktop
 {
   "mcpServers": {
-    "shuttle": {
-      "command": "shuttle mcp start"
+    "Shuttle": {
+      "command": "shuttle",
+      "args": ["mcp", "start"]
     }
   }
 }
