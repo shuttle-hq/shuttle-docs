@@ -3,38 +3,58 @@ title: MCP server (Cursor)
 description: How to set up a Shuttle Docs MCP server for use in AI editors
 icon: sparkles
 ---
-Take your coding of Shuttle apps to the next level with an [MCP](https://modelcontextprotocol.io/introduction) server! Imagine having Shuttle's entire knowledge base directly integrated with your AI coding tools. That's exactly what the MCP server delivers.
 
+Take your coding of Shuttle apps to the next level with an [MCP](https://modelcontextprotocol.io/introduction) server! Imagine having Shuttle's entire knowledge base directly integrated with your AI coding tools. That's exactly what the MCP server delivers.
 
 ## What’s this for?
 
 The MCP server is a lightweight local service that bridges your Shuttle apps with AI editors like Cursor. It feeds your editor contextual knowledge about Shuttle's source code and documentation, supercharging your development experience.
 
-
-## Set up local MCP wrapper
-
-Make sure you have [Node.js](https://nodejs.org/) installed.
-
-Shuttle Docs uses [Mintlify](https://mintlify.com/), which provides an easy way to run a local MCP server. Run this to set it up.
-
-```sh
-npx mint-mcp add shuttle
-```
-
 ## Add to Cursor
 
-To use the MCP server in [Cursor](https://www.cursor.com/) ([docs](https://docs.cursor.com/context/model-context-protocol)), adapt the command from the previous step and add it to Cursor's config:
+The Shuttle CLI (version 0.56 and later) packs a built-in MCP server with tools for searching docs and executing basic shuttle commands.
+
+To use the MCP server in [Cursor](https://www.cursor.com/) ([docs](https://docs.cursor.com/context/model-context-protocol)), adapt this to Cursor's config:
 
 ```json
 {
   "mcpServers": {
     "shuttle": {
-      "command": "node",
-      "args": ["/home/user/.mcp/shuttle/src/index.js"]
+      "command": "shuttle",
+      "args": ["mcp", "start"]
     }
   }
 }
 ```
 
-## You’re all set! ✅ 
-You should now be able to ask the Cursor agent Shuttle-related questions and get more detailed, informative answers—powered by your local Shuttle Docs MCP server. The Composer Agent will automatically use any MCP tools listed under Available Tools when relevant. To trigger Shuttle Docs MCP server tool intentionally, just tell the agent by referring to its name or description. We are working to make this even more powerful and would love to get your thoughts.
+## You’re all set! ✅
+
+You should now be able to ask the Cursor agent Shuttle-related questions and get more detailed, informative answers—powered by your local Shuttle Docs MCP server.
+The Composer Agent will automatically use any MCP tools listed under Available Tools when relevant.
+To trigger Shuttle Docs MCP server tool intentionally, just tell the agent by referring to its name or description.
+We are working to make this even more powerful and would love to get your thoughts.
+
+## Other MCPs
+
+<Accordion
+  title="Shuttle Docs MCP via Mintlify"
+>
+  You can also get an MCP that only queries the Shuttle Docs via [Mintlify](https://mintlify.com/):
+
+  ```sh
+  npx mint-mcp add shuttle
+  ```
+
+  And add this to the config
+
+  ```json
+  {
+    "mcpServers": {
+      "shuttle-docs": {
+        "command": "node",
+        "args": ["/home/user/.mcp/shuttle/src/index.js"]
+      }
+    }
+  }
+  ```
+</Accordion>
