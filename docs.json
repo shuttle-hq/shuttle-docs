@@ -115,7 +115,8 @@
                 ]
               },
               "docs/account",
-              "docs/teams"
+              "docs/teams",
+              "docs/scaling"
             ]
           },
           {
