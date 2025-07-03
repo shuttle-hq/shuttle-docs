@@ -1,25 +1,35 @@
 ---
-title: MCP server (Cursor)
-description: How to set up a Shuttle Docs MCP server for use in AI editors
+title: MCP server
+description: How to set up the Shuttle MCP server for use in AI coding assistants
 icon: sparkles
 ---
 
-Take your coding of Shuttle apps to the next level with an [MCP](https://modelcontextprotocol.io/introduction) server! Imagine having Shuttle's entire knowledge base directly integrated with your AI coding tools. That's exactly what the MCP server delivers.
+To make Rust development even better, we've built the Shuttle MCP server.
 
-## What’s this for?
+The Shuttle [MCP server](https://modelcontextprotocol.io/) brings our entire documentation and tooling ecosystem directly into your favorite AI coding assistant. Think of it as having a Shuttle expert sitting right next to you while you code.
 
-The MCP server is a lightweight local service that bridges your Shuttle apps with AI editors like Cursor. It feeds your editor contextual knowledge about Shuttle's source code and documentation, supercharging your development experience.
+## What's this for?
 
-## Add to Cursor
+The Shuttle MCP server supercharges your development workflow in two powerful ways:
 
-The Shuttle CLI (version 0.56 and later) packs a built-in MCP server with tools for searching docs and executing basic shuttle commands.
+**Contextual Knowledge**: It acts as a bridge between Shuttle's comprehensive documentation and your AI coding assistant, providing instant access to Shuttle-specific guidance without leaving your editor. No more tab-switching between docs and code!
 
-To use the MCP server in [Cursor](https://www.cursor.com/) ([docs](https://docs.cursor.com/context/model-context-protocol)), adapt this to Cursor's config:
+**Powerful Development Tools**: Beyond just documentation, the MCP server gives your AI agent direct access to Shuttle's tooling ecosystem. Your assistant can help you deploy services, fetch logs, and interact with the Shuttle console - all through natural conversation. This makes Shuttle development significantly faster and more intuitive.
 
-```json
+## Installation
+
+The Shuttle MCP server comes with the **Shuttle CLI (version 0.56 and later)**, make sure you have the [Shuttle CLI](https://docs.shuttle.dev/getting-started/installation) installed first.
+
+## Configuration
+
+Choose your preferred AI coding environment and add the Shuttle MCP server configuration.
+
+<CodeGroup>
+
+```json Cursor
 {
   "mcpServers": {
-    "shuttle": {
+    "Shuttle": {
       "command": "shuttle",
       "args": ["mcp", "start"]
     }
@@ -27,12 +37,56 @@ To use the MCP server in [Cursor](https://www.cursor.com/) ([docs](https://docs.
 }
 ```
 
-## You’re all set! ✅
+```json Windsurf
+{
+  "mcpServers": {
+    "Shuttle": {
+      "command": "shuttle",
+      "args": ["mcp", "start"]
+    }
+  }
+}
+```
 
-You should now be able to ask the Cursor agent Shuttle-related questions and get more detailed, informative answers—powered by your local Shuttle Docs MCP server.
-The Composer Agent will automatically use any MCP tools listed under Available Tools when relevant.
-To trigger Shuttle Docs MCP server tool intentionally, just tell the agent by referring to its name or description.
-We are working to make this even more powerful and would love to get your thoughts.
+```json VSCode
+{
+  "servers": {
+    "Shuttle": {
+      "type": "stdio",
+      "command": "shuttle",
+      "args": ["mcp", "start"]
+    }
+  }
+}
+```
+
+```json Claude Desktop
+{
+  "mcpServers": {
+    "Shuttle": {
+      "command": "shuttle",
+      "args": ["mcp", "start"]
+    }
+  }
+}
+```
+
+</CodeGroup>
+
+### Configuration File Locations
+
+| IDE            | Configuration Path                                                                                                                          |
+| -------------- | ------------------------------------------------------------------------------------------------------------------------------------------- |
+| Cursor         | `~/.cursor/mcp.json` (global) or `.cursor/mcp.json` (project)                                                                               |
+| Windsurf       | `~/.codeium/windsurf/mcp_config.json`                                                                                                       |
+| VSCode         | User settings or `.vscode/mcp.json` (project)                                                                                               |
+| Claude Desktop | **macOS**: `~/Library/Application Support/Claude/claude_desktop_config.json`<br/>**Windows**: `%APPDATA%\Claude\claude_desktop_config.json` |
+
+## You're all set! 🚀
+
+Your AI coding assistant now has direct access to Shuttle's knowledge base and tooling. Whether you're deploying services, managing resources, or troubleshooting issues, your AI companion can provide contextual, accurate guidance powered by the official Shuttle documentation.
+
+The integration works seamlessly in the background - just code naturally and let your AI assistant tap into Shuttle's expertise when needed. Happy coding!
 
 ## Other MCPs
 
@@ -41,20 +95,21 @@ We are working to make this even more powerful and would love to get your though
 >
   You can also get an MCP that only queries the Shuttle Docs via [Mintlify](https://mintlify.com/):
 
-  ```sh
-  npx mint-mcp add shuttle
-  ```
+```sh
+npx mint-mcp add shuttle
+```
 
-  And add this to the config
+And add this to the config
 
-  ```json
-  {
-    "mcpServers": {
-      "shuttle-docs": {
-        "command": "node",
-        "args": ["/home/user/.mcp/shuttle/src/index.js"]
-      }
+```json
+{
+  "mcpServers": {
+    "shuttle-docs": {
+      "command": "node",
+      "args": ["/home/user/.mcp/shuttle/src/index.js"]
     }
   }
-  ```
+}
+```
+
 </Accordion>
