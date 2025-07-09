@@ -12,7 +12,7 @@ For the current options available, check out [Deployment files](/docs/files).
 ## Workspaces
 
 Shuttle supports [cargo workspaces](https://doc.rust-lang.org/book/ch14-03-cargo-workspaces.html), but only one Shuttle service per workspace.
-The first workspace member found with a `shuttle-runtime` dependency and a binary target will be targeted for local runs and deployments.
+The first binary target using the `#[shuttle_runtime::main]` macro will be targeted for local runs and deployments.
 
 If `Shuttle.toml` or [Secrets](/resources/shuttle-secrets) are used, those files should be placed in the root of the workspace.
 
