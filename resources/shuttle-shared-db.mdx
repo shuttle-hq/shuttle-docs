@@ -7,13 +7,15 @@ icon: "database"
 This plugin manages databases on [Shuttle](https://www.shuttle.dev) and connects them to your app.
 A shared database is in the same cluster as other user's databases, but it is not accessible by other users.
 
-{/* If you want a high performing and isolated database, consider [Shuttle AWS RDS](./shuttle-aws-rds). */}
+If you want a high performing and isolated database, we also offer dedicated [Shuttle AWS RDS](./shuttle-aws-rds).
 
 <Tip>You can connect to any type of remotely hosted database from your code, so do not let our current database offerings limit your creativity! Got other databases you want to see on Shuttle? Let us know!</Tip>
 
+The Shuttle Shared Postgres cluster is RDS-based and uses Postgres version 16. Contact support if you want to enable common [Postgres Extensions](https://docs.aws.amazon.com/AmazonRDS/latest/PostgreSQLReleaseNotes/postgresql-extensions.html#postgresql-extensions-16x) for your project.
+
 ## Usage
 
-Start by adding `shuttle-shared-db` to the dependencies for your service.
+Start by adding the `shuttle-shared-db` dependency.
 Each type of shareable database is behind its own feature flag and macro attribute path.
 
 | Engine   | Feature flag | Attribute path |
