@@ -10,6 +10,6 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - name: Install mintlify
-        run: npm i -g mintlify
+        run: npm i -g mint
       - name: Check mintlify broken links
-        run: mintlify broken-links
+        run: mint broken-links
