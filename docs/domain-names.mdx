@@ -15,53 +15,58 @@ Adding a custom domain to your project follows these steps:
 - set up a DNS record to make it point to your Shuttle server, and
 - generate an SSL certificate that enables HTTPS traffic to your project.
 
-# Set up DNS record
+## 1. Set up DNS record
 
 The process for setting up the required DNS rule looks different depending on which type of domain and registrar you have.
 
-## Cloudflare
+<AccordionGroup>
+    <Accordion
+        title="Cloudflare"
+    >
+        If you have your domain name on Cloudflare, the process is quite simple. Go to `Websites -> <your domain> -> DNS -> Records -> Add Record`, then follow the relevant section below.
 
-If you have your domain name on Cloudflare, the process is quite simple. Go to `Websites -> <your domain> -> DNS -> Records -> Add Record`, then follow the relevant section below.
+        ### Root domain
 
-### Root domain
+        Add a `CNAME` record from `@` to your `*.shuttle.app` subdomain. Disable the Proxy.
 
-Add a `CNAME` record from `@` to your `*.shuttle.app` subdomain. Disable the Proxy.
+        ![cloudflare root cname](/images/cloudflare_root_cname.png)
 
-![cloudflare root cname](/images/cloudflare_root_cname.png)
+        Adding a `CNAME` on the root level here is possible due to Cloudflare's [CNAME flattening](https://developers.cloudflare.com/dns/cname-flattening/).
 
-Adding a `CNAME` on the root level here is possible due to Cloudflare's [CNAME flattening](https://developers.cloudflare.com/dns/cname-flattening/).
+        You can also add a `CNAME` for the `www` subdomain if you also want traffic to `www.example.com` to arrive to your service.
 
-You can also add a `CNAME` for the `www` subdomain if you also want traffic to `www.example.com` to arrive to your service.
+        ### Subdomain
 
-### Subdomain
+        Add a `CNAME` record from your subdomain to your `*.shuttle.app` subdomain. Disable the Proxy.
 
-Add a `CNAME` record from your subdomain to your `*.shuttle.app` subdomain. Disable the Proxy.
+        ![cloudflare subdomain cname](/images/cloudflare_sub_cname.png)
 
-![cloudflare subdomain cname](/images/cloudflare_sub_cname.png)
+        In the example above, the subdomain `my-subdomain` (as in `my-subdomain.my-domain.com`) is being directed to `my-project-0000.shuttle.app`.
+    </Accordion>
+    <Accordion
+        title="Other DNS providers"
+    >
+        The process for other providers can vary, but here are the general steps. If you want to add docs for a specific provider, feel free to contribute to this page.
 
-In the example above, the subdomain `thing` (as in `thing.my-domain.com`) is being directed to `example.shuttle.app`.
+        ### Root domain
 
-## Other DNS providers
+        If you are adding a root-level domain, add one or more `A` records that point to the same IP
+        addresses that are returned when you do a DNS lookup for your default shuttle domain, e.g.
+        `example.shuttle.app`.
 
-The process for other providers can vary, but here are the general steps. If you want to add docs for a specific provider, feel free to contribute to this page.
+        On Mac or Linux, we can use the `dig` tool in the terminal:
+        `dig +short A example.shuttle.app`
 
-### Root domain
+        On Windows you can use `nslookup` in the terminal, or browser based equivalents like
+        [this](https://toolbox.googleapps.com/apps/dig/#A/).
 
-If you are adding a root-level domain, add one or more `A` records that point to the same IP
-addresses that are returned when you do a DNS lookup for your default shuttle domain, e.g.
-`example.shuttle.app`.
+        ### Subdomain
 
-On Mac or Linux, we can use the `dig` tool in the terminal:
-`dig +short A example.shuttle.app`
+        If you are adding a subdomain, add a `CNAME` record from your subdomain to your `*.shuttle.app` subdomain.
+    </Accordion>
+</AccordionGroup>
 
-On Windows you can use `nslookup` in the terminal, or browser based equivalents like
-[this](https://toolbox.googleapps.com/apps/dig/#A/).
-
-### Subdomain
-
-If you are adding a subdomain, add a `CNAME` record from your subdomain to your `*.shuttle.app` subdomain.
-
-# Set up SSL certificate
+## 2. Set up SSL certificate
 
 Once the DNS records have propagated, add an SSL certificate and start receiving HTTPS traffic by running:
 
