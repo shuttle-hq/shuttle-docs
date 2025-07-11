@@ -27,12 +27,20 @@ After that, the previous deployment will start shutting down.
 This means that there is a window of time where there are two instances running in parallel.
 If the new deployment fails to become healthy, it will be retried 3 times while the the previous one will stays up.
 
-### HTTPS traffic
+### Incoming HTTPS traffic
 
 HTTPS traffic is proxied to your app on the project's default subdomain and any [custom domains](/docs/domain-names) that have been added.
 The proxy sets the `X-Forwarded-For` HTTP header on incoming requests to the remote IP address of the request.
 
 On the Growth tier, a dedicated Application Load Balancer is included, which provides better performance, reliabilty and isolation.
+
+### Outgoing traffic
+
+Egress traffic out from Shuttle go through NAT Gateways on these IP addresses:
+
+- `13.43.103.185`
+- `13.41.117.254`
+- `13.43.235.93`
 
 ## Environment variables
 
