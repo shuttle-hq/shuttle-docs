@@ -1,6 +1,6 @@
 ---
-title: "Integrate AWS RDS with Shuttle"
-description: "Seamlessly connect AWS RDS with your Rust applications on Shuttle. Our documentation shows you the steps to ensure robust database management."
+title: "AWS RDS"
+description: "Connect AWS RDS dedicated databases with your Rust applications on Shuttle"
 icon: "aws"
 ---
 
@@ -11,7 +11,7 @@ This plugin provisions AWS RDS databases on [Shuttle](https://www.shuttle.dev). 
 
 ## RDS vs Shared DB
 
-- Dedicated Instance: Each instance of AWS RDS is it's own dedicated instance.
+- Dedicated Instance: Each AWS RDS database is it's own dedicated instance.
 - Stability and Security: AWS RDS has greater stability due to it being a service directly offered by AWS, and also greater security due to being a dedicated instance.
 - Flexible: AWS RDS instances on the Shuttle platform can be customised to suit your needs. Instance size can be increased from the default and AWS RDS features can be enabled or disabled.
 
@@ -22,7 +22,6 @@ On *AWS RDS* we offer:
 
 With the *Shared DB* we offer:
 - Postgres
-- MongoDB
 
 ## Default RDS Instance
 
@@ -37,9 +36,7 @@ The RDS instance created by Shuttle has the following specifications and feature
 
 The pricing of this instance can be found on our [pricing page](https://www.shuttle.dev/pricing).
 
-If you require a different configuration, please contact us on [Discord](https://discord.gg/shuttle) or email us at hello@shuttle.rs. We can provision any size or configuration of RDS to suit your needs - a full list of RDS features can be found [here](https://aws.amazon.com/rds/features/)
-
-Shuttle makes sure that any data stored in your provisioned database is stored permanently and will persist if you redeploy your server via `shuttle deploy`, as well as if you restart your service via `shuttle project restart`.
+If you require a different configuration, please contact us. We can provision any size or configuration of RDS to suit your needs - a full list of RDS features can be found [here](https://aws.amazon.com/rds/features/).
 
 ## Usage
 
@@ -54,17 +51,7 @@ Each type of database is behind its own feature flag and macro attribute path.
 
 ### Output type
 
-By default, you can get the connection string to the database and connect to it with your preferred library.
-You can also specify other return types to get rid of common boilerplate.
-
-Depending on which type declaration is used as the output type in the macro, you might need to activate additional feature flags:
-
-| Engine   | Feature flag | Type declaration | Description |
-|----------|--------------|------------------|-------------|
-| Any | | `String` | The connection string including username and password |
-| Postgres | `sqlx` (with rustls) or `sqlx-native-tls` | `sqlx::PgPool` | An sqlx connection pool with reasonable defaults |
-| MySQL | `sqlx` (with rustls) or `sqlx-native-tls` | `sqlx::MySqlPool` | An sqlx connection pool with reasonable defaults |
-| MariaDB | `sqlx` (with rustls) or `sqlx-native-tls` | `sqlx::MySqlPool` | An sqlx connection pool with reasonable defaults |
+This resource supports the same output types as [Shared DB Postgres](./shuttle-shared-db#output-type), along with `sqlx::MySqlPool` for MySQL and MariaDB.
 
 Lastly, add a macro annotaion to the Shuttle main function. Here are examples for Postgres:
 

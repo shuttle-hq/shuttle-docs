@@ -128,7 +128,8 @@
                 "group": "Databases",
                 "icon": "database",
                 "pages": [
-                  "resources/shuttle-shared-db"
+                  "resources/shuttle-shared-db",
+                  "resources/shuttle-aws-rds"
                 ]
               }
             ]
