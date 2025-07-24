@@ -1,0 +1,36 @@
+---
+title: "Key Concepts"
+description: "Deep dive into Shuttle's Infrastructure from Code philosophy and how it differs from traditional approaches"
+icon: "code"
+---
+
+<CardGroup cols={2}>
+  <Card
+    title="Infrastructure-from-Code"
+    icon="code"
+    href="/explanation/key-concepts/infrastructure-from-code"
+  >
+    The paradigm shift: instead of provisioning infrastructure separately and then deploying code, you declare what you need directly in your application code and Shuttle provisions it automatically.
+  </Card>
+  <Card
+    title="Resource Abstraction"
+    icon="database"
+    href="/explanation/key-concepts/resource-abstraction"
+  >
+    Shuttle provides high-level abstractions (databases, secrets, external services) that you request by type, not by specific configuration. You ask for "a Postgres database" and get one, without VPC setup, connection strings, etc.
+  </Card>
+  <Card
+    title="Local Development Parity"
+    icon="laptop-code"
+    href="/explanation/key-concepts/local-development-parity"
+  >
+    Your development environment mirrors production automatically - when you run locally, Shuttle spins up the same resources (via Docker) that you'll have in production.
+  </Card>
+  <Card
+    title="Zero-Config Deployment"
+    icon="rocket"
+    href="/explanation/key-concepts/zero-config-deployment"
+  >
+    The elimination of deployment configuration files, CI/CD setup, and infrastructure management - shuttle deploy handles everything from code to running service.
+  </Card>
+</CardGroup>
