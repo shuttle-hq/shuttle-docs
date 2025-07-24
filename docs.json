@@ -74,7 +74,7 @@
         "pages": [
           "tutorials/your-first-app",
           {
-            "group": "Beginner",
+            "group": "Essentials",
             "icon": "graduation-cap",
             "pages": [
               "tutorials/beginner/rest-http-service-with-axum",
@@ -82,7 +82,7 @@
             ]
           },
           {
-            "group": "Intermediate", 
+            "group": "Deep Dive", 
             "icon": "code",
             "pages": [
               "tutorials/intermediate/authentication",
