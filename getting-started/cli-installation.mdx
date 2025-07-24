@@ -1,0 +1,109 @@
+---
+title: "CLI Installation"
+description: "How to install the Shuttle Command Line Interface (CLI)"
+icon: "download"
+---
+
+## <span style={{ fontWeight: 600 }}>Easy Installation </span>
+
+<span style={{ fontSize: '1.1em', fontWeight: 500 }}>
+Just run these two commands in your terminal:
+</span>
+
+1. <b>Step 1: Install Shuttle CLI</b>
+
+<CodeBlock language="sh" expanded>
+curl -sSfL https://www.shuttle.dev/install | bash
+</CodeBlock>
+
+2. <b>Step 2: Authenticate Shuttle CLI</b>
+
+<CodeBlock language="sh" expanded>
+shuttle login
+</CodeBlock>
+
+## <span style={{ fontWeight: 600 }}>Advanced Installation </span>
+
+<span style={{ fontSize: '1.1em', fontWeight: 500 }}>
+Looking for more ways to install Shuttle? Here are some alternative methods to fit your setup and preferences:
+</span>
+
+#### <span style={{ fontWeight: 500 }}>Windows (PowerShell)</span>
+
+If you're on Windows, run this command in PowerShell:
+
+<CodeBlock language="powershell" expanded>
+iwr https://www.shuttle.dev/install-win | iex
+</CodeBlock>
+
+<Info>
+<span style={{ fontWeight: 500 }}>The install script collects anonymous telemetry data to help improve Shuttle.</span> No IP address or similar is collected. The data includes:
+
+- <b>Platform (OS)</b>
+- <b>Installation method</b> (new install or upgrade)
+- <b>Success/Failure outcome and step</b>
+- <b>Start and end times of script execution</b>
+
+You can opt out by setting any of these environment variables to <code>1</code> or <code>true</code>:
+- <code>DO_NOT_TRACK</code>
+- <code>DISABLE_TELEMETRY</code>
+- <code>SHUTTLE_DISABLE_TELEMETRY</code>
+- <code>CI</code>
+
+The scripts are open source [[1]](https://github.com/shuttle-hq/shuttle/blob/main/install.sh) [[2]](https://github.com/shuttle-hq/shuttle/blob/main/install.ps1).
+</Info>
+
+#### <span style={{ fontWeight: 500 }}>Alternative Installation Methods</span>
+
+If you use Cargo's package manager, you can install Shuttle with:
+
+<CodeBlock language="sh" expanded>
+cargo binstall cargo-shuttle
+</CodeBlock>
+
+#### <span style={{ fontWeight: 500 }}>Building from Source</span>
+
+Prefer to build from source? Run:
+
+<CodeBlock language="sh" expanded>
+cargo install cargo-shuttle
+</CodeBlock>
+
+<Note>Building from source requires a Rust toolchain and may take longer than other installation methods.</Note>
+
+#### <span style={{ fontWeight: 500 }}>Pre-built Binaries</span>
+
+Download pre-built binaries for your platform from the <a href="https://github.com/shuttle-hq/shuttle/releases/latest" target="_blank">GitHub releases page</a>.
+
+#### <span style={{ fontWeight: 500 }}>Community Packages (unofficial)</span>
+
+Shuttle CLI is also available via community-maintained packages on popular package managers:
+
+<span style={{ fontWeight: 500 }}>Install with Homebrew:</span>
+<CodeBlock language="sh" expanded>
+brew install cargo-shuttle
+</CodeBlock>
+
+<span style={{ fontWeight: 500 }}>Install from the community repository (Arch Linux):</span>
+<CodeBlock language="sh" expanded>
+pacman -S cargo-shuttle
+</CodeBlock>
+
+<span style={{ fontWeight: 500 }}>Install on Alpine Edge (after enabling the testing repository):</span>
+<CodeBlock language="sh" expanded>
+apk add cargo-shuttle
+</CodeBlock>
+
+<Callout type="info" title="Looking for more platforms?">
+See the full list of available Shuttle CLI packages and their status on <a href="https://repology.org/project/cargo-shuttle/versions" target="_blank">Repology</a>.
+</Callout>
+
+#### <span style={{ fontWeight: 500 }}>Verifying Your Installation</span>
+
+After installation, check that Shuttle CLI is installed by running:
+
+<CodeBlock language="sh" expanded>
+shuttle --version
+</CodeBlock>
+
+You should see the current version number displayed.

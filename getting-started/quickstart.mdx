@@ -1,0 +1,40 @@
+---
+title: "Quickstart"
+description: "Follow these steps to deploy your first Shuttle project"
+icon: "download"
+---
+
+# Deploy your project
+
+<span style={{ fontSize: '1.1em', fontWeight: 500 }}>
+
+1. <b>Step 1: Install Shuttle CLI</b>
+
+<CodeBlock language="sh" expanded>
+curl -sSfL https://www.shuttle.dev/install | bash
+</CodeBlock>
+
+2. <b>Step 2: Authenticate Shuttle CLI</b>
+
+<CodeBlock language="sh" expanded>
+shuttle login
+</CodeBlock>
+
+3. <b>Step 3: Select a template</b>
+
+<b>Template:</b> Axum
+
+4. <b>Step 4: Initialize your project</b>
+
+<CodeBlock language="sh" expanded>
+shuttle init --template axum --id proj_01K0YAX30QM2TJ6F6R0TEFG88M --name "frosty-bouman"
+</CodeBlock>
+
+5. <b>Step 5: Deploy your project</b>
+
+<p>CD to the project directory and run:</p>
+<CodeBlock language="sh" expanded>
+shuttle deploy
+</CodeBlock>
+
+</span>

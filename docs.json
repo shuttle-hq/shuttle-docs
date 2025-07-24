@@ -66,7 +66,8 @@
         "group": "Shuttle",
         "pages": [
           "welcome/introduction",
-          "getting-started/installation"
+          "getting-started/quickstart",
+          "getting-started/cli-installation"
         ]
       },
       {
