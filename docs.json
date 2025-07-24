@@ -277,17 +277,11 @@
       {
         "group": "Explanation",
         "pages": [
-          {
-            "group": "Key Concepts",
-            "icon": "code",
-            "pages": [
-              "explanation/key-concepts",
+          "explanation/key-concepts",
               "explanation/key-concepts/infrastructure-from-code",
               "explanation/key-concepts/resource-abstraction",
               "explanation/key-concepts/local-development-parity",
-              "explanation/key-concepts/zero-config-deployment"
-            ]
-          },
+              "explanation/key-concepts/zero-config-deployment",
           {
             "group": "Core Concepts",
             "icon": "lightbulb",
