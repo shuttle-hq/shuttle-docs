@@ -1,0 +1,102 @@
+---
+title: "Static Files"
+'og:title': "Static Files with Rocket - Shuttle Docs"
+description: "This article walks you through setting up static files with Rocket, an ergonomic framework for simple web applications."
+---
+
+## Description
+
+This example has one route at `/` where the homepage is served and shows you how you can serve HTML or other types of files with Rocket.
+
+Note that static assets are declared in the `Shuttle.toml` file.
+
+You can clone the example below by running the following (you'll need `shuttle` CLI installed):
+```bash
+shuttle init --from shuttle-hq/shuttle-examples --subfolder rocket/static-files
+```
+
+## Code
+
+<CodeGroup>
+```rust src/main.rs
+use rocket::fs::NamedFile;
+use rocket::fs::{relative};
+use std::path::{Path, PathBuf};
+
+#[rocket::get("/<path..>")]
+pub async fn serve(mut path: PathBuf) -> Option<NamedFile> {
+    path.set_extension("html");
+    let mut path = Path::new(relative!("assets")).join(path);
+    if path.is_dir() {
+        path.push("index.html");
+    }
+
+    NamedFile::open(path).await.ok()
+}
+
+#[shuttle_runtime::main]
+async fn rocket() -> shuttle_rocket::ShuttleRocket {
+    let rocket = rocket::build().mount("/", rocket::routes![serve]);
+
+    Ok(rocket.into())
+}
+```
+
+```html assets/index.html
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Static Files</title>
+    </head>
+    <body>
+        <p>This is an example of serving static files with Rocket and Shuttle.</p>
+	<a href="/about">Click here to go to the About page</a>
+    </body>
+</html>
+```
+
+```html assets/about.html
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Static Files</title>
+    </head>
+    <body>
+        <p>This is the About page.</p>
+    </body>
+</html>
+```
+
+```toml Cargo.toml
+[package]
+name = "static-files"
+version = "0.1.0"
+edition = "2021"
+publish = false
+
+[dependencies]
+rocket = "0.5.0"
+shuttle-rocket = "0.56.0"
+shuttle-runtime = "0.56.0"
+tokio = "1.26.0"
+```
+
+```toml Shuttle.toml
+[build]
+assets = [
+    "assets",
+]
+```
+</CodeGroup>
+
+## Usage
+
+After you clone the example, launch it locally by using `shuttle run` then visit the home route at `http://localhost:8000` - you should see a homepage that shows our included HTML file.
+
+You can extend this example by adding more routes that serve other files.
+
+---
+
+<Snippet file="other-frameworks.mdx" />
+
+<Snippet file="check-examples.mdx" />

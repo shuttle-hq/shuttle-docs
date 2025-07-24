@@ -1,0 +1,185 @@
+---
+title: "Other Examples"
+description: "This section contains examples for the following frameworks: Rama, Tower, Warp, Salvo, Poem, Thruster, and Tide."
+---
+
+### Hello World
+
+This example provides a simple "Hello, world!" Rust application that you can deploy with Shuttle. It's a great starting point for learning how to use Shuttle and getting familiar with the deployment process for Rust applications.
+
+In order to get started, initialize your project with `shuttle init` and pick the framework you want to use for this example.
+
+Once you are done, your project should be setup with all the required dependencies so go ahead and copy/paste the relevant code snippet from below into your `main.rs` file.
+
+<CodeGroup>
+```rust Rama
+use rama::{
+    Context, Layer,
+    error::ErrorContext,
+    http::{
+        StatusCode,
+        layer::forwarded::GetForwardedHeaderLayer,
+        service::web::{Router, response::Result},
+    },
+    net::forwarded::Forwarded,
+};
+
+async fn hello_world(ctx: Context<()>) -> Result<String> {
+    Ok(match ctx.get::<Forwarded>() {
+        Some(forwarded) => format!(
+            "Hello cloud user @ {}!",
+            forwarded
+                .client_ip()
+                .context("missing IP information from user")
+                .map_err(|err| (StatusCode::INTERNAL_SERVER_ERROR, err.to_string()))?
+        ),
+        None => "Hello local user! Are you developing?".to_owned(),
+    })
+}
+
+#[shuttle_runtime::main]
+async fn main() -> Result<impl shuttle_rama::ShuttleService, shuttle_rama::ShuttleError> {
+    let router = Router::new().get("/", hello_world);
+
+    let app =
+        // Shuttle sits behind a load-balancer,
+        // so in case you want the real IP of the user,
+        // you need to ensure this headers is handled.
+        //
+        // Learn more at <https://docs.shuttle.dev/docs/deployment-environment#https-traffic>
+        GetForwardedHeaderLayer::x_forwarded_for().into_layer(router);
+
+    Ok(shuttle_rama::RamaService::application(app))
+}
+```
+
+```rust Tower
+use std::convert::Infallible;
+use std::future::Future;
+use std::pin::Pin;
+use std::task::{Context, Poll};
+
+#[derive(Clone)]
+struct HelloWorld;
+
+impl tower::Service<hyper::Request<hyper::Body>> for HelloWorld {
+    type Response = hyper::Response<hyper::Body>;
+    type Error = Infallible;
+    type Future = Pin<Box<dyn Future<Output = Result<Self::Response, Self::Error>> + Send + Sync>>;
+
+    fn poll_ready(&mut self, _cx: &mut Context<'_>) -> Poll<Result<(), Self::Error>> {
+        Poll::Ready(Ok(()))
+    }
+
+    fn call(&mut self, _req: hyper::Request<hyper::Body>) -> Self::Future {
+        let body = hyper::Body::from("Hello, world!");
+        let resp = hyper::Response::builder()
+            .status(200)
+            .body(body)
+            .expect("Unable to create the `hyper::Response` object");
+
+        let fut = async { Ok(resp) };
+
+        Box::pin(fut)
+    }
+}
+
+#[shuttle_runtime::main]
+async fn tower() -> shuttle_tower::ShuttleTower<HelloWorld> {
+    let service = HelloWorld;
+
+    Ok(service.into())
+}
+```
+
+```rust Warp
+use warp::Filter;
+use warp::Reply;
+
+#[shuttle_runtime::main]
+async fn warp() -> shuttle_warp::ShuttleWarp<(impl Reply,)> {
+    let route = warp::any().map(|| "Hello, World!");
+    Ok(route.boxed().into())
+}
+```
+
+```rust Salvo
+use salvo::prelude::*;
+
+#[handler]
+async fn hello_world(res: &mut Response) {
+    res.render(Text::Plain("Hello, world!"));
+}
+
+#[shuttle_runtime::main]
+async fn salvo() -> shuttle_salvo::ShuttleSalvo {
+    let router = Router::new().get(hello_world);
+
+    Ok(router.into())
+}
+```
+
+```rust Poem
+use poem::{get, handler, Route};
+use shuttle_poem::ShuttlePoem;
+
+#[handler]
+fn hello_world() -> &'static str {
+    "Hello, world!"
+}
+
+#[shuttle_runtime::main]
+async fn poem() -> ShuttlePoem<impl poem::Endpoint> {
+    let app = Route::new().at("/", get(hello_world));
+
+    Ok(app.into())
+}
+```
+
+```rust Thruster
+use thruster::{
+    context::basic_hyper_context::{generate_context, BasicHyperContext as Ctx, HyperRequest},
+    m, middleware_fn, App, HyperServer, MiddlewareNext, MiddlewareResult, ThrusterServer,
+};
+
+#[middleware_fn]
+async fn hello(mut context: Ctx, _next: MiddlewareNext<Ctx>) -> MiddlewareResult<Ctx> {
+    context.body("Hello, World!");
+    Ok(context)
+}
+
+#[shuttle_runtime::main]
+async fn thruster() -> shuttle_thruster::ShuttleThruster<HyperServer<Ctx, ()>> {
+    let server = HyperServer::new(
+        App::<HyperRequest, Ctx, ()>::create(generate_context, ()).get("/", m![hello]),
+    );
+
+    Ok(server.into())
+}
+```
+
+```rust Tide
+#[shuttle_runtime::main]
+async fn tide() -> shuttle_tide::ShuttleTide<()> {
+    let mut app = tide::new();
+    app.with(tide::log::LogMiddleware::new());
+
+    app.at("/").get(|_| async { Ok("Hello, world!") });
+
+    Ok(app.into())
+}
+```
+
+</CodeGroup>
+
+Run the example locally with:
+
+```bash
+shuttle run
+```
+
+In order to deploy the example, simply run:
+
+```bash
+shuttle deploy
+```

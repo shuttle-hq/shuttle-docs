@@ -1,0 +1,100 @@
+---
+title: "Hello World Bot"
+description: "Serenity is a Rust library for the Discord API."
+---
+
+This section revolves around simple Serenity examples you can get quickly started with by following these 4 steps:
+1. Go through the steps in **Prerequisites** below
+2. Initialize a new Serenity project by running the `shuttle init --template serenity` command
+3. Copy pasting the contents of the example you want to deploy -- make sure to check the tabs of the snippet(s) to ensure you are copying the right code/file
+4. Running the `shuttle deploy` command
+
+### Prerequisites
+
+To get started log in to the [Discord developer portal](https://discord.com/developers/applications).
+
+1. Click the New Application button, name your application and click Create.
+2. Navigate to the Bot tab in the lefthand menu, and add a new bot.
+3. On the bot page click the Reset Token button to reveal your token. Put this token in your `Secrets.toml`. It's very important that you don't reveal your token to anyone, as it can be abused. Create a `.gitignore` file to omit your `Secrets.toml` from version control.
+4. For the sake of this example, you also need to scroll down on the bot page to the Message Content Intent section and enable that option.
+
+To add the bot to a server we need to create an invite link.
+
+1. On your bot's application page, open the OAuth2 page via the lefthand panel.
+2. Go to the URL Generator via the lefthand panel, and select the `bot` scope as well as the `Send Messages` permission in the Bot Permissions section.
+3. Copy the URL, open it in your browser and select a Discord server you wish to invite the bot to.
+
+### Code
+
+This example shows how to build a Serenity bot with Shuttle that responds to the `!hello` command with `world!`.
+
+<CodeGroup>
+```rust src/main.rs
+use anyhow::Context as _;
+use serenity::async_trait;
+use serenity::model::channel::Message;
+use serenity::model::gateway::Ready;
+use serenity::prelude::*;
+use shuttle_runtime::SecretStore;
+use tracing::{error, info};
+
+struct Bot;
+
+#[async_trait]
+impl EventHandler for Bot {
+    async fn message(&self, ctx: Context, msg: Message) {
+        if msg.content == "!hello" {
+            if let Err(e) = msg.channel_id.say(&ctx.http, "world!").await {
+                error!("Error sending message: {:?}", e);
+            }
+        }
+    }
+
+    async fn ready(&self, _: Context, ready: Ready) {
+        info!("{} is connected!", ready.user.name);
+    }
+}
+
+#[shuttle_runtime::main]
+async fn serenity(
+    #[shuttle_runtime::Secrets] secrets: SecretStore,
+) -> shuttle_serenity::ShuttleSerenity {
+    // Get the discord token set in `Secrets.toml`
+    let token = secrets.get("DISCORD_TOKEN").context("'DISCORD_TOKEN' was not found")?;
+
+    // Set gateway intents, which decides what events the bot will be notified about
+    let intents = GatewayIntents::GUILD_MESSAGES | GatewayIntents::MESSAGE_CONTENT;
+
+    let client = Client::builder(&token, intents)
+        .event_handler(Bot)
+        .await
+        .expect("Err creating client");
+
+    Ok(client.into())
+}
+```
+
+```toml Secrets.toml
+DISCORD_TOKEN = 'the contents of your discord token'
+```
+
+```toml Cargo.toml
+[package]
+name = "hello-world-serenity-bot"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+anyhow = "1.0.66"
+serenity = { version = "0.12.0", default-features = false, features = ["client", "gateway", "rustls_backend", "model"] }
+shuttle-runtime = "0.56.0"
+shuttle-serenity = "0.56.0"
+tokio = "1.26.0"
+tracing = "0.1.37"
+```
+</CodeGroup>
+
+---
+<Snippet file="other-frameworks.mdx" />
+
+<Snippet file="check-examples.mdx" />

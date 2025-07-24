@@ -1,0 +1,36 @@
+---
+title: Metadata
+icon: "gear-code"
+---
+
+{/* TODO add this back when the plugin has been reworked */}
+
+The metadata plugin allows applications to obtain certain information about their runtime environment.
+
+## Usage
+
+Use the resource by annotating your main function with the `shuttle_runtime::ShuttleMetadata` attribute.
+
+## Example
+
+```rust main.rs
+use axum::{routing::get, Router};
+use shuttle_runtime::DeploymentMetadata;
+
+#[shuttle_runtime::main]
+async fn axum(
+    #[shuttle_runtime::Metadata] metadata: DeploymentMetadata,
+) -> shuttle_axum::ShuttleAxum {
+    let router = Router::new().route("/", get(format!("{:?}", metadata)));
+
+    Ok(router.into())
+}
+```
+
+This example has one route which returns the debug print of the `DeploymentMetadata` struct:
+
+```text
+DeploymentMetadata { env: Local, project_name: "metadata-axum-app", storage_path: ".shuttle-storage" }
+```
+
+The full example can also be found on [GitHub](https://github.com/shuttle-hq/shuttle-examples/tree/main/axum/metadata).

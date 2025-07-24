@@ -1,0 +1,43 @@
+---
+title: "Resources"
+description: "Learn about the resources that are officially supported by Shuttle."
+icon: "boxes-stacked"
+---
+
+This section covers the resources currently supported by Shuttle. In broad terms, for the resource needed, simply mark up your code with the appropriate annotation. This is very powerful and brings several benefits:
+
+- simplicity
+- receive a database by writing a simple annotation
+- enables quick prototyping, there is no need for extensive setup, management consoles/tools, etc.
+
+## Resources
+
+### AWS Relational Database Service (RDS)
+
+This plugin allows applications to leverage AWS RDS for database needs, instead of a shared database. This will result in improved availability and reliability given the "managed" nature of the service and its increased resources. It can be a good choice if the database backing the application requires the performance increase that results from improved isolation.
+
+### Shared Databases
+
+The Shared Databases plugin can give you your own Postgres database inside a cluster shared with other users. This is the option to choose if total database isolation isn't a concern. It's great starting point for prototyping applications on Shuttle.
+
+## Integrations
+
+Apps on Shuttle can integrate with many external services. For some, we provide official wrapper plugins to get you started quickly. Check out the [Integrations](/integrations) section for the full list.
+
+## Commands
+
+To check which resources are linked to your project, use
+
+```bash
+shuttle resource list
+```
+
+### Deleting resources
+
+You can delete database resources with
+
+```bash
+shuttle resource delete [TYPE]
+```
+
+To know what to put in the TYPE parameter, use the list command above.

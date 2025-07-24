@@ -82,54 +82,128 @@
     },
     "tabs": [
       {
-        "tab": "Documentation",
+        "tab": "Getting Started",
         "groups": [
           {
-            "group": "Getting Started",
+            "group": "Welcome",
             "pages": [
               "welcome/introduction",
-              "getting-started/installation",
-              "getting-started/quick-start",
-              "migration/guide"
+              "getting-started/installation"
+            ]
+          }
+        ]
+      },
+      {
+        "tab": "Tutorials",
+        "groups": [
+          {
+            "group": "Learning Path",
+            "pages": [
+              "tutorials/your-first-app",
+              "tutorials/rest-http-service-with-axum",
+              "tutorials/databases-with-rust",
+              "tutorials/authentication"
             ]
           },
           {
-            "group": "Shuttle",
+            "group": "Project-Based Learning",
             "pages": [
-              "docs/projects",
-              "docs/project-configuration",
-              "docs/local-run",
-              "docs/files",
+              "tutorials/discord-weather-forecast",
+              "tutorials/serverless-calendar-app",
+              "tutorials/url-shortener",
+              "tutorials/websocket-chat-app-js"
+            ]
+          },
+          {
+            "group": "Advanced Tutorials",
+            "pages": [
+              "tutorials/custom-service",
+              "tutorials/send-your-logs-to-datadog"
+            ]
+          }
+        ]
+      },
+      {
+        "tab": "How-to Guides",
+        "groups": [
+          {
+            "group": "Development",
+            "pages": [
+              "how-to-guides/quick-deployment",
+              "how-to-guides/cli-usage",
+              "how-to-guides/local-development"
+            ]
+          },
+          {
+            "group": "Deployment & Operations",
+            "pages": [
               "docs/builds",
               "docs/deployment-environment",
               "docs/logs",
               "docs/domain-names",
-              {
-                "group": "Telemetry",
-                "icon": "telescope",
-                "pages": [
-                  "docs/telemetry/overview",
-                  "docs/telemetry/getting-started",
-                  "docs/telemetry/betterstack",
-                  "docs/telemetry/custom-metrics"
-                ]
-              },
-              "docs/account",
-              "docs/teams",
               "docs/scaling"
+            ]
+          },
+          {
+            "group": "Database Management",
+            "pages": [
+              "how-to-guides/migrate-shared-postgres",
+              "docs/migrating-rds-postgres"
+            ]
+          },
+          {
+            "group": "Maintenance",
+            "pages": [
+              "how-to-guides/upgrade",
+              {
+                "group": "Troubleshooting",
+                "icon": "bug",
+                "pages": [
+                  "how-to-guides/troubleshooting/troubleshooting",
+                  "support/faq"
+                ]
+              }
+            ]
+          },
+          {
+            "group": "Platform Updates",
+            "pages": [
+              "platform-update/platform-update",
+              "platform-update/migration"
+            ]
+          }
+        ]
+      },
+      {
+        "tab": "Reference",
+        "groups": [
+          {
+            "group": "CLI",
+            "pages": [
+              "reference/cli-reference"
+            ]
+          },
+          {
+            "group": "Projects & Configuration",
+            "pages": [
+              "reference/projects",
+              "reference/project-configuration",
+              "docs/files",
+              "docs/console"
             ]
           },
           {
             "group": "Resources",
             "pages": [
-              "resources/resources",
-              "resources/shuttle-secrets",
+              "reference/resources",
+              "reference/shuttle-secrets",
+              "reference/shuttle-metadata",
               {
                 "group": "Databases",
                 "icon": "database",
                 "pages": [
-                  "resources/shuttle-shared-db",
-                  "resources/shuttle-aws-rds"
+                  "reference/shuttle-shared-db",
+                  "reference/shuttle-aws-rds"
                 ]
               }
             ]
@@ -138,39 +212,76 @@
             "group": "Integrations",
             "pages": [
               {
-                "group": "Databases",
-                "icon": "database",
+                "group": "External Services",
+                "icon": "link",
                 "pages": [
-                  "integrations/shuttle-turso",
-                  "integrations/shuttle-qdrant",
-                  "integrations/shuttle-opendal"
+                  "reference/shuttle-turso",
+                  "reference/shuttle-qdrant",
+                  "reference/shuttle-opendal",
+                  "reference/shuttle-openai"
                 ]
               },
-              "integrations/shuttle-openai",
-              "integrations/custom-resources",
-              "integrations/ci-cd",
-              "integrations/mcp-server"
+              "reference/custom-resources",
+              "reference/ci-cd",
+              "reference/mcp-server"
             ]
           },
           {
-            "group": "Guides",
+            "group": "Examples",
             "pages": [
-              "guides/cli",
-              "guides/upgrade",
-              "guides/migrate-shared-postgres",
+              "reference/examples/overview",
               {
-                "group": "Platform Update",
-                "icon": "layer-group",
+                "group": "Web Frameworks",
                 "pages": [
-                  "platform-update/platform-update",
-                  "platform-update/migration"
+                  {
+                    "group": "Axum",
+                    "pages": [
+                      "reference/examples/axum",
+                      "reference/examples/axum-postgres",
+                      "reference/examples/axum-static-files",
+                      "reference/examples/axum-websockets",
+                      "reference/examples/axum-jwt-authentication"
+                    ]
+                  },
+                  {
+                    "group": "Actix Web",
+                    "pages": [
+                      "reference/examples/actix",
+                      "reference/examples/actix-postgres",
+                      "reference/examples/actix-static-files",
+                      "reference/examples/actix-websocket-actorless",
+                      "reference/examples/actix-cookie-authentication"
+                    ]
+                  },
+                  {
+                    "group": "Rocket",
+                    "pages": [
+                      "reference/examples/rocket",
+                      "reference/examples/rocket-postgres",
+                      "reference/examples/rocket-static-files",
+                      "reference/examples/rocket-jwt-authentication"
+                    ]
+                  }
                 ]
-              }
+              },
+              {
+                "group": "Discord Bots",
+                "pages": [
+                  "reference/examples/serenity",
+                  "reference/examples/serenity-todo",
+                  "reference/examples/poise"
+                ]
+              },
+              "reference/examples/loco",
+              "reference/examples/other",
+              "reference/examples/examples-repo-link"
             ]
           },
           {
-            "group": "Pricing",
+            "group": "Account & Billing",
             "pages": [
+              "docs/account",
+              "docs/teams",
               "pricing/overview",
               "pricing/pro-trial",
               "pricing/billing",
@@ -180,79 +291,40 @@
             ]
           },
           {
-            "group": "Support",
+            "group": "Telemetry",
             "pages": [
-              "support/support",
-              "support/faq",
-              "support/troubleshooting"
+              "docs/telemetry/overview",
+              "docs/telemetry/getting-started",
+              "docs/telemetry/betterstack",
+              "docs/telemetry/custom-metrics"
+            ]
+          }
+        ]
+      },
+      {
+        "tab": "Explanation",
+        "groups": [
+          {
+            "group": "Core Concepts",
+            "pages": [
+              "explanation/architecture",
+              "explanation/infrastructure-from-code"
             ]
           },
           {
-            "group": "Community",
+            "group": "Platform Understanding",
             "pages": [
-              "community/get-involved",
-              "community/contribute",
-              "community/open-source"
+              "docs/deployment-environment",
+              "migration/guide"
             ]
           }
         ]
       },
       {
-        "tab": "Examples",
+        "tab": "Templates",
         "groups": [
           {
-            "group": "Examples",
-            "pages": [
-              "examples/overview",
-              {
-                "group": "Axum",
-                "pages": [
-                  "examples/axum",
-                  "examples/axum-postgres",
-                  "examples/axum-static-files",
-                  "examples/axum-websockets",
-                  "examples/axum-jwt-authentication"
-                ]
-              },
-              {
-                "group": "Actix Web",
-                "pages": [
-                  "examples/actix",
-                  "examples/actix-postgres",
-                  "examples/actix-static-files",
-                  "examples/actix-websocket-actorless",
-                  "examples/actix-cookie-authentication"
-                ]
-              },
-              {
-                "group": "Rocket",
-                "pages": [
-                  "examples/rocket",
-                  "examples/rocket-postgres",
-                  "examples/rocket-static-files",
-                  "examples/rocket-jwt-authentication"
-                ]
-              },
-              "examples/loco",
-              {
-                "group": "Serenity",
-                "pages": [
-                  "examples/serenity",
-                  "examples/serenity-todo",
-                  "examples/poise"
-                ]
-              },
-              "examples/other",
-              "examples/examples-repo-link"
-            ]
-          }
-        ]
-      },
-      {
-        "tab": "Templates and Tutorials",
-        "groups": [
-          {
-            "group": "Templates and Tutorials",
+            "group": "Templates",
             "pages": [
               "templates/overview"
             ]
@@ -262,26 +334,27 @@
             "pages": [
               "templates/fullstack/saas-template"
             ]
-          },
-          {
-            "group": "Tutorials",
-            "pages": [
-              "templates/tutorials/rest-http-service-with-axum",
-              "templates/tutorials/discord-weather-forecast",
-              "templates/tutorials/databases-with-rust",
-              "templates/tutorials/serverless-calendar-app",
-              "templates/tutorials/url-shortener",
-              "templates/tutorials/authentication",
-              "templates/tutorials/send-your-logs-to-datadog",
-              "templates/tutorials/websocket-chat-app-js",
-              "templates/tutorials/custom-service"
-            ]
           }
         ]
       },
       {
-        "tab": "Blog",
-        "href": "https://www.shuttle.dev/blog/tags/all"
+        "tab": "Community & Support",
+        "groups": [
+          {
+            "group": "Community",
+            "pages": [
+              "community/get-involved",
+              "community/contribute",
+              "community/open-source"
+            ]
+          },
+          {
+            "group": "Support",
+            "pages": [
+              "support/support"
+            ]
+          }
+        ]
       }
     ]
   }

@@ -1,0 +1,86 @@
+---
+title: "Poise"
+description: "Poise is an opinionated Discord bot framework based on Serenity with good support for slash commands."
+---
+
+### Prerequisites
+
+To get going with Poise, follow the same prerequisites as for [Serenity](./serenity).
+
+### Code
+
+This example shows how to build a Poise bot with Shuttle that responds to the `/hello` command with `world!`.
+
+<CodeGroup>
+```rust src/main.rs
+use anyhow::Context as _;
+use poise::serenity_prelude::{ClientBuilder, GatewayIntents};
+use shuttle_runtime::SecretStore;
+use shuttle_serenity::ShuttleSerenity;
+
+struct Data {} // User data, which is stored and accessible in all command invocations
+type Error = Box<dyn std::error::Error + Send + Sync>;
+type Context<'a> = poise::Context<'a, Data, Error>;
+
+/// Responds with "world!"
+#[poise::command(slash_command)]
+async fn hello(ctx: Context<'_>) -> Result<(), Error> {
+    ctx.say("world!").await?;
+    Ok(())
+}
+
+#[shuttle_runtime::main]
+async fn main(#[shuttle_runtime::Secrets] secret_store: SecretStore) -> ShuttleSerenity {
+    // Get the discord token set in `Secrets.toml`
+    let discord_token = secret_store
+        .get("DISCORD_TOKEN")
+        .context("'DISCORD_TOKEN' was not found")?;
+
+    let framework = poise::Framework::builder()
+        .options(poise::FrameworkOptions {
+            commands: vec![hello()],
+            ..Default::default()
+        })
+        .setup(|ctx, _ready, framework| {
+            Box::pin(async move {
+                poise::builtins::register_globally(ctx, &framework.options().commands).await?;
+                Ok(Data {})
+            })
+        })
+        .build();
+
+    let client = ClientBuilder::new(discord_token, GatewayIntents::non_privileged())
+        .framework(framework)
+        .await
+        .map_err(shuttle_runtime::CustomError::new)?;
+
+    Ok(client.into())
+}
+```
+
+```toml Secrets.toml
+DISCORD_TOKEN = 'the contents of your discord token'
+```
+
+```toml Cargo.toml
+[package]
+name = "hello-world-poise-bot"
+version = "0.1.0"
+edition = "2021"
+publish = false
+
+[dependencies]
+anyhow = "1.0.68"
+poise = "0.6.1"
+shuttle-runtime = "0.56.0"
+# Since poise is a serenity command framework, it can run on Shuttle with shuttle-serenity
+shuttle-serenity = "0.56.0"
+tracing = "0.1.37"
+tokio = "1.26.0"
+```
+</CodeGroup>
+
+---
+<Snippet file="other-frameworks.mdx" />
+
+<Snippet file="check-examples.mdx" />

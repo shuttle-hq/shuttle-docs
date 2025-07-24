@@ -1,0 +1,67 @@
+---
+title: Migrate Postgres Data
+description: Migrate Postgres data to shuttle.dev
+icon: dove
+---
+
+This guide shows how to dump schemas and table data from a [Shared Postgres](/resources/shuttle-shared-db) database, and restore a dump.
+
+If you encounter issues, feel free to [contact us](/support/support) for help.
+
+## Prerequisites
+
+To run the data upload against the database, you need a Postgres Client.
+In this guide, we will use `psql`.
+On Debian/Ubuntu, you can install it with:
+
+```sh
+sudo apt install postgresql-client
+```
+
+<Warning>
+Shuttle Postgres databases run Postgres version 16, so `psql` versions older than 16 might not work.
+</Warning>
+
+## Dump database to SQL file
+
+Since the Shared Postgres cluster has strict permissions, running `pg_dump` against your connection string is not possible.
+Instead, you can use the `resource dump` command that runs `pg_dump` with `--no-owner --no-privileges` for you.
+
+<Note>
+Dumping the database data extracts a copy of all data, and the database is left unmodified.
+</Note>
+
+The command writes a dump in SQL format to stdout, so you can use it to write to a file like so:
+
+```sh
+# dump database into /tmp/dump.sql
+shuttle resource dump database::shared::postgres > /tmp/dump.sql
+```
+
+<Note>
+If you get errors about request limits or timeouts, reach out to us for support.
+</Note>
+
+You can inspect the file and edit it to your liking.
+If you already let your schema migrations run in the new db, you could for instance remove the `CREATE TABLE`, `ALTER TABLE` etc, and only keep the table data `COPY` statements and so on.
+
+## Restore data from a SQL file
+
+Use the following command to get the connection string for the new database:
+
+```sh
+shuttle resource list --show-secrets
+```
+
+Use psql to run the dump file against it:
+
+```sh
+psql -d <connection string> -f filename.sql
+```
+
+You might see various errors about tables, rows, or constraints already existing in the new database.
+In most cases this is fine, but you can verify that everything looks good by connecting to the database, and testing the app.
+
+```sh
+psql <connection string>
+```

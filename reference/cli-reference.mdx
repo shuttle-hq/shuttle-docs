@@ -1,0 +1,590 @@
+---
+title: "CLI Reference"
+description: "Complete reference for all Shuttle CLI commands and options"
+icon: "terminal"
+---
+
+## Overview
+
+The Shuttle CLI is your primary interface for developing, deploying, and managing applications on the Shuttle platform. This reference provides comprehensive documentation for all commands and options.
+
+## Installation
+
+```bash
+cargo install cargo-shuttle
+```
+
+## Global Options
+
+These options can be used with any command:
+
+| Option                       | Description                                                                      |
+| ---------------------------- | -------------------------------------------------------------------------------- |
+| `--debug`                    | Turn on tracing output for Shuttle libraries (WARNING: can print sensitive data) |
+| `--offline`                  | Disable network requests that are not strictly necessary                         |
+| `--working-directory <PATH>` | Specify the working directory                                                    |
+| `--name <NAME>`              | Specify the name or id of the project                                            |
+
+## Commands Reference
+
+### Authentication
+
+#### `shuttle login`
+
+Log in to the Shuttle platform.
+
+```bash
+shuttle login
+```
+
+**Options:**
+
+- None
+
+**Description:**
+Opens your browser to authenticate with the Shuttle Console. You can use Google, GitHub, or email to authenticate.
+
+#### `shuttle logout`
+
+Log out of the Shuttle platform.
+
+```bash
+shuttle logout [OPTIONS]
+```
+
+**Options:**
+
+- `--reset-api-key` - Log out and reset your account's API key
+
+### Account Management
+
+#### `shuttle account`
+
+Show information about your Shuttle account.
+
+```bash
+shuttle account
+```
+
+**Aliases:** `acc`
+
+**Output:**
+
+- Account ID
+- Email address
+- Subscription tier
+- Project limits
+
+### Project Management
+
+#### `shuttle init`
+
+Generate a Shuttle project from a template.
+
+```bash
+shuttle init [OPTIONS] [PATH]
+```
+
+**Options:**
+
+- `--template <TEMPLATE>` - Template to use (e.g., axum, rocket, serenity)
+- `--template-subpath <PATH>` - Specify a subpath within the template
+
+**Examples:**
+
+```bash
+shuttle init                        # Interactive template selection
+shuttle init --template axum        # Use Axum template
+shuttle init my-project             # Create in specific directory
+```
+
+#### `shuttle project create`
+
+Create a project on Shuttle.
+
+```bash
+shuttle project create [OPTIONS]
+```
+
+**Aliases:** `proj create`
+
+**Options:**
+
+- `--name <NAME>` - Project name
+
+#### `shuttle project list`
+
+List all projects you have access to.
+
+```bash
+shuttle project list [OPTIONS]
+```
+
+**Aliases:** `proj list`
+
+**Options:**
+
+- `--raw` - Output tables without borders
+
+#### `shuttle project status`
+
+Get the status of this project on Shuttle.
+
+```bash
+shuttle project status [OPTIONS]
+```
+
+**Aliases:** `proj status`
+
+#### `shuttle project link`
+
+Link this workspace to a Shuttle project.
+
+```bash
+shuttle project link [OPTIONS]
+```
+
+**Aliases:** `proj link`
+
+#### `shuttle project delete`
+
+Delete a project and all linked data.
+
+```bash
+shuttle project delete [OPTIONS]
+```
+
+**Aliases:** `proj delete`
+
+**Options:**
+
+- `--yes` - Skip confirmations and proceed
+
+#### `shuttle project update name`
+
+Update project config - rename the project.
+
+```bash
+shuttle project update name <NEW_NAME>
+```
+
+### Local Development
+
+#### `shuttle run`
+
+Run a project locally.
+
+```bash
+shuttle run [OPTIONS]
+```
+
+**Options:**
+
+- `--port <PORT>` - Port to run on (default: 8000)
+- `--external` - Listen on all addresses (0.0.0.0) instead of just localhost
+- `--secrets <FILE>` - Use a non-default secrets file
+- `--release` - Compile with release optimizations
+- `--bacon` - Run in watch mode (requires bacon to be installed)
+
+**Examples:**
+
+```bash
+shuttle run                         # Run on localhost:8000
+shuttle run --port 3000            # Run on port 3000
+shuttle run --external --port 8080 # Expose to network on port 8080
+shuttle run --secrets prod.toml    # Use production secrets
+shuttle run --release              # Optimized build
+```
+
+### Deployment
+
+#### `shuttle deploy`
+
+Deploy a project to Shuttle.
+
+```bash
+shuttle deploy [OPTIONS]
+```
+
+**Options:**
+
+- `--allow-dirty` - Allow deployment with uncommitted files
+- `--no-follow` - Don't follow deployment status, exit after operation begins
+- `--output-archive <FILE>` - Output deployment archive to file instead of deploying
+- `--raw` - Don't display timestamps and log origin tags
+- `--secrets <FILE>` - Use a non-default secrets file
+
+**Examples:**
+
+```bash
+shuttle deploy                      # Standard deployment
+shuttle deploy --no-follow        # Deploy and exit immediately
+shuttle deploy --secrets prod.toml # Deploy with production secrets
+shuttle deploy --allow-dirty       # Deploy with uncommitted changes
+```
+
+#### `shuttle deployment list`
+
+List the deployments for a service.
+
+```bash
+shuttle deployment list [OPTIONS]
+```
+
+**Aliases:** `depl list`
+
+**Options:**
+
+- `--page <NUMBER>` - Which page to display
+- `--limit <NUMBER>` - How many deployments per page to display
+- `--raw` - Output tables without borders
+
+#### `shuttle deployment status`
+
+View status of a deployment.
+
+```bash
+shuttle deployment status [OPTIONS]
+```
+
+**Aliases:** `depl status`
+
+**Options:**
+
+- `--id <ID>` - ID of deployment to get status for (defaults to current)
+
+#### `shuttle deployment stop`
+
+Stop running deployment(s).
+
+```bash
+shuttle deployment stop [OPTIONS]
+```
+
+**Aliases:** `depl stop`
+
+**Options:**
+
+- `--no-follow` - Don't follow deployment status
+- `--raw` - Don't display timestamps and log origin tags
+
+#### `shuttle deployment redeploy`
+
+Redeploy a previous deployment.
+
+```bash
+shuttle deployment redeploy [OPTIONS] [ID]
+```
+
+**Aliases:** `depl redeploy`
+
+**Options:**
+
+- `--id <ID>` - ID of deployment to redeploy
+- `--no-follow` - Don't follow deployment status
+- `--raw` - Don't display timestamps and log origin tags
+
+**Examples:**
+
+```bash
+shuttle deployment redeploy        # Redeploy latest
+shuttle deployment redeploy abc123 # Redeploy specific deployment
+```
+
+### Logs
+
+#### `shuttle logs`
+
+View build and deployment logs.
+
+```bash
+shuttle logs [OPTIONS]
+```
+
+**Options:**
+
+- `--id <ID>` - Deployment ID to get logs for (defaults to current deployment)
+- `--latest` - View logs from the most recent deployment
+- `--raw` - Don't display timestamps and log origin tags
+
+**Examples:**
+
+```bash
+shuttle logs                # Current deployment logs
+shuttle logs --latest      # Latest deployment logs
+shuttle logs --id abc123   # Specific deployment logs
+shuttle logs --raw         # Raw logs without formatting
+```
+
+### Resource Management
+
+#### `shuttle resource list`
+
+List project resources.
+
+```bash
+shuttle resource list [OPTIONS]
+```
+
+**Aliases:** `res list`
+
+**Options:**
+
+- `--raw` - Output tables without borders
+- `--show-secrets` - Show secrets from resources
+
+#### `shuttle resource delete`
+
+Delete a resource.
+
+```bash
+shuttle resource delete <TYPE>
+```
+
+**Aliases:** `res delete`
+
+**Options:**
+
+- `--yes` - Skip confirmations and proceed
+
+**Examples:**
+
+```bash
+shuttle resource delete database::shared::postgres  # Delete shared Postgres
+shuttle resource delete secrets                     # Delete secrets
+```
+
+### SSL Certificates
+
+#### `shuttle certificate add`
+
+Add SSL certificate for custom domain.
+
+```bash
+shuttle certificate add <DOMAIN>
+```
+
+**Aliases:** `cert add`
+
+**Examples:**
+
+```bash
+shuttle certificate add example.com
+shuttle certificate add api.example.com
+```
+
+#### `shuttle certificate list`
+
+List project certificates.
+
+```bash
+shuttle certificate list [OPTIONS]
+```
+
+**Aliases:** `cert list`
+
+**Options:**
+
+- `--raw` - Output tables without borders
+
+#### `shuttle certificate delete`
+
+Delete SSL certificate.
+
+```bash
+shuttle certificate delete <DOMAIN>
+```
+
+**Aliases:** `cert delete`
+
+**Options:**
+
+- `--yes` - Skip confirmations and proceed
+
+### Utilities
+
+#### `shuttle generate shell`
+
+Generate shell completions.
+
+```bash
+shuttle generate shell <SHELL>
+```
+
+**Supported shells:**
+
+- `bash`
+- `elvish`
+- `fish`
+- `powershell`
+- `zsh`
+
+**Options:**
+
+- `--output <FILE>` - Output to a file (stdout by default)
+
+**Setup Examples:**
+
+```bash
+# Bash
+echo 'eval "$(shuttle generate shell bash)"' >> ~/.bashrc
+
+# Zsh
+echo 'eval "$(shuttle generate shell zsh)"' >> ~/.zshrc
+
+# Fish
+shuttle generate shell fish > ~/.config/fish/completions/shuttle.fish
+```
+
+#### `shuttle generate manpage`
+
+Generate man page.
+
+```bash
+shuttle generate manpage
+```
+
+#### `shuttle feedback`
+
+Open GitHub issue for feedback.
+
+```bash
+shuttle feedback
+```
+
+#### `shuttle upgrade`
+
+Upgrade the Shuttle CLI binary.
+
+```bash
+shuttle upgrade [OPTIONS]
+```
+
+**Options:**
+
+- `--preview` - Install unreleased version from main branch
+
+## Environment Variables
+
+| Variable          | Description                                              |
+| ----------------- | -------------------------------------------------------- |
+| `SHUTTLE_API_URL` | Override the default API URL                             |
+| `SHUTTLE_API_KEY` | API key for authentication (use `shuttle login` instead) |
+
+## Configuration Files
+
+### `.shuttle/config.toml`
+
+Project-specific configuration stored in your project directory.
+
+```toml
+project_id = "proj_example123"
+```
+
+### `Secrets.toml`
+
+Store secrets for your application:
+
+```toml
+MY_API_KEY = "secret-value"
+DATABASE_URL = "postgres://..."
+```
+
+### `Shuttle.toml`
+
+Project configuration (optional):
+
+```toml
+name = "my-project"
+
+[build]
+dockerfile = "Dockerfile"
+```
+
+## Exit Codes
+
+| Code | Meaning                      |
+| ---- | ---------------------------- |
+| 0    | Success                      |
+| 1    | General error                |
+| 2    | Command line usage error     |
+| 130  | Interrupted by user (Ctrl+C) |
+
+## Common Workflows
+
+### First Deployment
+
+```bash
+shuttle login
+shuttle init --template axum
+cd my-project
+shuttle run                 # Test locally
+shuttle deploy             # Deploy to production
+```
+
+### Development Cycle
+
+```bash
+shuttle run                 # Develop locally
+shuttle deploy             # Deploy changes
+shuttle logs               # Check deployment logs
+```
+
+### Project Management
+
+```bash
+shuttle project list       # See all projects
+shuttle project status     # Check current project
+shuttle resource list      # See project resources
+```
+
+### Debugging
+
+```bash
+shuttle logs --latest      # Check recent logs
+shuttle deployment status  # Check deployment state
+shuttle --debug deploy     # Verbose deployment
+```
+
+## Troubleshooting
+
+### Common Issues
+
+**"Project not found" errors:**
+
+```bash
+shuttle project link       # Re-link to correct project
+```
+
+**Authentication issues:**
+
+```bash
+shuttle logout
+shuttle login             # Re-authenticate
+```
+
+**Local development issues:**
+
+- Ensure Docker is running for database resources
+- Check port availability with `--port` option
+- Use `--external` to expose to local network
+
+**Deployment issues:**
+
+- Use `--debug` flag for detailed output
+- Check `shuttle logs` for build errors
+- Verify `Cargo.toml` dependencies
+
+## Getting Help
+
+```bash
+shuttle help                    # General help
+shuttle <command> --help       # Command-specific help
+shuttle --debug <command>      # Verbose output for debugging
+```
+
+For additional support:
+
+- [Discord Community](https://discord.gg/shuttle)
+- [GitHub Issues](https://github.com/shuttle-hq/shuttle/issues)
+- [Documentation](https://docs.shuttle.dev)

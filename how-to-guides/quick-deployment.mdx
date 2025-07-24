@@ -1,0 +1,157 @@
+---
+title: "Quick Deployment"
+description: "How to deploy your first Shuttle project to the cloud in minutes"
+icon: "rocket"
+---
+
+<Note>
+  This guide assumes you have already installed the Shuttle CLI. If you haven't,
+  please visit the [installation guide](../getting-started/installation) first.
+</Note>
+
+## Problem
+
+You want to quickly get a Rust web application deployed to the cloud with minimal setup and configuration.
+
+## Solution
+
+Follow these steps to go from zero to deployed in under 5 minutes:
+
+### 1. Authenticate with Shuttle
+
+```sh
+shuttle login
+```
+
+This opens your browser to the [Shuttle Console](https://console.shuttle.dev/) where you can authenticate with Google, GitHub, or email.
+
+### 2. Create Your Project
+
+```sh
+shuttle init --template axum my-app
+cd my-app
+```
+
+Choose from available templates:
+
+- `axum` - Modern, ergonomic web framework
+- `rocket` - Type-safe web framework
+- `actix` - Actor-based web framework
+- `serenity` - Discord bot framework
+
+### 3. Test Locally (Optional)
+
+```sh
+shuttle run
+```
+
+Your app runs at `http://localhost:8000`. Press `Ctrl+C` to stop.
+
+### 4. Deploy to Production
+
+```sh
+shuttle deploy
+```
+
+**That's it!** Shuttle will:
+
+1. Build your application
+2. Provision any required infrastructure
+3. Deploy to AWS with HTTPS
+4. Provide you with a live URL
+
+<Info>
+  Your first deployment may take 2-3 minutes as Shuttle sets up your project
+  infrastructure.
+</Info>
+
+## What You Get
+
+- ✅ **HTTPS by default** - Secure endpoints from day one
+- ✅ **Custom subdomain** - `https://my-app-xyz.shuttle.app`
+- ✅ **Automatic builds** - No Docker or CI/CD setup needed
+- ✅ **Zero configuration** - Infrastructure provisioned automatically
+
+## Adding a Database
+
+Need a database? Just add the annotation:
+
+```rust
+#[shuttle_runtime::main]
+async fn main(
+    #[shuttle_shared_db::Postgres] pool: sqlx::PgPool,
+) -> shuttle_axum::ShuttleAxum {
+    // Database is automatically provisioned and connected
+}
+```
+
+Update your `Cargo.toml`:
+
+```toml
+[dependencies]
+shuttle-shared-db = "0.56.0"
+sqlx = { version = "0.8", features = ["runtime-tokio-rustls", "postgres"] }
+```
+
+Then deploy again:
+
+```sh
+shuttle deploy
+```
+
+## Useful Commands
+
+### Check Deployment Status
+
+```sh
+shuttle project status
+```
+
+### View Logs
+
+```sh
+shuttle logs
+```
+
+### List Your Projects
+
+```sh
+shuttle project list
+```
+
+### Update Your App
+
+```sh
+# Make code changes, then:
+shuttle deploy
+```
+
+## Next Steps
+
+- **Add more resources**: Try adding secrets, AWS RDS, or external integrations
+- **Custom domains**: Set up your own domain name
+- **Learn the CLI**: Explore all available commands with `shuttle help`
+- **Join the community**: Get help on [Discord](https://discord.gg/shuttle)
+
+## Troubleshooting
+
+**Deployment failed?**
+
+- Check `shuttle logs` for error details
+- Ensure your `Cargo.toml` has correct dependencies
+- Try `shuttle project status` to see project state
+
+**Local run issues?**
+
+- Make sure Docker is running (needed for databases)
+- Check if port 8000 is available, or use `--port` flag
+
+**Authentication problems?**
+
+- Try `shuttle logout` then `shuttle login` again
+
+---
+
+**Time to deployment: ~5 minutes** ⚡
+
+Ready for more advanced features? Check out our [tutorials](/tutorials) for building complete applications with databases, authentication, and more.

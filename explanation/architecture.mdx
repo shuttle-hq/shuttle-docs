@@ -1,0 +1,134 @@
+---
+title: "Shuttle Architecture"
+description: "Understand how Shuttle's infrastructure-from-code platform works under the hood"
+icon: "building"
+---
+
+## Overview
+
+Shuttle is designed around a fundamental principle: **Infrastructure from Code**. Unlike traditional platforms where you configure infrastructure separately from your application code, Shuttle provisions and manages infrastructure directly from your Rust code using macros and annotations.
+
+## Core Architecture
+
+### The Shuttle Runtime
+
+At the heart of Shuttle is the `#[shuttle_runtime::main]` macro that wraps your application. This macro:
+
+- **Analyzes your code** during compilation to understand what resources you need
+- **Provisions infrastructure** automatically based on your annotations
+- **Handles deployment lifecycle** including startup, shutdown, and health checks
+- **Manages resource connections** and provides them to your application
+
+```rust
+#[shuttle_runtime::main]
+async fn main(
+    #[shuttle_shared_db::Postgres] pool: sqlx::PgPool,
+    #[shuttle_runtime::Secrets] secrets: SecretStore,
+) -> ShuttleAxum {
+    // Your app code here - infrastructure is ready
+}
+```
+
+### Resource Provisioning System
+
+Shuttle's resource system works through a combination of:
+
+1. **Compile-time Analysis**: Shuttle scans your code for resource annotations
+2. **Infrastructure Planning**: The platform determines what resources to provision
+3. **Automatic Provisioning**: Resources are created and configured
+4. **Runtime Injection**: Live connections are provided to your application
+
+This approach eliminates the need for:
+
+- Manual infrastructure configuration
+- Environment-specific connection strings
+- Complex deployment scripts
+- Infrastructure-as-code templates
+
+### Deployment Pipeline
+
+When you run `shuttle deploy`, here's what happens:
+
+1. **Code Archive**: Your project is bundled and uploaded
+2. **Build Phase**: Code is compiled in a secure build environment
+3. **Resource Analysis**: The runtime analyzes required resources
+4. **Infrastructure Provisioning**: Resources are created or updated
+5. **Container Deployment**: Your app is deployed to AWS ECS (Fargate)
+6. **Health Checks**: The platform verifies deployment success
+
+### Isolation and Security
+
+Each Shuttle project runs in its own:
+
+- **ECS Service**: Dedicated compute isolation
+- **Resource Namespace**: Logical separation of databases, secrets, etc.
+- **Network Context**: Isolated networking and security groups
+
+## Design Principles
+
+### Developer Experience First
+
+Shuttle prioritizes developer productivity by:
+
+- Reducing boilerplate and configuration
+- Providing immediate feedback during development
+- Abstracting infrastructure complexity
+- Maintaining familiar Rust development patterns
+
+### Infrastructure Transparency
+
+While Shuttle abstracts infrastructure management, it maintains transparency by:
+
+- Providing clear resource information in the console
+- Offering detailed deployment logs
+- Supporting custom resource configurations when needed
+- Maintaining compatibility with standard Rust crates
+
+### Scalability by Design
+
+The architecture supports growth through:
+
+- Automatic resource scaling based on usage
+- Support for custom resource configurations
+- Integration with external services and databases
+- Multi-region deployment capabilities (Enterprise)
+
+## Comparison with Traditional Approaches
+
+### Traditional Deployment
+
+```
+Code → Docker Image → Kubernetes/Docker Compose → Infrastructure Config → Deploy
+```
+
+### Shuttle Approach
+
+```
+Annotated Code → shuttle deploy → Running Application
+```
+
+This simplified flow reduces complexity while maintaining full control over your application logic.
+
+## Resource Lifecycle
+
+Resources in Shuttle follow a managed lifecycle:
+
+1. **Declaration**: Resources are declared via annotations in your code
+2. **Provisioning**: First deployment creates the resource
+3. **Persistence**: Resources persist across deployments
+4. **Management**: Resources can be managed via CLI or console
+5. **Cleanup**: Resources are cleaned up when projects are deleted
+
+This lifecycle ensures that your data persists while your application code evolves.
+
+## Understanding the Platform Benefits
+
+Shuttle's architecture provides several key advantages:
+
+- **Faster Development**: No infrastructure setup time
+- **Reduced Complexity**: Infrastructure and application code in one place
+- **Better Reliability**: Managed infrastructure with automatic scaling
+- **Cost Efficiency**: Pay only for what you use, automatic optimization
+- **Security**: Built-in best practices and managed updates
+
+Understanding these architectural principles helps you make the most of Shuttle's capabilities and design applications that leverage the platform's strengths.

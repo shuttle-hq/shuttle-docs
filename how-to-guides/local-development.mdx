@@ -1,0 +1,166 @@
+---
+title: "Local Run"
+description: "Develop your Shuttle app locally"
+icon: "screwdriver-wrench"
+---
+
+While deploying to production is easy with Shuttle, running your project locally is
+useful for development. To start your project on your local system, while in your
+project directory, run:
+
+```bash
+shuttle run
+```
+
+The Shuttle CLI builds and runs your app in a similar way that the Shuttle platform does.
+It then starts a local provisioner server that simulates resource provisioning on the local system using Docker.
+
+The environment variables available in the [deployment environment](/docs/deployment-environment) are also set during a local run.
+
+## Local runs with databases
+
+If your project uses a database resource, it will default to starting a local [Docker](https://docs.docker.com/get-docker/) container for that database.
+If you'd like to opt out of this behavior and supply your own database URI, simply pass it in as an argument to your resource.
+This argument also supports insertion of secrets from `Secrets.toml` with string interpolation:
+
+```rust
+#[shuttle_runtime::main]
+async fn main(
+    #[shuttle_shared_db::Postgres(
+        local_uri = "postgres://postgres:{secrets.PASSWORD}@localhost:16695/postgres"
+    )] pool: PgPool,
+) -> ShuttleAxum { ... }
+```
+
+<Note>**IMPORTANT:** If Docker isn't started, you may receive an "os error 2" error. This is typically related to your Docker installation. If you're using Docker via the CLI, you can use any Docker command to start it up. If you're using Docker Desktop, you will need to start Docker Desktop.</Note>
+
+<Note>If Docker fails to launch the database container, sometimes pulling the image manually (`docker pull postgres:16`) can help resolve it.</Note>
+
+<Note>To recreate a local database, use `docker ps` to find the postgres container, then `docker stop` and `docker rm` to delete it. On the next run, a new one will be created.</Note>
+
+## Expose your application to your local network
+
+If you'd like to expose your application to you local network, for example if you're serving a static
+website and you'd like to open it on your phone, simply pass in the `--external` flag:
+
+```bash
+shuttle run --external
+```
+
+This will bind your local application to `0.0.0.0:8000`, and you will now be able to connect to it
+using your computer's local IP. If you'd also like to change the port, you can do so with the `--port`
+argument:
+
+```bash
+shuttle run --external --port 8123
+```
+
+<Note>You may need to open the port your app is started on in your firewall.</Note>
+
+## Development Tips
+
+Here are some small tips and tricks to boost your productivity when developing locally.
+
+### Live reload backend with `bacon`
+
+To live reload your Shuttle app when you save a file, you can install [bacon](https://github.com/Canop/bacon) and then use
+
+```bash
+shuttle run --bacon
+```
+
+to run Shuttle's default bacon job.
+The job tells bacon to execute `shuttle run` when you save a file.
+
+To customize this behavior, you can set up your own jobs in `bacon.toml`.
+Shuttle's default bacon config can be found [here](https://github.com/shuttle-hq/shuttle/tree/main/cargo-shuttle/src/util).
+
+### Live reload backend with `cargo watch`
+
+<Note>`cargo-watch` is no longer maintained, but still works</Note>
+
+To live reload your Shuttle app when you save a file, you can use [cargo-watch](https://github.com/watchexec/cargo-watch):
+
+```bash
+# This will execute `shuttle run` when you save a file.
+cargo watch -s 'shuttle run'
+# This will also (q)uietly (c)lear the console between runs.
+cargo watch -qcs 'shuttle run'
+
+# There are many other helpful options, see `cargo watch --help`
+```
+
+Small caveat: Be aware that ignoring files with `.ignore` will also affect the behaviour of `shuttle deploy`.
+See the documentation on [including ignored files](https://docs.shuttle.dev/docs/files#include-ignored-files) for more info.
+
+### Live reload frontend with `tower-livereload`
+
+Using `bacon` or `cargo watch` will only reload the "backend" Shuttle process.
+If you are developing a frontend in the browser that is hosted by your Shuttle app,
+you might also want the web page to reload when files change.
+If you are using Axum or other Tower-compatible frameworks, the Tower layer [tower-livereload](https://github.com/leotaku/tower-livereload) can help you.
+
+First, add it to your project:
+
+```bash
+cargo add tower-livereload
+```
+
+Then, when constructing your Axum router, add the layer like this:
+
+```rust
+let router = Router::new()
+    .route(/* ... */)
+    .layer(tower_livereload::LiveReloadLayer::new());
+```
+
+This will inject HTML responses with code for live reloading your web page when the server restarts.
+This also works in combination with `cargo watch`!
+
+If you want to exclude this functionality from the release build, add this:
+
+```rust
+let mut router = /* ... */;
+
+if cfg!(debug_assertions) {
+    router = router.layer(tower_livereload::LiveReloadLayer::new());
+}
+```
+
+## Docker engines
+
+`cargo-shuttle` uses the [bollard](https://docs.rs/bollard/latest/bollard/index.html) crate to interact with the Docker engine on local runs.
+
+If you are using a non-standard Docker engine, you might get this error:
+
+```text
+got unexpected error while inspecting docker container:
+error trying to connect: No such file or directory
+```
+
+The error is emitted due to bollard not connecting to the correct Docker Socket location.
+
+On Unix, bollard defaults to connecting to `unix:///var/run/docker.sock` unless the `DOCKER_HOST` env variable overrides it.
+
+If you end up using a `DOCKER_HOST` like below, you can add the `export DOCKER_HOST=...` line to your shell's config file to have it automatically set in new shell sessions.
+
+### Docker Desktop
+
+```bash
+export DOCKER_HOST="unix://$HOME/.docker/run/docker.sock"
+```
+
+### Podman
+
+You will need to expose a rootless socket for Podman, and then set the `DOCKER_HOST` environment variable:
+
+```bash
+podman system service --time=0 unix:///tmp/podman.sock
+export DOCKER_HOST=unix:///tmp/podman.sock
+```
+
+### Colima
+
+```bash
+export DOCKER_HOST="unix://$HOME/.colima/default/docker.sock"
+```

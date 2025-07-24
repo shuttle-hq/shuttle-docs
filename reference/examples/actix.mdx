@@ -1,0 +1,59 @@
+---
+title: "Hello World"
+'og:title': "Hello World with Actix Web - Shuttle Docs"
+description:
+  "Actix Web is a powerful, pragmatic, and extremely fast web framework for Rust."
+---
+
+This section revolves around simple Actix examples you can get quickly started with by following these 3 steps:
+1. Initialize a new Actix project by running the `shuttle init --template actix-web` command
+2. Copy pasting the contents of the example you want to deploy -- make sure to check the tabs of the snippet(s) to ensure you are copying the right code/file
+3. Running the `shuttle deploy` command
+
+<Tip>If you are looking for step-by-step guides, check out our [Tutorials](/templates/tutorials) section.</Tip>
+
+You can clone the example below by running the following (you'll need `shuttle` CLI installed):
+```bash
+shuttle init --template actix-web
+```
+
+<CodeGroup>
+```rust src/main.rs
+use actix_web::{get, web::ServiceConfig};
+use shuttle_actix_web::ShuttleActixWeb;
+
+#[get("/")]
+async fn hello_world() -> &'static str {
+    "Hello World!"
+}
+
+#[shuttle_runtime::main]
+async fn actix_web(
+) -> ShuttleActixWeb<impl FnOnce(&mut ServiceConfig) + Send + Clone + 'static> {
+    let config = move |cfg: &mut ServiceConfig| {
+        cfg.service(hello_world);
+    };
+
+    Ok(config.into())
+}
+```
+
+```toml Cargo.toml
+[package]
+name = "hello-world"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+actix-web = "4.3.1"
+shuttle-actix-web = "0.56.0"
+shuttle-runtime = "0.56.0"
+tokio = "1.26.0"
+```
+</CodeGroup>
+
+---
+
+<Snippet file="other-frameworks.mdx" />
+
+<Snippet file="check-examples.mdx" />

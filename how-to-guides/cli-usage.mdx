@@ -1,0 +1,114 @@
+---
+title: "CLI"
+description: "Overview of the Shuttle commands"
+icon: "code"
+---
+
+Interaction with the Shuttle platform is mainly done with the `shuttle` Command Line Interface (CLI).
+Some tasks, such as viewing logs, can also be done in the [Shuttle Console](https://console.shuttle.dev/).
+
+<Snippet file="binaries.mdx" />
+
+To get an overview of available commands, subcommands, and options, run:
+
+```bash
+shuttle help
+# or
+shuttle <command> --help
+```
+
+## Commands
+
+| Command     | Description |
+| ----------- | ----------- |
+| init        | Generate a Shuttle project from a template |
+| run         | Run a project locally |
+| deploy      | Deploy a project |
+| deployment  | Manage deployments [aliases: depl] |
+| logs        | View build and deployment logs |
+| project     | Manage Shuttle projects [aliases: proj] |
+| resource    | Manage resources [aliases: res] |
+| certificate | Manage SSL certificates for custom domains [aliases: cert] |
+| account     | Show info about your Shuttle account [aliases: acc] |
+| login       | Log in to the Shuttle platform |
+| logout      | Log out of the Shuttle platform |
+| generate    | Generate shell completions and man page |
+| feedback    | Open an issue on GitHub and provide feedback |
+| upgrade     | Upgrade the Shuttle CLI binary |
+| help        | Print this message or the help of the given subcommand(s) |
+
+## Cookbook / Cheat Sheet
+
+These are some useful sequences of commands that are handy to keep in your back pocket.
+For full documentation, use `--help` on the respective command.
+Use the global `--debug` flag to print detailed debug output.
+
+### Get started
+
+- `cargo install cargo-shuttle`: For more alternatives, see [Installation](/getting-started/installation).
+- `shuttle login`: Log in via the Shuttle Console.
+- `shuttle init`: Generate a project from a template.
+- `shuttle account`: Check account details.
+
+### Local run
+
+For more tips, see [Local Run](/docs/local-run).
+
+- `shuttle run`: Run the project locally so you can test your changes.
+- `shuttle run --port 8080`: Change the local port.
+- `shuttle run --port 8080 --external`: Expose to local network by listening on `0.0.0.0`.
+- `shuttle run --secrets <file>`: Use a non-default secrets file for this run.
+- `shuttle run --release`: Compile with release mode.
+- `shuttle run --bacon`: Run in watch mode, requires separate install of [bacon](https://github.com/Canop/bacon).
+
+### Deploy a project
+
+- `shuttle project create`: Create a project on Shuttle.
+- `shuttle deploy`: Deploy the project to Shuttle.
+- `shuttle deploy --no-follow`: Don't poll deployment state. Alias: `--nf`.
+- `shuttle deploy --secrets <file>`: Use a non-default secrets file for this deployment.
+
+### Manage projects
+
+<Tip>
+All project-related commands can use:
+- `--working-directory <path>` or `--wd <path>` to execute the command in a different folder.
+- `--name <name>` to specify project name explicitly (see [Project](/docs/projects#project-name-and-id)).
+- `--id <id>` to specify project id explicitly (see [Project](/docs/projects#project-name-and-id)).
+</Tip>
+
+- `shuttle project list`: List your projects.
+- `shuttle project status`: Check the state of this project.
+- `shuttle project link`: Link this project folder to a project on Shuttle.
+- `shuttle project delete`: Delete a project.
+- `shuttle project update name <new-name>`: Rename a project and its default subdomain.
+
+### Manage deployments and logs
+
+- `shuttle deployment list`: List deployments in this project.
+- `shuttle deployment status`: Show status of the currently running deployment.
+- `shuttle deployment stop`: Stop any currently running deployments.
+- `shuttle deployment redeploy`: Redeploy the latest deployment without building.
+- `shuttle deployment redeploy [id]`: Redeploy the specified deployment id without building.
+- `shuttle logs`: Get all logs from the currently running deployment.
+- `shuttle logs --latest`: Get all logs from the latest deployment.
+- `shuttle logs <id>`: Get all logs from a specific deployment.
+- `shuttle logs --raw`: Print the logs without timestamps and origin tags. The `--raw` flag is also available for the `run` and `deploy` commands.
+
+### Manage resources
+
+- `shuttle resource list`: List resources linked to this project.
+- `shuttle resource delete <type>`: Delete a resource such as databases and secrets.
+
+### Shell completions
+
+Use `shuttle generate shell <shell>` with one of the supported shells: bash, elvish, fish, powershell, zsh.
+
+Example configuration for Zsh on Linux: add `eval "$(shuttle generate shell zsh)"` to `~/.zshrc`.
+
+### Utility
+
+- `shuttle <command> --debug`: Turn on tracing output for Shuttle libraries. (WARNING: can print sensitive data)
+- `shuttle <command> --output json` to get the output from API calls in plain JSON.
+- `shuttle deploy --output-archive <path>`: Dump the deployment archive to disk instead of deploying it. Useful for debugging.
+- `shuttle logout --reset-api-key`: Log out and reset your account's API key.

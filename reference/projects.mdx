@@ -1,0 +1,80 @@
+---
+title: Projects
+description: Everything about Shuttle projects
+icon: "cards-blank"
+---
+
+A Shuttle Project is the main high-level abstraction on the Shuttle platform.
+Projects are logical separations of deployments (services), logs, resources, and more.
+
+Deployments to different Shuttle projects run in their own ECS service (Fargate VM), providing a high level of isolation from other projects.
+
+## Project Limits
+
+<Info>
+In the free Community Tier, you are limited to 3 projects.
+See [Pricing](https://www.shuttle.dev/pricing) for Pro tier benefits, such as more projects.
+</Info>
+
+<Snippet file="project-gc.mdx" />
+
+## Project Name and ID
+
+A Shuttle Project is uniquely identified with its ID, a string starting with `proj_`.
+The Shuttle API uses project IDs to identify calls to the project APIs.
+
+The Project Name is an more convenient way to identify your projects.
+The name is also part of the default free subdomain your project is hosted on (`https://<project-name>-<nonce>.shuttle.app/`).
+The *nonce* (4 random characters) at the end allows multiple users to have projects with the same name.
+
+You can view your project IDs and names with:
+
+```sh
+shuttle project list
+```
+
+You can rename a project with the following command.
+Note: This also updates the default subdomain name.
+Custom domains remain unchanged.
+
+```sh
+shuttle project update name <new-name>
+```
+
+## Project Linking
+
+For the Shuttle CLI to know which Shuttle Project ID to target, it stores the ID in a gitignored config file in your project.
+If the ID is not found, it will prompt you to link a project.
+You can also re-link the project with one of:
+
+```sh
+shuttle project link
+shuttle project link --name my-project
+shuttle project link --id proj_<ID>
+```
+
+## CLI options
+
+When running CLI commands, the project can always be overridden with the `--name` or `--id` options, regardless of which directory you are in.
+
+```bash
+# Create a project called `my-project`
+shuttle project create --name my-project
+
+# Check the deployment list of `my-project`
+shuttle deployment list --name my-project
+
+# View the logs of project with id `proj_01J5AYYKX1WZX51F8GBTH269XB`
+shuttle logs --id proj_01J5AYYKX1WZX51F8GBTH269XB
+```
+
+## Environments
+
+Multiple environments (such as development, staging, and production) within a project is a planned feature.
+
+Until that feature is ready, you can use a workflow of using one Shuttle project for each environment (for example `project` and `project-dev`).
+To deploy to the non-default project name, you can use the `deploy` command with `--name` for targetting a different project, and `--secrets` to use a different secrets file. For example:
+
+```sh
+shuttle deploy --name project-dev --secrets Secrets.dev.toml
+```

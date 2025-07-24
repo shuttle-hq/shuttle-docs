@@ -1,0 +1,63 @@
+---
+title: Project configuration
+description: How to configure your Rust project for running on Shuttle
+icon: "gear"
+---
+
+## Shuttle.toml
+
+The file `Shuttle.toml` can be used for project-local configuration.
+For the current options available, check out [Deployment files](/docs/files).
+
+## Workspaces
+
+Shuttle supports [cargo workspaces](https://doc.rust-lang.org/book/ch14-03-cargo-workspaces.html), but only one Shuttle service per workspace.
+The first binary target using the `#[shuttle_runtime::main]` macro will be targeted for local runs and deployments.
+
+If `Shuttle.toml` or [Secrets](/resources/shuttle-secrets) are used, those files should be placed in the root of the workspace.
+
+This is an example of a workspace structure with shared code between a backend and frontend crate:
+
+```text
+.
+├── .gitignore
+├── Cargo.toml
+├── Secrets.toml      (optional)
+├── Shuttle.toml      (optional)
+├── backend/
+│   ├── Cargo.toml    (depends on shuttle-runtime)
+│   └── src/
+│       └── main.rs   (contains #[shuttle_runtime::main])
+├── frontend/
+│   ├── Cargo.toml
+│   └── src/
+│       └── main.rs
+└── shared/
+    ├── Cargo.toml
+    └── src/
+        └── lib.rs
+```
+
+## Cargo feature flags
+
+If the cargo feature `shuttle` exists, Shuttle activates it and disables default features.
+
+In this example, Shuttle will enable the features `shuttle` and `bar`.
+To use default features on Shuttle, add `default` to the shuttle array.
+
+```toml Cargo.toml
+[features]
+default = ["foo"]
+shuttle = ["bar"]
+foo = []
+bar = []
+```
+
+## Multiple binaries
+
+If you want to keep your project structured for allowing both running with and without Shuttle, check out the [standalone-binary](https://github.com/shuttle-hq/shuttle-examples/tree/main/other/standalone-binary) example. This is great for gradually adding Shuttle into your project.
+
+## .shuttle/config.toml
+
+The `.shuttle/config.toml` is created when linking your project folder to a Shuttle project.
+It is added to `.gitignore` by default, and should not be committed.

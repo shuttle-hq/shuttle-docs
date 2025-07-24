@@ -1,0 +1,61 @@
+---
+title: "Hello World"
+"og:title": "Hello World with Axum - Shuttle Docs"
+description: "Axum is a web application framework that focuses on ergonomics and
+  modularity."
+---
+
+This section revolves around simple Axum examples you can get quickly started with by following these 3 steps:
+
+1. Initialize a new Axum project by running the `shuttle init --template axum` command
+2. Copy pasting the contents of the example you want to deploy -- make sure to check the tabs of the snippet(s) to ensure you are copying the right code/file
+3. Running the `shuttle deploy` command
+
+<Tip>
+  If you are looking for step-by-step guides, check out our
+  [Tutorials](/templates/tutorials) section.
+</Tip>
+
+You can clone the example below by running the following (you'll need `shuttle` CLI installed):
+
+```bash
+shuttle init --template axum
+```
+
+<CodeGroup>
+
+```rust src/main.rs
+use axum::{routing::get, Router};
+
+async fn hello_world() -> &'static str {
+    "Hello, world!"
+}
+
+#[shuttle_runtime::main]
+async fn main() -> shuttle_axum::ShuttleAxum {
+    let router = Router::new().route("/", get(hello_world));
+
+    Ok(router.into())
+}
+```
+
+```toml Cargo.toml
+[package]
+name = "hello-world"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+axum = "0.8"
+shuttle-axum = "0.56.0"
+shuttle-runtime = "0.56.0"
+tokio = "1.28.2"
+```
+
+</CodeGroup>
+
+---
+
+<Snippet file="other-frameworks.mdx" />
+
+<Snippet file="check-examples.mdx" />

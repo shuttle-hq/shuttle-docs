@@ -1,0 +1,35 @@
+---
+title: "Troubleshooting"
+description: "Learn about how to solve common problems you might run into while using Shuttle."
+icon: "bug"
+---
+
+This section is aimed at collecting common issues users have to provide quick debug solutions.
+
+<AccordionGroup>
+  <Accordion title="I've updated Shuttle and my project isn't working anymore.">
+    Make sure to follow all of the [upgrading steps](/guides/upgrade).
+  </Accordion>
+  <Accordion title="I get os error 2 when trying to load up my project">
+    This is most likely to happen if you're using one of our shared database annotations. To prevent this from happening, ensure that Docker is running.
+
+    Check [Docker engines](/docs/local-run#docker-engines) for more info.
+  </Accordion>
+  <Accordion title="libpq.so.5: cannot open shared object file">
+    Some Postgres libraries need `libpq` installed at runtime. To install it on Shuttle, add a [`shuttle_setup_container.sh`](/docs/builds#experimental-hook-scripts) with `apt update && apt install -y libpq-dev`.
+  </Accordion>
+  <Accordion title="I get mismatched dependencies between one of my dependencies and Shuttle crate dependencies!">
+    This is likely because you are a using a different version of the dependency than the Shuttle crate, causing a dependency mismatch.
+
+    To fix this, there's a couple of options:
+    1) Switch the version of your crate over to the dependency. You can find the correct one either from the error itself, or going to Crates.io and checking the dependencies of the latest Shuttle crate version.
+    2) If you are unable to do the above because of nested dependencies, you can typically fork the crate's repo then upgrade the dependency yourself. However, depending on breaking changes this may be a non-trivial amount of work.
+  </Accordion>
+  <Accordion title="I get 401 Unauthorised error while trying to use the CLI">
+    Try logging out and logging back in. If this still doesn't work, feel free to shoot us a message on [our Discord server!](https://discord.gg/shuttle)
+  </Accordion>
+</AccordionGroup>
+
+### Other issues?
+
+Hop on over to [our Discord server](https://discord.gg/shuttle), we are very responsive!

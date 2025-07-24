@@ -1,0 +1,135 @@
+---
+title: "Postgres Todo App"
+'og:title': "Postgres Todo App with Axum - Shuttle Docs"
+description: "This article walks you through how you can easily set up a simple to-do app using Axum and SQLx with PostgresQL."
+---
+
+## Description
+This example shows how to make a simple TODO app using Axum and a shared Shuttle Postgres DB.
+
+The following routes are provided:
+- GET `/todos/<id>` - Get a to-do item by ID.
+- POST `/todos` - Create a to-do item. Takes "note" as a JSON body parameter.
+
+You can clone the example below by running the following (you'll need `shuttle` CLI installed):
+
+```bash
+shuttle init --from shuttle-hq/shuttle-examples --subfolder axum/postgres
+```
+
+## Code
+
+<CodeGroup>
+```rust src/main.rs
+use axum::{
+    extract::{Path, State},
+    http::StatusCode,
+    response::IntoResponse,
+    routing::{get, post},
+    Json, Router,
+};
+use serde::{Deserialize, Serialize};
+use shuttle_runtime::CustomError;
+use sqlx::{FromRow, PgPool};
+
+async fn retrieve(
+    Path(id): Path<i32>,
+    State(state): State<MyState>,
+) -> Result<impl IntoResponse, impl IntoResponse> {
+    match sqlx::query_as::<_, Todo>("SELECT * FROM todos WHERE id = $1")
+        .bind(id)
+        .fetch_one(&state.pool)
+        .await
+    {
+        Ok(todo) => Ok((StatusCode::OK, Json(todo))),
+        Err(e) => Err((StatusCode::BAD_REQUEST, e.to_string())),
+    }
+}
+
+async fn add(
+    State(state): State<MyState>,
+    Json(data): Json<TodoNew>,
+) -> Result<impl IntoResponse, impl IntoResponse> {
+    match sqlx::query_as::<_, Todo>("INSERT INTO todos (note) VALUES ($1) RETURNING id, note")
+        .bind(&data.note)
+        .fetch_one(&state.pool)
+        .await
+    {
+        Ok(todo) => Ok((StatusCode::CREATED, Json(todo))),
+        Err(e) => Err((StatusCode::BAD_REQUEST, e.to_string())),
+    }
+}
+
+#[derive(Clone)]
+struct MyState {
+    pool: PgPool,
+}
+
+#[shuttle_runtime::main]
+async fn axum(#[shuttle_shared_db::Postgres] pool: PgPool) -> shuttle_axum::ShuttleAxum {
+    sqlx::migrate!()
+        .run(&pool)
+        .await
+        .map_err(CustomError::new)?;
+
+    let state = MyState { pool };
+    let router = Router::new()
+        .route("/todos", post(add))
+        .route("/todos/:id", get(retrieve))
+        .with_state(state);
+
+    Ok(router.into())
+}
+
+#[derive(Deserialize)]
+struct TodoNew {
+    pub note: String,
+}
+
+#[derive(Serialize, FromRow)]
+struct Todo {
+    pub id: i32,
+    pub note: String,
+}
+```
+
+```toml Cargo.toml
+[package]
+name = "postgres"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+axum = "0.7.3"
+serde = { version = "1.0.188", features = ["derive"] }
+shuttle-axum = "0.56.0"
+shuttle-runtime = "0.56.0"
+shuttle-shared-db = { version = "0.56.0", features = ["postgres", "sqlx"] }
+sqlx = "0.8.2"
+tokio = "1.28.2"
+```
+</CodeGroup>
+
+## Usage
+
+Once you've cloned the example, try launching it locally using `shuttle run`. Once you've verified that it runs successfully, try using cURL in a new terminal to send a POST request:
+
+```bash
+curl -X POST -d '{"note":"Hello world!"}' -H 'Content-Type: application/json' \
+ http://localhost:8000/todos
+```
+
+Assuming the request was successful, you'll get back a JSON response with the ID and Note of the record you just created. If you try the following cURL command, you should be able to then retrieve the message you stored:
+
+```bash
+curl http://localhost:8000/todos/<id>
+```
+
+Interested in extending this example? Here's as couple of ideas:
+- Add update and delete routes
+- Add static files to show your records
+---
+
+<Snippet file="other-frameworks.mdx" />
+
+<Snippet file="check-examples.mdx" />

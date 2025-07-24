@@ -1,0 +1,83 @@
+---
+title: "Static Files"
+"og:title": "Static Files with Axum - Shuttle Docs"
+description: "This article walks you through setting up static files with Axum, a powerful Rust framework maintained by the Tokio-rs team."
+---
+
+## Description
+
+This example has one route at `/` where the homepage is served and shows you how you can serve HTML or other types of files with Actix Web.
+
+Note that build assets are declared in `Shuttle.toml`.
+
+You can clone the example below by running the following (you'll need `shuttle` CLI installed):
+
+```bash
+shuttle init --from shuttle-hq/shuttle-examples --subfolder axum/static-files
+```
+
+## Code
+
+<CodeGroup>
+
+```rust src/main.rs
+use axum::Router;
+use tower_http::services::ServeDir;
+
+#[shuttle_runtime::main]
+async fn main() -> shuttle_axum::ShuttleAxum {
+    // ServeDir falls back to serve index.html when requesting a directory
+    let router = Router::new().fallback_service(ServeDir::new("assets"));
+
+    Ok(router.into())
+}
+```
+
+```html assets/index.html
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Static Files</title>
+  </head>
+  <body>
+    <p>This is an example of serving static files with Axum and Shuttle.</p>
+  </body>
+</html>
+```
+
+```toml Cargo.toml
+[package]
+name = "static-files"
+version = "0.1.0"
+edition = "2021"
+publish = false
+
+[dependencies]
+axum = "0.8"
+shuttle-axum = "0.56.0"
+shuttle-runtime = "0.56.0"
+tokio = "1.28.2"
+tower-http = { version = "0.6", features = ["fs"] }
+```
+
+```toml Shuttle.toml
+[build]
+assets = [
+    "assets",
+]
+```
+
+</CodeGroup>
+
+## Usage
+
+After you clone the example, launch it locally by using `shuttle run` then visit the home route at `http://localhost:8000` - you should see a homepage that shows our included HTML file.
+
+You can extend this example by adding more routes that serve other files.
+
+---
+
+<Snippet file="other-frameworks.mdx" />
+
+<Snippet file="check-examples.mdx" />
+```

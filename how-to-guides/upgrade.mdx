@@ -1,0 +1,24 @@
+---
+title: "Upgrade Shuttle version"
+description: "How to upgrade to newer Shuttle versions"
+icon: "code-merge"
+---
+
+1. Check the [Releases page](https://github.com/shuttle-hq/shuttle/releases) for any considerations regarding breaking changes in the new release.
+
+2. Upgrade your Shuttle CLI with one of the options below:
+   - `shuttle upgrade` **(available in v0.48.0+)** (runs the install script below for you)
+   - `curl -sSfL https://www.shuttle.dev/install | bash` (Linux and macOS)
+   - `iwr https://www.shuttle.dev/install-win | iex` (Windows)
+   - `cargo binstall cargo-shuttle`
+   - `cargo install cargo-shuttle`
+
+3. Update your project's Shuttle dependencies in `Cargo.toml`:
+   ```toml Cargo.toml
+   shuttle-runtime = "0.56.0"
+   # do the same for other shuttle dependencies
+   ```
+
+4. Test that your project works with `cargo check` / `shuttle run`.
+
+5. Finally, redeploy your Shuttle app with `shuttle deploy`.

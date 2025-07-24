@@ -1,0 +1,239 @@
+---
+title: "Infrastructure from Code"
+description: "Deep dive into Shuttle's Infrastructure from Code philosophy and how it differs from traditional approaches"
+icon: "code"
+---
+
+## What is Infrastructure from Code?
+
+Infrastructure from Code (IfC) is Shuttle's foundational approach where infrastructure requirements are expressed directly in your application code through annotations and macros, rather than in separate configuration files or management consoles.
+
+## The Philosophy
+
+Traditional cloud development follows a separation-of-concerns model:
+
+- **Application Logic**: Your business code
+- **Infrastructure Configuration**: YAML files, Terraform, CloudFormation
+- **Deployment Scripts**: CI/CD pipelines, Docker configurations
+
+This separation, while architecturally sound, creates significant friction:
+
+- Context switching between code and infrastructure
+- Synchronization challenges between environments
+- Complex dependency management
+- High barrier to entry for new developers
+
+Shuttle's Infrastructure from Code collapses this complexity by expressing infrastructure needs directly where they're used.
+
+## How It Works
+
+### Traditional Approach
+
+```yaml
+# docker-compose.yml
+services:
+  database:
+    image: postgres:13
+    environment:
+      POSTGRES_DB: myapp
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: password
+
+  app:
+    build: .
+    depends_on:
+      - database
+    environment:
+      DATABASE_URL: postgres://user:password@database:5432/myapp
+```
+
+```rust
+// Your app code
+let pool = PgPool::connect(&env::var("DATABASE_URL")?).await?;
+```
+
+### Shuttle's Infrastructure from Code
+
+```rust
+#[shuttle_runtime::main]
+async fn main(
+    #[shuttle_shared_db::Postgres] pool: sqlx::PgPool,
+) -> ShuttleAxum {
+    // Database is automatically provisioned and connected
+    // No environment variables, no configuration files
+}
+```
+
+## Key Principles
+
+### 1. Declarative Resource Requirements
+
+Resources are declared at the point of use:
+
+```rust
+#[shuttle_runtime::main]
+async fn main(
+    #[shuttle_shared_db::Postgres] db: PgPool,
+    #[shuttle_runtime::Secrets] secrets: SecretStore,
+    #[shuttle_aws_rds::Postgres] production_db: PgPool,
+) -> ShuttleAxum {
+    // All resources are ready to use
+}
+```
+
+Each annotation tells Shuttle:
+
+- What type of resource you need
+- Configuration requirements (if any)
+- Expected connection type
+
+### 2. Automatic Lifecycle Management
+
+Resources are:
+
+- **Created** on first deployment
+- **Persisted** across deployments
+- **Managed** automatically (updates, backups, scaling)
+- **Cleaned up** when no longer needed
+
+### 3. Type Safety
+
+Infrastructure requirements are checked at compile time:
+
+```rust
+// This won't compile if the resource annotation is wrong
+#[shuttle_runtime::main]
+async fn main(
+    #[shuttle_shared_db::Postgres] pool: sqlx::PgPool, // ✓ Correct
+    #[shuttle_shared_db::Postgres] pool: String,       // ✗ Type mismatch
+) -> ShuttleAxum { ... }
+```
+
+## Benefits of Infrastructure from Code
+
+### Developer Experience
+
+- **Single Source of Truth**: Infrastructure requirements live with the code that uses them
+- **Immediate Feedback**: Compilation errors catch infrastructure misconfigurations
+- **Local Development**: Same annotations work for local and production environments
+- **Reduced Context Switching**: No need to leave your code editor
+
+### Operational Excellence
+
+- **Consistency**: Same infrastructure definition across all environments
+- **Reproducibility**: Code changes include infrastructure changes
+- **Version Control**: Infrastructure evolution is tracked with code changes
+- **Automatic Optimization**: Platform can optimize resource configurations
+
+### Team Collaboration
+
+- **Reduced Complexity**: New team members need only understand the code
+- **Clearer Dependencies**: Infrastructure requirements are explicit in code
+- **Easier Reviews**: Infrastructure changes are visible in code reviews
+- **Knowledge Sharing**: Infrastructure knowledge embedded in codebase
+
+## When to Use Different Resource Types
+
+### Shared Resources (Development/Prototyping)
+
+```rust
+#[shuttle_shared_db::Postgres] pool: PgPool,
+```
+
+- Fastest to provision
+- Shared with other users
+- Perfect for development and small applications
+
+### Dedicated Resources (Production)
+
+```rust
+#[shuttle_aws_rds::Postgres] pool: PgPool,
+```
+
+- Isolated infrastructure
+- Better performance and control
+- Suitable for production workloads
+
+### External Integrations
+
+```rust
+#[shuttle_qdrant::Qdrant] qdrant: QdrantClient,
+#[shuttle_turso::Turso] turbo: LibSqlDatabase,
+```
+
+- Connect to external services
+- Managed configuration and credentials
+- Seamless integration with third-party platforms
+
+## Advanced Patterns
+
+### Conditional Resources
+
+```rust
+#[shuttle_runtime::main]
+async fn main(
+    #[shuttle_shared_db::Postgres] dev_db: Option<PgPool>,
+    #[shuttle_aws_rds::Postgres] prod_db: Option<PgPool>,
+) -> ShuttleAxum {
+    let pool = prod_db.or(dev_db).expect("No database available");
+    // Use environment-appropriate database
+}
+```
+
+### Resource Configuration
+
+```rust
+#[shuttle_runtime::main]
+async fn main(
+    #[shuttle_aws_rds::Postgres(
+        config = "db_config.toml"
+    )] pool: PgPool,
+) -> ShuttleAxum {
+    // Custom database configuration
+}
+```
+
+## Comparison with Infrastructure as Code
+
+| Aspect              | Infrastructure as Code       | Infrastructure from Code      |
+| ------------------- | ---------------------------- | ----------------------------- |
+| Definition Location | Separate files               | In application code           |
+| Sync Complexity     | Manual synchronization       | Automatic                     |
+| Learning Curve      | High (multiple tools)        | Low (just Rust)               |
+| Type Safety         | Runtime errors               | Compile-time checks           |
+| Environment Parity  | Configuration drift risk     | Guaranteed consistency        |
+| Team Collaboration  | Specialized knowledge needed | All developers can contribute |
+
+## Limitations and Considerations
+
+### When IfC Might Not Be Ideal
+
+1. **Complex Multi-Service Architectures**: Where infrastructure spans multiple applications
+2. **Strict Compliance Requirements**: Where infrastructure must be managed separately
+3. **Legacy System Integration**: Where existing infrastructure cannot be modified
+4. **Multi-Language Environments**: Where not all services use Rust
+
+### Working Within Constraints
+
+- Use **Custom Resources** for complex infrastructure needs
+- Leverage **External Integrations** for third-party services
+- Combine with **Traditional Infrastructure** for legacy components
+- Implement **Hybrid Approaches** where needed
+
+## The Future of Infrastructure from Code
+
+Infrastructure from Code represents a shift toward:
+
+- **Developer-Centric Infrastructure**: Tools that work the way developers think
+- **Reduced Operational Overhead**: Less infrastructure to manage manually
+- **Faster Innovation**: Reduced time from idea to deployment
+- **Better Reliability**: Fewer moving parts and configuration errors
+
+As the pattern matures, expect to see:
+
+- More resource types and integrations
+- Enhanced local development capabilities
+- Improved performance and scaling options
+- Broader ecosystem adoption
+
+Understanding Infrastructure from Code helps you leverage Shuttle's full potential and design applications that are both powerful and maintainable.

@@ -1,0 +1,129 @@
+---
+title: "AWS RDS"
+description: "Connect AWS RDS dedicated databases with your Rust applications on Shuttle"
+icon: "aws"
+---
+
+This plugin provisions AWS RDS databases on [Shuttle](https://www.shuttle.dev). The following engines are supported:
+- Postgres
+- MySQL
+- MariaDB
+
+## RDS vs Shared DB
+
+- Dedicated Instance: Each AWS RDS database is it's own dedicated instance.
+- Stability and Security: AWS RDS has greater stability due to it being a service directly offered by AWS, and also greater security due to being a dedicated instance.
+- Flexible: AWS RDS instances on the Shuttle platform can be customised to suit your needs. Instance size can be increased from the default and AWS RDS features can be enabled or disabled.
+
+On *AWS RDS* we offer:
+- Postgres
+- MySQL
+- MariaDB
+
+With the *Shared DB* we offer:
+- Postgres
+
+## Default RDS Instance
+
+The RDS instance created by Shuttle has the following specifications and features by default:
+- 2 vCPU
+- 1 GB Memory
+- 20 GiB Storage
+- Backups Disabled
+- Single Availability Zone
+- 1 Node
+- No Proxy
+
+The pricing of this instance can be found on our [pricing page](https://www.shuttle.dev/pricing).
+
+If you require a different configuration, please contact us. We can provision any size or configuration of RDS to suit your needs - a full list of RDS features can be found [here](https://aws.amazon.com/rds/features/).
+
+## Usage
+
+Please [contact us](/support/support) to enable RDS resources for your account.
+Then, add the `shuttle-aws-rds` dependency.
+Each type of database is behind its own feature flag and macro attribute path.
+
+| Engine   | Feature flag | Attribute path |
+|----------|--------------|----------------|
+| Postgres | `postgres`   | `shuttle_aws_rds::Postgres` |
+| MySQL    | `mysql`      | `shuttle_aws_rds::MySql` |
+| MariaDB  | `mariadb`    | `shuttle_aws_rds::MariaDB` |
+
+### Output type
+
+This resource supports the same output types as [Shared DB Postgres](./shuttle-shared-db#output-type), along with `sqlx::MySqlPool` for MySQL and MariaDB.
+
+Lastly, add a macro annotaion to the Shuttle main function. Here are examples for Postgres:
+
+```rust
+// Use the connection string
+#[shuttle_runtime::main]
+async fn main(#[shuttle_aws_rds::Postgres] conn_str: String) -> ... { ... }
+
+// With sqlx feature flag, get a PgPool connected automatically
+#[shuttle_runtime::main]
+async fn main(#[shuttle_aws_rds::Postgres] pool: sqlx::PgPool) -> ... { ... }
+```
+
+<Snippet file="sqlx-macros.mdx" />
+
+### Parameters
+
+All of the AWS RDS macros take the same optional parameter:
+
+| Parameter     | Type | Description                                                                                  |
+|---------------|------|----------------------------------------------------------------------------------------------|
+| local_uri     | &str | If specified, on local runs, use this database instead of starting a Docker container for it |
+| database_name | &str | Name to give the default database. Defaults to project name if none is given                 |
+
+When passing in strings, you can also insert secrets from `Secrets.toml` using string interpolation.
+To insert the `PASSWORD` secret, pass it in like this:
+
+```rust
+#[shuttle_runtime::main]
+async fn main(
+    #[shuttle_aws_rds::Postgres(
+        local_uri = "postgres://postgres:{secrets.PASSWORD}@localhost:16695/postgres"
+    )] conn_str: String,
+) -> ... { ... }
+```
+
+<Note>Caveat: If you are interpolating a secret from `Secrets.dev.toml`, you need to set the same secret in `Secrets.toml` to a empty string so that this step does not crash in deployment.</Note>
+
+The URI should be formatted according to the
+[Postgres](https://www.postgresql.org/docs/current/libpq-connect.html#LIBPQ-CONNSTRING) or
+[MySql and MariaDB](https://dev.mysql.com/doc/refman/8.0/en/connecting-using-uri-or-key-value-pairs.html#connecting-using-uri)
+documentation, depending on which one you're using.
+
+If you do not specify a `local_uri`, then cargo-shuttle will attempt to spin up a Docker container and launch the database inside of it.
+For this to succeed, you must have Docker installed and you must also have started the Docker engine. If you have not used Docker
+before, the easiest way is to [install the desktop app](https://docs.docker.com/get-docker/) and then launch it in order to start
+the Docker engine.
+
+<Snippet file="connection-string.mdx" />
+
+## Example
+
+This snippet shows the main function of a tide app that uses the `#[shuttle_aws_rds::Postgres]` attribute macro to provision an RDS Postgres database,
+which can be accessed with an [sqlx Pool](https://docs.rs/sqlx/latest/sqlx/pool/index.html).
+
+```rust main.rs
+#[shuttle_runtime::main]
+async fn tide(
+    #[shuttle_aws_rds::Postgres] pool: PgPool,
+) -> ShuttleTide<MyState> {
+    pool.execute(include_str!("../schema.sql"))
+        .await
+        .map_err(CustomError::new)?;
+
+    let state = MyState { pool };
+    let mut app = tide::with_state(state);
+
+    app.with(tide::log::LogMiddleware::new());
+    app.at("/todo").post(add);
+    app.at("/todo/:id").get(retrieve);
+
+    Ok(app.into())
+}
+```
