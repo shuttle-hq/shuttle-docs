@@ -86,9 +86,7 @@
             "icon": "code",
             "pages": [
               "tutorials/intermediate/authentication",
-              "tutorials/intermediate/websocket-chat-app-js",
-              "tutorials/intermediate/serverless-calendar-app",
-              "tutorials/intermediate/url-shortener"
+              "tutorials/intermediate/websocket-chat-app-js"
             ]
           },
           {

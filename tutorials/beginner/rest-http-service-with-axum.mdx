@@ -1,553 +1,702 @@
 ---
-title: "Building Your First REST API with Axum"
-description: "Learn to build a complete task manager API with Axum by creating endpoints, handling JSON, and adding persistence"
+title: "Building REST APIs with Shuttle and Axum"
+description: "Learn to build production-ready REST APIs using Shuttle's HTTP routing and state management"
 icon: "code"
 ---
 
 ## Learning Objectives
 
-By the end of this tutorial, you will have built a working task manager API and learned how to:
+By completing this tutorial, you'll master **Shuttle API patterns** and learn to:
 
-- Create HTTP routes that respond to different request methods
-- Handle JSON requests and responses
-- Work with path parameters for dynamic routing
-- Store and retrieve data using in-memory state
-- Test your API endpoints
+- **Shuttle HTTP Routing**: Build RESTful APIs with Axum and automatic request handling
+- **Database State Management**: Share database connections across API endpoints efficiently
+- **Request/Response Patterns**: Handle JSON, path parameters, and HTTP status codes
+- **Error Handling**: Implement structured error responses with proper HTTP semantics
+- **API Testing**: Test endpoints locally before deploying to production
 
 ## Prerequisites
 
-- Basic Rust knowledge (structs, functions, async/await)
-- [Shuttle CLI installed](/getting-started/installation)
-- Familiarity with REST API concepts (GET, POST, PUT, DELETE)
-
-**Time Required**: 45-60 minutes
+- **Time Required**: 20 minutes
+- **Rust**: Version 1.75.0 or later ([install here](https://rustup.rs/))
+- **Tools**: [Shuttle CLI installed](/getting-started/installation)
+- **Accounts**: None required (Shuttle account created automatically)
+- **Experience**: Completed [Your First Shuttle App](/tutorials/your-first-app) tutorial
 
 ## What We're Building
 
-We'll create a **Task Manager API** where users can:
+We'll create **TaskFlow API** - a production task management REST API with full CRUD operations and validation.
 
-- Get a list of all tasks (`GET /tasks`)
-- Get a specific task by ID (`GET /tasks/{id}`)
-- Create new tasks (`POST /tasks`)
-- Update existing tasks (`PUT /tasks/{id}`)
-- Delete tasks (`DELETE /tasks/{id}`)
+This demonstrates building scalable APIs with Shuttle's zero-config database integration and automatic HTTP handling.
 
-Each task will have an ID, title, description, and completion status.
+**High-level components:**
 
-## Step 1: Create Your Project
+- **REST API** (Axum framework with JSON responses)
+- **PostgreSQL Database** (auto-provisioned with optimized schema)
+- **Data Validation** (request validation and error handling)
+- **Database Transactions** (ACID operations for data consistency)
+- **API Documentation** (built-in endpoint discovery)
 
-First, let's create a new Shuttle project with Axum:
+## Tutorial Steps
 
-```bash
-shuttle init --template axum task-manager
-cd task-manager
-```
+### Step 1: Initialize Your API Project
 
-You'll see this starting code in `src/main.rs`:
-
-```rust
-use axum::{routing::get, Router};
-
-async fn hello_world() -> &'static str {
-    "Hello, world!"
-}
-
-#[shuttle_runtime::main]
-async fn main() -> shuttle_axum::ShuttleAxum {
-    let router = Router::new().route("/", get(hello_world));
-
-    Ok(router.into())
-}
-```
-
-Let's test this works:
+Create a new REST API project:
 
 ```bash
-shuttle run
+shuttle init --template axum taskflow-api
+cd taskflow-api
 ```
 
-Visit `http://localhost:8000` in your browser. You should see "Hello, world!" displayed.
+Update `Cargo.toml` with API dependencies:
 
-**What to notice**: The `#[shuttle_runtime::main]` macro wraps your Axum router for Shuttle deployment. The `Router::new()` creates a new router, and `.route()` adds a path with a handler function.
+```toml
+[package]
+name = "taskflow-api"
+version = "0.1.0"
+edition = "2021"
 
-## Step 2: Create Your First Task Endpoint
+[dependencies]
+axum = { version = "0.7", features = ["macros"] }
+shuttle-axum = "0.56.0"
+shuttle-runtime = "0.56.0"
+shuttle-shared-db = "0.56.0"
+sqlx = { version = "0.8", features = ["runtime-tokio-rustls", "postgres", "macros", "chrono"] }
+serde = { version = "1.0", features = ["derive"] }
+chrono = { version = "0.4", features = ["serde"] }
+tokio = { version = "1.0", features = ["full"] }
+uuid = { version = "1.0", features = ["v4", "serde"] }
+```
 
-Now we'll create our first real API endpoint. Replace the contents of `src/main.rs` with:
+### Step 2: Define API Data Models
+
+Create `src/models.rs` with comprehensive task management types:
 
 ```rust
-use axum::{
-    routing::get,
-    Router,
-    Json,
-    http::StatusCode,
-    response::IntoResponse,
-};
 use serde::{Deserialize, Serialize};
+use chrono::{DateTime, Utc};
+use uuid::Uuid;
 
-#[derive(Serialize, Deserialize, Clone)]
-struct Task {
-    id: u32,
-    title: String,
-    description: String,
-    completed: bool,
+#[derive(Debug, Clone, Serialize, Deserialize, sqlx::FromRow)]
+pub struct Task {
+    pub id: Uuid,
+    pub title: String,
+    pub description: Option<String>,
+    pub completed: bool,
+    pub priority: TaskPriority,
+    pub created_at: DateTime<Utc>,
+    pub updated_at: DateTime<Utc>,
 }
 
-async fn get_tasks() -> impl IntoResponse {
-    let tasks = vec![
-        Task {
-            id: 1,
-            title: "Learn Rust".to_string(),
-            description: "Study the Rust programming language".to_string(),
-            completed: false,
-        },
-        Task {
-            id: 2,
-            title: "Build an API".to_string(),
-            description: "Create a REST API with Axum".to_string(),
-            completed: true,
-        },
-    ];
-
-    (StatusCode::OK, Json(tasks))
+#[derive(Debug, Clone, Serialize, Deserialize, sqlx::Type)]
+#[sqlx(type_name = "task_priority", rename_all = "lowercase")]
+pub enum TaskPriority {
+    Low,
+    Medium,
+    High,
+    Critical,
 }
 
-#[shuttle_runtime::main]
-async fn main() -> shuttle_axum::ShuttleAxum {
-    let router = Router::new()
-        .route("/tasks", get(get_tasks));
-
-    Ok(router.into())
+#[derive(Debug, Deserialize)]
+pub struct CreateTask {
+    pub title: String,
+    pub description: Option<String>,
+    pub priority: Option<TaskPriority>,
 }
-```
 
-Start your server again:
-
-```bash
-shuttle run
-```
-
-Now visit `http://localhost:8000/tasks`. You should see JSON output like this:
-
-```json
-[
-  {
-    "id": 1,
-    "title": "Learn Rust",
-    "description": "Study the Rust programming language",
-    "completed": false
-  },
-  {
-    "id": 2,
-    "title": "Build an API",
-    "description": "Create a REST API with Axum",
-    "completed": true
-  }
-]
-```
-
-**What to notice**: We've defined a `Task` struct with Serde annotations for JSON conversion. The `Json()` wrapper automatically converts our Rust data to JSON, and `StatusCode::OK` sets the HTTP response code to 200.
-
-## Step 3: Add a Single Task Endpoint
-
-Let's add an endpoint to get individual tasks by ID. Add this function before the `main` function:
-
-```rust
-use axum::extract::Path;
-
-async fn get_task(Path(id): Path<u32>) -> impl IntoResponse {
-    let task = Task {
-        id,
-        title: format!("Task {}", id),
-        description: format!("Description for task {}", id),
-        completed: false,
-    };
-
-    (StatusCode::OK, Json(task))
+#[derive(Debug, Deserialize)]
+pub struct UpdateTask {
+    pub title: Option<String>,
+    pub description: Option<String>,
+    pub completed: Option<bool>,
+    pub priority: Option<TaskPriority>,
 }
-```
 
-Update your router in the `main` function:
-
-```rust
-let router = Router::new()
-    .route("/tasks", get(get_tasks))
-    .route("/tasks/:id", get(get_task));
-```
-
-Restart your server and test the new endpoint:
-
-```bash
-curl http://localhost:8000/tasks/42
-```
-
-You should see:
-
-```json
-{
-  "id": 42,
-  "title": "Task 42",
-  "description": "Description for task 42",
-  "completed": false
+#[derive(Debug, Serialize)]
+pub struct TaskResponse {
+    pub task: Task,
 }
-```
 
-**What to notice**: The `Path(id): Path<u32>` extracts the ID from the URL path. The `:id` in the route matches any number, and Axum automatically converts it to a `u32`.
-
-## Step 4: Add Task Creation
-
-Now we'll add the ability to create new tasks. First, let's create a request type for new tasks:
-
-```rust
-#[derive(Deserialize)]
-struct CreateTask {
-    title: String,
-    description: String,
+#[derive(Debug, Serialize)]
+pub struct TasksResponse {
+    pub tasks: Vec<Task>,
+    pub total: usize,
 }
-```
 
-Add this handler function:
-
-```rust
-async fn create_task(Json(payload): Json<CreateTask>) -> impl IntoResponse {
-    let new_task = Task {
-        id: 99, // We'll make this dynamic later
-        title: payload.title,
-        description: payload.description,
-        completed: false,
-    };
-
-    (StatusCode::CREATED, Json(new_task))
+#[derive(Debug, Serialize)]
+pub struct ApiError {
+    pub error: String,
+    pub message: String,
+    pub details: Option<serde_json::Value>,
 }
-```
 
-Update your imports and router:
-
-```rust
-use axum::{
-    routing::{get, post},
-    Router,
-    Json,
-    http::StatusCode,
-    response::IntoResponse,
-    extract::Path,
-};
-
-// In main function:
-let router = Router::new()
-    .route("/tasks", get(get_tasks).post(create_task))
-    .route("/tasks/:id", get(get_task));
-```
-
-Test creating a task:
-
-```bash
-curl -X POST http://localhost:8000/tasks \
-  -H "Content-Type: application/json" \
-  -d '{"title": "New Task", "description": "A task created via API"}'
-```
-
-You should see the created task returned with ID 99 and status 201 Created.
-
-**What to notice**: `Json(payload): Json<CreateTask>` automatically parses the JSON request body into our Rust struct. We can chain multiple HTTP methods on the same route using `.get().post()`.
-
-## Step 5: Add Persistent State
-
-Our API currently doesn't remember tasks between requests. Let's add in-memory storage using Axum's state feature.
-
-Add these imports:
-
-```rust
-use std::collections::HashMap;
-use std::sync::{Arc, Mutex};
-use axum::extract::State;
-```
-
-Create an application state type:
-
-```rust
-type TaskStore = Arc<Mutex<HashMap<u32, Task>>>;
-
-#[derive(Clone)]
-struct AppState {
-    tasks: TaskStore,
-    next_id: Arc<Mutex<u32>>,
-}
-```
-
-Update your handlers to use state. Replace the `get_tasks` function:
-
-```rust
-async fn get_tasks(State(state): State<AppState>) -> impl IntoResponse {
-    let tasks = state.tasks.lock().unwrap();
-    let tasks_vec: Vec<Task> = tasks.values().cloned().collect();
-
-    (StatusCode::OK, Json(tasks_vec))
-}
-```
-
-Replace the `get_task` function:
-
-```rust
-async fn get_task(
-    State(state): State<AppState>,
-    Path(id): Path<u32>
-) -> impl IntoResponse {
-    let tasks = state.tasks.lock().unwrap();
-
-    match tasks.get(&id) {
-        Some(task) => (StatusCode::OK, Json(task.clone())),
-        None => (StatusCode::NOT_FOUND, Json(Task {
-            id: 0,
-            title: "Not found".to_string(),
-            description: "Task not found".to_string(),
-            completed: false,
-        })),
-    }
-}
-```
-
-Replace the `create_task` function:
-
-```rust
-async fn create_task(
-    State(state): State<AppState>,
-    Json(payload): Json<CreateTask>
-) -> impl IntoResponse {
-    let mut next_id = state.next_id.lock().unwrap();
-    let id = *next_id;
-    *next_id += 1;
-
-    let new_task = Task {
-        id,
-        title: payload.title,
-        description: payload.description,
-        completed: false,
-    };
-
-    state.tasks.lock().unwrap().insert(id, new_task.clone());
-
-    (StatusCode::CREATED, Json(new_task))
-}
-```
-
-Update your main function to initialize state:
-
-```rust
-#[shuttle_runtime::main]
-async fn main() -> shuttle_axum::ShuttleAxum {
-    let mut initial_tasks = HashMap::new();
-    initial_tasks.insert(1, Task {
-        id: 1,
-        title: "Learn Rust".to_string(),
-        description: "Study the Rust programming language".to_string(),
-        completed: false,
-    });
-
-    let state = AppState {
-        tasks: Arc::new(Mutex::new(initial_tasks)),
-        next_id: Arc::new(Mutex::new(2)),
-    };
-
-    let router = Router::new()
-        .route("/tasks", get(get_tasks).post(create_task))
-        .route("/tasks/:id", get(get_task))
-        .with_state(state);
-
-    Ok(router.into())
-}
-```
-
-Restart your server and test it:
-
-```bash
-# Get all tasks
-curl http://localhost:8000/tasks
-
-# Create a new task
-curl -X POST http://localhost:8000/tasks \
-  -H "Content-Type: application/json" \
-  -d '{"title": "Persistent Task", "description": "This task will be remembered"}'
-
-# Get all tasks again - you should see your new task
-curl http://localhost:8000/tasks
-```
-
-**What to notice**: The state persists between requests now. `State(state): State<AppState>` injects the shared state into each handler. We use `Arc<Mutex<>>` to safely share data between concurrent requests.
-
-## Step 6: Complete the CRUD Operations
-
-Let's add the final operations - updating and deleting tasks. Add these request types:
-
-```rust
-#[derive(Deserialize)]
-struct UpdateTask {
-    title: Option<String>,
-    description: Option<String>,
-    completed: Option<bool>,
-}
-```
-
-Add the update handler:
-
-```rust
-async fn update_task(
-    State(state): State<AppState>,
-    Path(id): Path<u32>,
-    Json(payload): Json<UpdateTask>
-) -> impl IntoResponse {
-    let mut tasks = state.tasks.lock().unwrap();
-
-    match tasks.get_mut(&id) {
-        Some(task) => {
-            if let Some(title) = payload.title {
-                task.title = title;
-            }
-            if let Some(description) = payload.description {
-                task.description = description;
-            }
-            if let Some(completed) = payload.completed {
-                task.completed = completed;
-            }
-            (StatusCode::OK, Json(task.clone()))
+impl ApiError {
+    pub fn new(error: &str, message: &str) -> Self {
+        Self {
+            error: error.to_string(),
+            message: message.to_string(),
+            details: None,
         }
-        None => (StatusCode::NOT_FOUND, Json(Task {
-            id: 0,
-            title: "Not found".to_string(),
-            description: "Task not found".to_string(),
-            completed: false,
-        })),
+    }
+
+    pub fn validation_error(field: &str, issue: &str) -> Self {
+        Self {
+            error: "validation_error".to_string(),
+            message: format!("Validation failed for field '{}'", field),
+            details: Some(serde_json::json!({
+                "field": field,
+                "issue": issue
+            })),
+        }
+    }
+}
+
+impl Default for TaskPriority {
+    fn default() -> Self {
+        TaskPriority::Medium
     }
 }
 ```
 
-Add the delete handler:
+### Step 3: Set Up Database Schema
+
+Create `src/database.rs` for database initialization:
 
 ```rust
-async fn delete_task(
-    State(state): State<AppState>,
-    Path(id): Path<u32>
-) -> impl IntoResponse {
-    let mut tasks = state.tasks.lock().unwrap();
+use sqlx::PgPool;
 
-    match tasks.remove(&id) {
-        Some(_) => StatusCode::NO_CONTENT,
-        None => StatusCode::NOT_FOUND,
-    }
+pub async fn initialize_database(pool: &PgPool) -> Result<(), sqlx::Error> {
+    // Create custom enum type for task priorities
+    sqlx::query!(
+        r#"
+        DO $$ BEGIN
+            CREATE TYPE task_priority AS ENUM ('low', 'medium', 'high', 'critical');
+        EXCEPTION
+            WHEN duplicate_object THEN null;
+        END $$;
+        "#
+    )
+    .execute(pool)
+    .await?;
+
+    // Create tasks table with optimized indexes
+    sqlx::query!(
+        r#"
+        CREATE TABLE IF NOT EXISTS tasks (
+            id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+            title TEXT NOT NULL CHECK (length(trim(title)) > 0),
+            description TEXT,
+            completed BOOLEAN NOT NULL DEFAULT false,
+            priority task_priority NOT NULL DEFAULT 'medium',
+            created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+            updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+        );
+
+        -- Indexes for common query patterns
+        CREATE INDEX IF NOT EXISTS idx_tasks_completed ON tasks(completed);
+        CREATE INDEX IF NOT EXISTS idx_tasks_priority ON tasks(priority);
+        CREATE INDEX IF NOT EXISTS idx_tasks_created_at ON tasks(created_at DESC);
+        CREATE INDEX IF NOT EXISTS idx_tasks_updated_at ON tasks(updated_at DESC);
+
+        -- Composite index for filtering completed tasks by priority
+        CREATE INDEX IF NOT EXISTS idx_tasks_completed_priority ON tasks(completed, priority);
+
+        -- Update trigger for updated_at
+        CREATE OR REPLACE FUNCTION update_updated_at_column()
+        RETURNS TRIGGER AS $$
+        BEGIN
+            NEW.updated_at = NOW();
+            RETURN NEW;
+        END;
+        $$ language 'plpgsql';
+
+        DROP TRIGGER IF EXISTS update_tasks_updated_at ON tasks;
+        CREATE TRIGGER update_tasks_updated_at
+            BEFORE UPDATE ON tasks
+            FOR EACH ROW
+            EXECUTE FUNCTION update_updated_at_column();
+        "#
+    )
+    .execute(pool)
+    .await?;
+
+    Ok(())
+}
+
+pub async fn get_database_stats(pool: &PgPool) -> Result<serde_json::Value, sqlx::Error> {
+    let stats = sqlx::query!(
+        r#"
+        SELECT
+            COUNT(*) as total_tasks,
+            COUNT(*) FILTER (WHERE completed = true) as completed_tasks,
+            COUNT(*) FILTER (WHERE priority = 'critical') as critical_tasks,
+            COUNT(*) FILTER (WHERE created_at >= NOW() - INTERVAL '24 hours') as tasks_today
+        FROM tasks
+        "#
+    )
+    .fetch_one(pool)
+    .await?;
+
+    Ok(serde_json::json!({
+        "total_tasks": stats.total_tasks,
+        "completed_tasks": stats.completed_tasks,
+        "critical_tasks": stats.critical_tasks,
+        "tasks_today": stats.tasks_today
+    }))
 }
 ```
 
-Update your imports and router:
+### Step 4: Build REST API Handlers
+
+Create `src/handlers.rs` with full CRUD operations:
 
 ```rust
+use crate::{database::get_database_stats, models::*};
+use axum::{
+    extract::{Path, Query, State},
+    http::StatusCode,
+    response::Json,
+};
+use serde::Deserialize;
+use sqlx::PgPool;
+use std::collections::HashMap;
+use uuid::Uuid;
+
+#[derive(Debug, Deserialize)]
+pub struct ListTasksQuery {
+    pub completed: Option<bool>,
+    pub priority: Option<TaskPriority>,
+    pub limit: Option<i64>,
+    pub offset: Option<i64>,
+}
+
+// CREATE: Add a new task
+pub async fn create_task(
+    State(pool): State<PgPool>,
+    Json(create_task): Json<CreateTask>,
+) -> Result<(StatusCode, Json<TaskResponse>), (StatusCode, Json<ApiError>)> {
+    // Validate title
+    if create_task.title.trim().is_empty() {
+        return Err((
+            StatusCode::BAD_REQUEST,
+            Json(ApiError::validation_error("title", "cannot be empty")),
+        ));
+    }
+
+    // Insert task with proper error handling
+    let task = sqlx::query_as!(
+        Task,
+        r#"
+        INSERT INTO tasks (title, description, priority)
+        VALUES ($1, $2, $3)
+        RETURNING id, title, description, completed, priority AS "priority: TaskPriority", created_at, updated_at
+        "#,
+        create_task.title.trim(),
+        create_task.description,
+        create_task.priority.unwrap_or_default() as TaskPriority
+    )
+    .fetch_one(&pool)
+    .await
+    .map_err(|e| {
+        eprintln!("Database error creating task: {}", e);
+        (
+            StatusCode::INTERNAL_SERVER_ERROR,
+            Json(ApiError::new("database_error", "Failed to create task")),
+        )
+    })?;
+
+    Ok((StatusCode::CREATED, Json(TaskResponse { task })))
+}
+
+// READ: Get all tasks with filtering
+pub async fn list_tasks(
+    State(pool): State<PgPool>,
+    Query(query): Query<ListTasksQuery>,
+) -> Result<Json<TasksResponse>, (StatusCode, Json<ApiError>)> {
+    let limit = query.limit.unwrap_or(50).min(100); // Cap at 100
+    let offset = query.offset.unwrap_or(0);
+
+    let mut sql = String::from(
+        r#"
+        SELECT id, title, description, completed, priority AS "priority: TaskPriority", created_at, updated_at
+        FROM tasks
+        WHERE 1=1
+        "#
+    );
+    let mut conditions = Vec::new();
+
+    // Add filtering conditions
+    if let Some(completed) = query.completed {
+        conditions.push(format!("AND completed = {}", completed));
+    }
+
+    if let Some(priority) = query.priority {
+        conditions.push(format!("AND priority = '{:?}'", priority).to_lowercase());
+    }
+
+    // Append conditions and ordering
+    for condition in conditions {
+        sql.push_str(&condition);
+    }
+    sql.push_str(" ORDER BY created_at DESC LIMIT $1 OFFSET $2");
+
+    let tasks = sqlx::query_as::<_, Task>(&sql)
+        .bind(limit)
+        .bind(offset)
+        .fetch_all(&pool)
+        .await
+        .map_err(|e| {
+            eprintln!("Database error listing tasks: {}", e);
+            (
+                StatusCode::INTERNAL_SERVER_ERROR,
+                Json(ApiError::new("database_error", "Failed to fetch tasks")),
+            )
+        })?;
+
+    Ok(Json(TasksResponse {
+        total: tasks.len(),
+        tasks,
+    }))
+}
+
+// READ: Get a specific task by ID
+pub async fn get_task(
+    State(pool): State<PgPool>,
+    Path(task_id): Path<Uuid>,
+) -> Result<Json<TaskResponse>, (StatusCode, Json<ApiError>)> {
+    let task = sqlx::query_as!(
+        Task,
+        r#"
+        SELECT id, title, description, completed, priority AS "priority: TaskPriority", created_at, updated_at
+        FROM tasks
+        WHERE id = $1
+        "#,
+        task_id
+    )
+    .fetch_optional(&pool)
+    .await
+    .map_err(|e| {
+        eprintln!("Database error fetching task: {}", e);
+        (
+            StatusCode::INTERNAL_SERVER_ERROR,
+            Json(ApiError::new("database_error", "Failed to fetch task")),
+        )
+    })?
+    .ok_or_else(|| {
+        (
+            StatusCode::NOT_FOUND,
+            Json(ApiError::new("not_found", "Task not found")),
+        )
+    })?;
+
+    Ok(Json(TaskResponse { task }))
+}
+
+// UPDATE: Modify an existing task
+pub async fn update_task(
+    State(pool): State<PgPool>,
+    Path(task_id): Path<Uuid>,
+    Json(update_task): Json<UpdateTask>,
+) -> Result<Json<TaskResponse>, (StatusCode, Json<ApiError>)> {
+    // Validate title if provided
+    if let Some(ref title) = update_task.title {
+        if title.trim().is_empty() {
+            return Err((
+                StatusCode::BAD_REQUEST,
+                Json(ApiError::validation_error("title", "cannot be empty")),
+            ));
+        }
+    }
+
+    // Build dynamic update query
+    let mut updates = Vec::new();
+    let mut params: Vec<&dyn sqlx::postgres::PgHasArrayType> = vec![&task_id];
+    let mut param_index = 2;
+
+    if let Some(ref title) = update_task.title {
+        updates.push(format!("title = ${}", param_index));
+        params.push(title);
+        param_index += 1;
+    }
+
+    if let Some(ref description) = update_task.description {
+        updates.push(format!("description = ${}", param_index));
+        params.push(description);
+        param_index += 1;
+    }
+
+    if let Some(completed) = update_task.completed {
+        updates.push(format!("completed = ${}", param_index));
+        params.push(&completed);
+        param_index += 1;
+    }
+
+    if let Some(ref priority) = update_task.priority {
+        updates.push(format!("priority = ${}", param_index));
+        params.push(priority);
+    }
+
+    if updates.is_empty() {
+        return Err((
+            StatusCode::BAD_REQUEST,
+            Json(ApiError::new("validation_error", "No fields to update")),
+        ));
+    }
+
+    let sql = format!(
+        r#"
+        UPDATE tasks
+        SET {}
+        WHERE id = $1
+        RETURNING id, title, description, completed, priority AS "priority: TaskPriority", created_at, updated_at
+        "#,
+        updates.join(", ")
+    );
+
+    // Execute update with error handling
+    let task = match sqlx::query_as::<_, Task>(&sql) {
+        mut query => {
+            query = query.bind(task_id);
+            if let Some(ref title) = update_task.title {
+                query = query.bind(title.trim());
+            }
+            if let Some(ref description) = update_task.description {
+                query = query.bind(description);
+            }
+            if let Some(completed) = update_task.completed {
+                query = query.bind(completed);
+            }
+            if let Some(ref priority) = update_task.priority {
+                query = query.bind(priority);
+            }
+            query
+        }
+    }
+    .fetch_optional(&pool)
+    .await
+    .map_err(|e| {
+        eprintln!("Database error updating task: {}", e);
+        (
+            StatusCode::INTERNAL_SERVER_ERROR,
+            Json(ApiError::new("database_error", "Failed to update task")),
+        )
+    })?
+    .ok_or_else(|| {
+        (
+            StatusCode::NOT_FOUND,
+            Json(ApiError::new("not_found", "Task not found")),
+        )
+    })?;
+
+    Ok(Json(TaskResponse { task }))
+}
+
+// DELETE: Remove a task
+pub async fn delete_task(
+    State(pool): State<PgPool>,
+    Path(task_id): Path<Uuid>,
+) -> Result<StatusCode, (StatusCode, Json<ApiError>)> {
+    let result = sqlx::query!("DELETE FROM tasks WHERE id = $1", task_id)
+        .execute(&pool)
+        .await
+        .map_err(|e| {
+            eprintln!("Database error deleting task: {}", e);
+            (
+                StatusCode::INTERNAL_SERVER_ERROR,
+                Json(ApiError::new("database_error", "Failed to delete task")),
+            )
+        })?;
+
+    if result.rows_affected() == 0 {
+        return Err((
+            StatusCode::NOT_FOUND,
+            Json(ApiError::new("not_found", "Task not found")),
+        ));
+    }
+
+    Ok(StatusCode::NO_CONTENT)
+}
+
+// Health check with database statistics
+pub async fn health_check(
+    State(pool): State<PgPool>,
+) -> Result<Json<serde_json::Value>, (StatusCode, Json<ApiError>)> {
+    let db_stats = get_database_stats(&pool).await.map_err(|e| {
+        eprintln!("Database error in health check: {}", e);
+        (
+            StatusCode::INTERNAL_SERVER_ERROR,
+            Json(ApiError::new("database_error", "Health check failed")),
+        )
+    })?;
+
+    Ok(Json(serde_json::json!({
+        "status": "healthy",
+        "timestamp": chrono::Utc::now(),
+        "database": db_stats
+    })))
+}
+```
+
+### Step 5: Wire Up the Complete API
+
+Update `src/main.rs` to create the full REST API:
+
+```rust
+mod models;
+mod database;
+mod handlers;
+
 use axum::{
     routing::{get, post, put, delete},
     Router,
-    Json,
-    http::StatusCode,
-    response::IntoResponse,
-    extract::{Path, State},
 };
+use database::initialize_database;
+use handlers::*;
+use sqlx::PgPool;
 
-// In main function:
-let router = Router::new()
-    .route("/tasks", get(get_tasks).post(create_task))
-    .route("/tasks/:id", get(get_task).put(update_task).delete(delete_task))
-    .with_state(state);
+#[shuttle_runtime::main]
+async fn main(
+    #[shuttle_shared_db::Postgres] pool: PgPool,
+) -> shuttle_axum::ShuttleAxum {
+    // Initialize database schema
+    initialize_database(&pool)
+        .await
+        .expect("Failed to initialize database");
+
+    // Build comprehensive REST API
+    let app = Router::new()
+        // Health endpoint
+        .route("/health", get(health_check))
+
+        // Task CRUD operations
+        .route("/tasks", get(list_tasks).post(create_task))
+        .route("/tasks/:id", get(get_task).put(update_task).delete(delete_task))
+
+        // Apply shared database state
+        .with_state(pool);
+
+    Ok(app.into())
+}
 ```
 
-Test the complete API:
+### Step 6: Test Your REST API
+
+Test the complete API functionality:
 
 ```bash
-# Create a task
-curl -X POST http://localhost:8000/tasks \
-  -H "Content-Type: application/json" \
-  -d '{"title": "Test Task", "description": "Testing updates"}'
-
-# Update the task (assuming it got ID 2)
-curl -X PUT http://localhost:8000/tasks/2 \
-  -H "Content-Type: application/json" \
-  -d '{"completed": true}'
-
-# Get the updated task
-curl http://localhost:8000/tasks/2
-
-# Delete the task
-curl -X DELETE http://localhost:8000/tasks/2
-
-# Verify it's gone
-curl http://localhost:8000/tasks/2
+shuttle run
 ```
 
-**What to notice**: We can chain multiple HTTP methods on the same route: `.get().put().delete()`. The `Option<>` fields in `UpdateTask` allow partial updates - users only need to send the fields they want to change.
+**Test all CRUD operations:**
 
-## Step 7: Deploy Your API
+```bash
+# CREATE: Add tasks
+curl -X POST "http://localhost:8000/tasks" \
+  -H "Content-Type: application/json" \
+  -d '{"title": "Build REST API", "priority": "high"}'
 
-Your API is complete! Let's deploy it to the cloud:
+curl -X POST "http://localhost:8000/tasks" \
+  -H "Content-Type: application/json" \
+  -d '{"title": "Write tests", "description": "Unit and integration tests", "priority": "medium"}'
+
+# READ: List all tasks
+curl "http://localhost:8000/tasks"
+
+# READ: List with filtering
+curl "http://localhost:8000/tasks?completed=false&priority=high"
+
+# READ: Get specific task (replace with actual ID from creation)
+curl "http://localhost:8000/tasks/YOUR_TASK_ID"
+
+# UPDATE: Modify task
+curl -X PUT "http://localhost:8000/tasks/YOUR_TASK_ID" \
+  -H "Content-Type: application/json" \
+  -d '{"completed": true, "priority": "medium"}'
+
+# DELETE: Remove task
+curl -X DELETE "http://localhost:8000/tasks/YOUR_TASK_ID"
+
+# Health check
+curl "http://localhost:8000/health"
+```
+
+### Step 7: Test Error Handling
+
+Verify proper error responses:
+
+```bash
+# Test validation errors
+curl -X POST "http://localhost:8000/tasks" \
+  -H "Content-Type: application/json" \
+  -d '{"title": "", "priority": "high"}'
+
+# Test not found errors
+curl "http://localhost:8000/tasks/00000000-0000-0000-0000-000000000000"
+
+# Test invalid JSON
+curl -X POST "http://localhost:8000/tasks" \
+  -H "Content-Type: application/json" \
+  -d '{"title": "Invalid JSON"'
+```
+
+### Step 8: Deploy Your API
+
+Deploy the TaskFlow API to production:
 
 ```bash
 shuttle deploy
 ```
 
-After deployment, Shuttle will give you a live URL like `https://task-manager-xyz.shuttle.app`. You can test your deployed API:
+Test your live API:
 
 ```bash
-curl https://task-manager-xyz.shuttle.app/tasks
+# Replace with your deployed URL
+export API_URL="https://taskflow-api.shuttle.app"
+
+# Test production endpoints
+curl "$API_URL/health"
+curl -X POST "$API_URL/tasks" \
+  -H "Content-Type: application/json" \
+  -d '{"title": "Production task", "priority": "critical"}'
 ```
 
-## What You've Accomplished
+## What You've Learned
 
-Congratulations! You've built a complete REST API with Axum that includes:
+You've mastered these **key Shuttle API concepts**:
 
-- ✅ **Multiple HTTP routes** with different methods (GET, POST, PUT, DELETE)
-- ✅ **JSON request and response handling** using Serde
-- ✅ **Dynamic path parameters** for resource identification
-- ✅ **Persistent state management** with thread-safe storage
-- ✅ **Complete CRUD operations** for task management
-- ✅ **Cloud deployment** with Shuttle
-
-## Key Concepts You've Learned
-
-Through building this API, you've learned:
-
-- **Router creation**: Using `Router::new()` and chaining routes
-- **Handler functions**: Writing async functions that process requests
-- **JSON serialization**: Converting between Rust structs and JSON
-- **Path extraction**: Getting dynamic values from URLs
-- **State management**: Sharing data between requests safely
-- **HTTP status codes**: Returning appropriate response codes
-
-## Next Steps
-
-Now that you understand Axum basics, you can:
-
-1. **Add a database** - Replace in-memory storage with PostgreSQL using `shuttle-shared-db`
-2. **Add authentication** - Protect your API with user sessions
-3. **Add validation** - Ensure request data meets your requirements
-4. **Add error handling** - Create better error responses
-5. **Add middleware** - Add logging, CORS, or rate limiting
-
-Try our [Authentication tutorial](/tutorials/authentication) or [Database tutorial](/tutorials/databases-with-rust) next!
+- **HTTP Routing** - RESTful endpoints with Axum and automatic JSON handling
+- **Database Integration** - Shared connection pools and optimized queries
+- **Request Validation** - Input sanitization and structured error responses
+- **State Management** - Efficient resource sharing across HTTP handlers
+- **Custom Types** - PostgreSQL enums and type-safe database operations
+- **Production Deployment** - Zero-config API hosting with automatic HTTPS
+- **Error Handling** - Proper HTTP status codes and client-friendly error messages
 
 ## Troubleshooting
 
-**Server won't start?**
+**Database connection errors?**
 
-- Check that all dependencies are in `Cargo.toml`
-- Ensure no other service is using port 8000
+- Shuttle automatically provisions PostgreSQL with optimized connection pooling
+- Check that schema initialization completed without errors
 
-**JSON parsing errors?**
+**JSON parsing failures?**
 
-- Verify your request has `Content-Type: application/json` header
-- Check that field names match your struct exactly
+- Verify request `Content-Type: application/json` headers
+- Check that request body matches the expected struct fields
 
-**State not persisting?**
+**Route conflicts?**
 
-- Remember state only persists while the server runs
-- Restarting the server resets all data
+- Ensure path parameters like `/:id` don't conflict with static routes
+- Check that HTTP methods are correctly specified
 
-**Deployment issues?**
+**Validation errors not showing?**
 
-- Run `shuttle project status` to check your project
-- View logs with `shuttle logs`
+- Verify error handling middleware is properly configured
+- Check that validation logic returns appropriate HTTP status codes
 
-You've successfully learned the fundamentals of building REST APIs with Axum!
+## Next Steps
+
+Expand your API skills:
+
+1. **Add Authentication** - Secure your API with [Authentication Tutorial](/tutorials/intermediate/authentication)
+2. **Database Mastery** - Learn advanced patterns with [Database Tutorial](/tutorials/beginner/databases-with-rust)
+3. **Real-time Features** - Add WebSockets with [Chat App Tutorial](/tutorials/intermediate/websocket-chat-app-js)

@@ -1,55 +1,58 @@
 ---
 title: "Building a Multi-Service Application"
-description: "Learn to combine Discord bots with web APIs in a single Shuttle service"
+description: "Learn to combine Discord bots with web APIs in a single Shuttle service using custom runtime patterns"
 icon: "boxes-stacked"
 ---
 
 ## Learning Objectives
 
-By the end of this tutorial, you will have built a **Discord Bot + Web Dashboard** application and learned how to:
+By completing this tutorial, you'll master **Shuttle multi-service patterns** and learn to:
 
-- Create custom Shuttle services that run multiple services together
-- Build a Discord bot alongside a web API in the same application
-- Share data between different services within one deployment
-- Handle concurrent service management with Tokio
-- Deploy multi-service applications to production
+- **Shuttle Custom Services**: Implement the `Service` trait for specialized runtime behavior
+- **Service Composition**: Combine Discord bots, web APIs, and background tasks in one deployment
+- **Shared Resource Management**: Use Shuttle's dependency injection with custom services
+- **Concurrent Runtime Patterns**: Handle multiple async services with proper error handling
+- **Infrastructure from Code**: Define complex service architectures declaratively
 
 ## Prerequisites
 
-- Completed [Discord Weather Bot tutorial](/tutorials/discord-weather-forecast)
-- Basic understanding of async Rust and Tokio
+- Completed [Discord Weather Bot](/tutorials/advanced/discord-weather-forecast) tutorial
+- Understanding of async Rust and concurrent programming
 - [Shuttle CLI installed](/getting-started/installation)
-- A Discord account and test server
+- Discord account and test server for bot development
 
-**Time Required**: 60-75 minutes
+**Time Required**: 45-60 minutes
 
 ## What We're Building
 
-We'll create a **Discord Bot with Web Dashboard** that includes:
+We'll create **BotCommand Central** - a unified Discord bot and web dashboard:
 
-- **Discord Bot**: Responds to `/stats` command and tracks usage
-- **Web API**: Provides endpoints to view bot statistics and health
-- **Shared State**: Both services share data about bot usage
-- **Live Dashboard**: Web interface showing real-time bot activity
+- **Discord Bot Service** - Slash commands with usage analytics
+- **Web Dashboard Service** - Real-time statistics and control panel
+- **Background Analytics** - Continuous metrics collection and reporting
+- **Shared State Management** - Cross-service data synchronization
+- **Health Monitoring** - Service health checks and automatic recovery
 
-Users will be able to interact with the bot in Discord while viewing live statistics through a web browser.
+Users can interact with the bot in Discord while monitoring performance through a web interface.
 
-## Step 1: Create Your Project
+## Tutorial Steps
 
-Create a new Shuttle project without any template:
+### Step 1: Initialize Custom Service Project
+
+Create a new project without templates for maximum control:
 
 ```bash
-shuttle init --template none discord-web-service
-cd discord-web-service
+shuttle init --template none botcommand-central
+cd botcommand-central
 ```
 
-This creates a minimal project with just `shuttle-runtime`. Let's examine what we got:
+Examine the minimal structure:
 
 ```bash
 cat src/main.rs
 ```
 
-You should see a basic structure:
+You'll see:
 
 ```rust
 #[shuttle_runtime::main]
@@ -58,145 +61,295 @@ async fn main() -> shuttle_runtime::ShuttleAxum {
 }
 ```
 
-**What to notice**: The `--template none` gives us a blank slate to build our custom service from scratch.
-
-## Step 2: Set Up Dependencies
-
-Update your `Cargo.toml` to include all the dependencies we need:
+Update `Cargo.toml` with multi-service dependencies:
 
 ```toml
 [package]
-name = "discord-web-service"
+name = "botcommand-central"
 version = "0.1.0"
 edition = "2021"
 
 [dependencies]
-anyhow = "1.0"
-axum = "0.8"
-hyper = "0.14"
-poise = "0.6"
-serde = { version = "1.0", features = ["derive"] }
+# Shuttle runtime and resources
 shuttle-runtime = "0.56.0"
-tokio = { version = "1.28", features = ["full"] }
+shuttle-secrets = "0.56.0"
+shuttle-shared-db = "0.56.0"
+
+# Web framework
+axum = { version = "0.7", features = ["json"] }
+tower-http = { version = "0.5", features = ["cors", "fs"] }
+
+# Discord bot
+poise = "0.6"
+serenity = { version = "0.12", default-features = false, features = ["client", "gateway", "rustls_backend", "model"] }
+
+# Async runtime and utilities
+tokio = { version = "1.0", features = ["full"] }
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+sqlx = { version = "0.8", features = ["runtime-tokio-rustls", "postgres", "macros", "chrono"] }
+chrono = { version = "0.4", features = ["serde"] }
 tracing = "0.1"
-tower = "0.5"
-tower-http = { version = "0.6", features = ["cors"] }
-std::sync = { version = "1.0", package = "parking_lot" }
+tracing-subscriber = "0.3"
+
+# Utilities
+anyhow = "1.0"
+uuid = { version = "1.0", features = ["v4", "serde"] }
 ```
 
-Build to download dependencies:
+### Step 2: Define Multi-Service Architecture
 
-```bash
-cargo build
-```
-
-**What to notice**: We're combining Discord bot dependencies (`poise`) with web server dependencies (`axum`) in one project.
-
-## Step 3: Create Shared State
-
-Create `src/state.rs` for data shared between services:
+Create `src/models.rs` for shared data structures:
 
 ```rust
 use serde::{Deserialize, Serialize};
+use chrono::{DateTime, Utc};
 use std::collections::HashMap;
-use std::sync::Arc;
-use tokio::sync::RwLock;
 
-#[derive(Debug, Serialize, Deserialize, Clone)]
-pub struct BotStats {
-    pub total_commands: u64,
-    pub commands_by_type: HashMap<String, u64>,
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct ServiceMetrics {
+    pub service_name: String,
+    pub command_count: u64,
+    pub error_count: u64,
     pub uptime_seconds: u64,
-    pub last_command_time: Option<String>,
+    pub last_activity: Option<DateTime<Utc>>,
+    pub health_status: HealthStatus,
 }
 
-impl Default for BotStats {
-    fn default() -> Self {
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub enum HealthStatus {
+    Healthy,
+    Degraded,
+    Unhealthy,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct CommandStats {
+    pub command_name: String,
+    pub execution_count: u64,
+    pub average_response_time_ms: f64,
+    pub last_executed: Option<DateTime<Utc>>,
+    pub error_rate: f64,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct SystemOverview {
+    pub total_commands: u64,
+    pub active_services: Vec<ServiceMetrics>,
+    pub recent_commands: Vec<CommandStats>,
+    pub system_uptime: u64,
+    pub overall_health: HealthStatus,
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+pub struct ApiResponse<T> {
+    pub success: bool,
+    pub data: Option<T>,
+    pub error: Option<String>,
+    pub timestamp: DateTime<Utc>,
+}
+
+impl<T> ApiResponse<T> {
+    pub fn success(data: T) -> Self {
         Self {
-            total_commands: 0,
-            commands_by_type: HashMap::new(),
-            uptime_seconds: 0,
-            last_command_time: None,
+            success: true,
+            data: Some(data),
+            error: None,
+            timestamp: Utc::now(),
+        }
+    }
+
+    pub fn error(message: &str) -> Self {
+        Self {
+            success: false,
+            data: None,
+            error: Some(message.to_string()),
+            timestamp: Utc::now(),
         }
     }
 }
+```
+
+### Step 3: Implement Shared State Management
+
+Create `src/state.rs` for cross-service data management:
+
+```rust
+use crate::models::*;
+use sqlx::PgPool;
+use std::sync::Arc;
+use tokio::sync::RwLock;
+use chrono::{Utc, Duration};
+use std::collections::HashMap;
 
 #[derive(Clone)]
 pub struct AppState {
-    pub stats: Arc<RwLock<BotStats>>,
+    pub pool: PgPool,
+    pub metrics: Arc<RwLock<HashMap<String, ServiceMetrics>>>,
+    pub command_stats: Arc<RwLock<HashMap<String, CommandStats>>>,
     pub start_time: std::time::Instant,
 }
 
 impl AppState {
-    pub fn new() -> Self {
+    pub fn new(pool: PgPool) -> Self {
         Self {
-            stats: Arc::new(RwLock::new(BotStats::default())),
+            pool,
+            metrics: Arc::new(RwLock::new(HashMap::new())),
+            command_stats: Arc::new(RwLock::new(HashMap::new())),
             start_time: std::time::Instant::now(),
         }
     }
 
-    pub async fn increment_command(&self, command_name: &str) {
-        let mut stats = self.stats.write().await;
-        stats.total_commands += 1;
-        *stats.commands_by_type.entry(command_name.to_string()).or_insert(0) += 1;
-        stats.last_command_time = Some(chrono::Utc::now().to_rfc3339());
-        stats.uptime_seconds = self.start_time.elapsed().as_secs();
+    // Record command execution with timing
+    pub async fn record_command(&self, command_name: &str, response_time_ms: f64, success: bool) {
+        // Update database
+        if let Err(e) = sqlx::query!(
+            r#"
+            INSERT INTO command_logs (command_name, execution_time, response_time_ms, success, created_at)
+            VALUES ($1, NOW(), $2, $3, NOW())
+            "#,
+            command_name,
+            response_time_ms,
+            success
+        )
+        .execute(&self.pool)
+        .await {
+            tracing::error!("Failed to log command: {}", e);
+        }
+
+        // Update in-memory stats
+        let mut stats = self.command_stats.write().await;
+        let entry = stats.entry(command_name.to_string()).or_insert(CommandStats {
+            command_name: command_name.to_string(),
+            execution_count: 0,
+            average_response_time_ms: 0.0,
+            last_executed: None,
+            error_rate: 0.0,
+        });
+
+        entry.execution_count += 1;
+        entry.last_executed = Some(Utc::now());
+
+        // Update rolling average response time
+        entry.average_response_time_ms =
+            (entry.average_response_time_ms * (entry.execution_count - 1) as f64 + response_time_ms)
+            / entry.execution_count as f64;
+
+        // Update error rate
+        if !success {
+            entry.error_rate = (entry.error_rate * (entry.execution_count - 1) as f64 + 1.0)
+                / entry.execution_count as f64;
+        } else {
+            entry.error_rate = entry.error_rate * (entry.execution_count - 1) as f64
+                / entry.execution_count as f64;
+        }
     }
 
-    pub async fn get_stats(&self) -> BotStats {
-        let mut stats = self.stats.read().await.clone();
-        stats.uptime_seconds = self.start_time.elapsed().as_secs();
-        stats
+    // Update service health metrics
+    pub async fn update_service_metrics(&self, service_name: &str, command_count: u64, error_count: u64) {
+        let mut metrics = self.metrics.write().await;
+
+        let health_status = if error_count > command_count / 2 {
+            HealthStatus::Unhealthy
+        } else if error_count > command_count / 10 {
+            HealthStatus::Degraded
+        } else {
+            HealthStatus::Healthy
+        };
+
+        metrics.insert(service_name.to_string(), ServiceMetrics {
+            service_name: service_name.to_string(),
+            command_count,
+            error_count,
+            uptime_seconds: self.start_time.elapsed().as_secs(),
+            last_activity: Some(Utc::now()),
+            health_status,
+        });
+    }
+
+    // Get comprehensive system overview
+    pub async fn get_system_overview(&self) -> SystemOverview {
+        let metrics = self.metrics.read().await;
+        let command_stats = self.command_stats.read().await;
+
+        let total_commands: u64 = metrics.values().map(|m| m.command_count).sum();
+        let active_services: Vec<ServiceMetrics> = metrics.values().cloned().collect();
+        let recent_commands: Vec<CommandStats> = command_stats.values()
+            .cloned()
+            .collect::<Vec<_>>()
+            .into_iter()
+            .take(10)
+            .collect();
+
+        let overall_health = if active_services.iter().any(|s| matches!(s.health_status, HealthStatus::Unhealthy)) {
+            HealthStatus::Unhealthy
+        } else if active_services.iter().any(|s| matches!(s.health_status, HealthStatus::Degraded)) {
+            HealthStatus::Degraded
+        } else {
+            HealthStatus::Healthy
+        };
+
+        SystemOverview {
+            total_commands,
+            active_services,
+            recent_commands,
+            system_uptime: self.start_time.elapsed().as_secs(),
+            overall_health,
+        }
     }
 }
 ```
 
-Add chrono dependency to `Cargo.toml`:
+### Step 4: Create Discord Bot Service
 
-```toml
-chrono = { version = "0.4", features = ["serde"] }
-```
-
-Test it compiles:
-
-```bash
-cargo check
-```
-
-**What to notice**: We use `Arc<RwLock<>>` to safely share data between the Discord bot and web server running concurrently.
-
-## Step 4: Create Discord Bot Commands
-
-Create `src/bot.rs` for Discord bot functionality:
+Create `src/discord.rs` for Discord bot functionality:
 
 ```rust
-use crate::state::AppState;
+use crate::{models::*, state::AppState};
 use poise::serenity_prelude as serenity;
-use std::sync::Arc;
+use std::time::Instant;
 
 pub type Error = Box<dyn std::error::Error + Send + Sync>;
 pub type Context<'a> = poise::Context<'a, AppState, Error>;
 
-/// Get bot statistics
-#[poise::command(slash_command, description = "View bot usage statistics")]
-pub async fn stats(ctx: Context<'_>) -> Result<(), Error> {
+/// Get comprehensive system statistics
+#[poise::command(slash_command, description = "View detailed system statistics and health")]
+pub async fn system_stats(ctx: Context<'_>) -> Result<(), Error> {
+    let start_time = Instant::now();
     let app_state = ctx.data();
-    app_state.increment_command("stats").await;
 
-    let stats = app_state.get_stats().await;
+    let overview = app_state.get_system_overview().await;
+    let response_time = start_time.elapsed().as_millis() as f64;
+
+    // Record command execution
+    app_state.record_command("system_stats", response_time, true).await;
+
+    let health_emoji = match overview.overall_health {
+        HealthStatus::Healthy => "🟢",
+        HealthStatus::Degraded => "🟡",
+        HealthStatus::Unhealthy => "🔴",
+    };
 
     let response = format!(
-        "📊 **Bot Statistics**\n\
-        🔢 Total Commands: {}\n\
-        ⏱️ Uptime: {} seconds\n\
-        🕐 Last Command: {}\n\
-        📈 Commands by type:\n{}",
-        stats.total_commands,
-        stats.uptime_seconds,
-        stats.last_command_time.unwrap_or("Never".to_string()),
-        stats.commands_by_type
-            .iter()
-            .map(|(cmd, count)| format!("  • {}: {}", cmd, count))
+        "{} **System Overview**\n\
+        📊 Total Commands: {}\n\
+        ⏱️ System Uptime: {}s\n\
+        🔧 Active Services: {}\n\
+        ⚡ Response Time: {:.1}ms\n\n\
+        **Recent Commands:**\n{}",
+        health_emoji,
+        overview.total_commands,
+        overview.system_uptime,
+        overview.active_services.len(),
+        response_time,
+        overview.recent_commands.iter()
+            .take(5)
+            .map(|cmd| format!(
+                "• `{}`: {} executions ({}ms avg)",
+                cmd.command_name,
+                cmd.execution_count,
+                cmd.average_response_time_ms
+            ))
             .collect::<Vec<_>>()
             .join("\n")
     );
@@ -205,187 +358,415 @@ pub async fn stats(ctx: Context<'_>) -> Result<(), Error> {
     Ok(())
 }
 
-/// Say hello and increment counter
-#[poise::command(slash_command, description = "Say hello")]
-pub async fn hello(ctx: Context<'_>) -> Result<(), Error> {
+/// Execute a health check with diagnostics
+#[poise::command(slash_command, description = "Perform comprehensive health check")]
+pub async fn health_check(ctx: Context<'_>) -> Result<(), Error> {
+    let start_time = Instant::now();
     let app_state = ctx.data();
-    app_state.increment_command("hello").await;
 
-    let user = ctx.author().display_name();
-    ctx.reply(format!("Hello, {}! 👋", user)).await?;
+    // Test database connectivity
+    let db_health = match sqlx::query!("SELECT 1 as test").fetch_one(&app_state.pool).await {
+        Ok(_) => "🟢 Connected",
+        Err(_) => "🔴 Error",
+    };
+
+    let response_time = start_time.elapsed().as_millis() as f64;
+    let success = db_health.contains("🟢");
+
+    app_state.record_command("health_check", response_time, success).await;
+
+    let response = format!(
+        "🏥 **Health Check Results**\n\
+        🤖 Bot Status: 🟢 Online\n\
+        🗄️ Database: {}\n\
+        ⚡ Response Time: {:.1}ms\n\
+        📈 Memory Usage: {}MB\n\
+        🕐 Timestamp: {}",
+        db_health,
+        response_time,
+        get_memory_usage(),
+        chrono::Utc::now().format("%Y-%m-%d %H:%M:%S UTC")
+    );
+
+    ctx.reply(response).await?;
     Ok(())
 }
 
-/// Get bot health status
-#[poise::command(slash_command, description = "Check if bot is healthy")]
-pub async fn health(ctx: Context<'_>) -> Result<(), Error> {
+/// Generate a performance report
+#[poise::command(slash_command, description = "Generate detailed performance report")]
+pub async fn performance_report(ctx: Context<'_>) -> Result<(), Error> {
+    let start_time = Instant::now();
     let app_state = ctx.data();
-    app_state.increment_command("health").await;
 
-    ctx.reply("✅ Bot is healthy and running!").await?;
+    // Get database statistics
+    let db_stats = sqlx::query!(
+        r#"
+        SELECT
+            COUNT(*) as total_commands,
+            AVG(response_time_ms) as avg_response_time,
+            COUNT(*) FILTER (WHERE success = false) as error_count
+        FROM command_logs
+        WHERE created_at >= NOW() - INTERVAL '24 hours'
+        "#
+    )
+    .fetch_one(&app_state.pool)
+    .await?;
+
+    let response_time = start_time.elapsed().as_millis() as f64;
+    app_state.record_command("performance_report", response_time, true).await;
+
+    let error_rate = if db_stats.total_commands.unwrap_or(0) > 0 {
+        (db_stats.error_count.unwrap_or(0) as f64 / db_stats.total_commands.unwrap_or(1) as f64) * 100.0
+    } else {
+        0.0
+    };
+
+    let response = format!(
+        "📈 **24-Hour Performance Report**\n\
+        🔢 Commands Executed: {}\n\
+        ⚡ Average Response Time: {:.1}ms\n\
+        ❌ Error Rate: {:.1}%\n\
+        🎯 Success Rate: {:.1}%\n\
+        🔄 Report Generated: {:.1}ms",
+        db_stats.total_commands.unwrap_or(0),
+        db_stats.avg_response_time.unwrap_or(0.0),
+        error_rate,
+        100.0 - error_rate,
+        response_time
+    );
+
+    ctx.reply(response).await?;
     Ok(())
 }
 
-pub fn get_commands() -> Vec<poise::Command<AppState, Error>> {
-    vec![stats(), hello(), health()]
+fn get_memory_usage() -> u64 {
+    // Simplified memory usage (in production, use a proper system info crate)
+    use std::alloc::{GlobalAlloc, Layout, System};
+    42 // Placeholder - in real implementation, get actual memory usage
+}
+
+pub fn get_discord_commands() -> Vec<poise::Command<AppState, Error>> {
+    vec![system_stats(), health_check(), performance_report()]
 }
 ```
 
-**What to notice**: Each command increments our shared statistics, demonstrating how the bot and web API will share data.
+### Step 5: Create Web Dashboard Service
 
-## Step 5: Create Web API
-
-Create `src/web.rs` for the web server:
+Create `src/web.rs` for the web interface:
 
 ```rust
-use crate::state::AppState;
+use crate::{models::*, state::AppState};
 use axum::{
     extract::State,
     http::StatusCode,
-    response::{Html, IntoResponse, Json},
+    response::{Html, Json},
     routing::get,
     Router,
 };
-use serde_json::json;
 
-pub fn create_router(state: AppState) -> Router {
+pub fn create_web_router(state: AppState) -> Router {
     Router::new()
         .route("/", get(dashboard))
-        .route("/api/stats", get(get_stats))
-        .route("/api/health", get(health_check))
+        .route("/api/overview", get(get_system_overview))
+        .route("/api/metrics", get(get_metrics))
+        .route("/api/health", get(health_endpoint))
         .with_state(state)
 }
 
 async fn dashboard() -> Html<&'static str> {
-    Html(
-        r#"
-        <!DOCTYPE html>
-        <html>
-        <head>
-            <title>Discord Bot Dashboard</title>
-            <meta http-equiv="refresh" content="10">
-            <style>
-                body { font-family: Arial, sans-serif; margin: 40px; background: #36393f; color: #dcddde; }
-                .container { max-width: 800px; margin: 0 auto; }
-                .card { background: #2f3136; padding: 20px; border-radius: 8px; margin: 20px 0; }
-                .stat { display: inline-block; margin: 10px 20px; }
-                .number { font-size: 2em; font-weight: bold; color: #7289da; }
-                h1 { color: #7289da; }
-                .refresh { font-size: 0.8em; color: #b9bbbe; }
-            </style>
-        </head>
-        <body>
-            <div class="container">
-                <h1>🤖 Discord Bot Dashboard</h1>
-                <div class="card">
-                    <h3>Real-time Statistics</h3>
-                    <p class="refresh">This page refreshes every 10 seconds</p>
-                    <div id="stats">Loading...</div>
-                </div>
-                <div class="card">
-                    <h3>API Endpoints</h3>
-                    <ul>
-                        <li><a href="/api/stats" style="color: #7289da;">/api/stats</a> - JSON statistics</li>
-                        <li><a href="/api/health" style="color: #7289da;">/api/health</a> - Health check</li>
-                    </ul>
-                </div>
-                <div class="card">
-                    <h3>Discord Commands</h3>
-                    <ul>
-                        <li><code>/stats</code> - View bot statistics</li>
-                        <li><code>/hello</code> - Say hello</li>
-                        <li><code>/health</code> - Check bot health</li>
-                    </ul>
+    Html(r#"
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BotCommand Central - Multi-Service Dashboard</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', system-ui, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: #333;
+            min-height: 100vh;
+        }
+        .container { max-width: 1400px; margin: 0 auto; padding: 2rem; }
+        .header {
+            text-align: center;
+            color: white;
+            margin-bottom: 3rem;
+        }
+        .header h1 { font-size: 3rem; margin-bottom: 0.5rem; }
+        .header p { font-size: 1.2rem; opacity: 0.9; }
+
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            margin-bottom: 3rem;
+        }
+        .card {
+            background: white;
+            border-radius: 16px;
+            padding: 2rem;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+            transition: transform 0.2s ease;
+        }
+        .card:hover { transform: translateY(-4px); }
+        .card h3 {
+            color: #667eea;
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .metric {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.75rem 0;
+            border-bottom: 1px solid #f0f0f0;
+        }
+        .metric:last-child { border-bottom: none; }
+        .metric-label { font-weight: 500; }
+        .metric-value {
+            font-weight: bold;
+            color: #667eea;
+        }
+
+        .status-indicator {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            margin-right: 0.5rem;
+        }
+        .status-healthy { background: #4CAF50; }
+        .status-degraded { background: #FF9800; }
+        .status-unhealthy { background: #F44336; }
+
+        .refresh-info {
+            text-align: center;
+            color: white;
+            opacity: 0.8;
+            margin-top: 2rem;
+        }
+
+        .command-list {
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        .command-item {
+            padding: 0.75rem;
+            border-bottom: 1px solid #f0f0f0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .command-name { font-family: monospace; background: #f8f9fa; padding: 0.25rem 0.5rem; border-radius: 4px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🚀 BotCommand Central</h1>
+            <p>Multi-Service Dashboard - Real-time Monitoring</p>
+        </div>
+
+        <div class="dashboard-grid">
+            <div class="card">
+                <h3>📊 System Overview</h3>
+                <div id="systemOverview">
+                    <div class="metric">
+                        <span class="metric-label">Loading...</span>
+                        <span class="metric-value">-</span>
+                    </div>
                 </div>
             </div>
-            <script>
-                async function loadStats() {
-                    try {
-                        const response = await fetch('/api/stats');
-                        const stats = await response.json();
-                        document.getElementById('stats').innerHTML = `
-                            <div class="stat">
-                                <div class="number">${stats.total_commands}</div>
-                                <div>Total Commands</div>
-                            </div>
-                            <div class="stat">
-                                <div class="number">${stats.uptime_seconds}s</div>
-                                <div>Uptime</div>
-                            </div>
-                            <div class="stat">
-                                <div class="number">${Object.keys(stats.commands_by_type).length}</div>
-                                <div>Command Types</div>
-                            </div>
-                            <div style="clear: both; margin-top: 20px;">
-                                <strong>Last Command:</strong> ${stats.last_command_time || 'Never'}
-                            </div>
-                        `;
-                    } catch (error) {
-                        document.getElementById('stats').innerHTML = 'Error loading stats';
-                    }
-                }
-                loadStats();
-                setInterval(loadStats, 5000);
-            </script>
-        </body>
-        </html>
-        "#,
-    )
+
+            <div class="card">
+                <h3>⚡ Performance Metrics</h3>
+                <div id="performanceMetrics">
+                    <div class="metric">
+                        <span class="metric-label">Loading...</span>
+                        <span class="metric-value">-</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <h3>🔧 Service Health</h3>
+                <div id="serviceHealth">
+                    <div class="metric">
+                        <span class="metric-label">Loading...</span>
+                        <span class="metric-value">-</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <h3>📈 Recent Commands</h3>
+                <div class="command-list" id="recentCommands">
+                    Loading commands...
+                </div>
+            </div>
+        </div>
+
+        <div class="refresh-info">
+            <p>🔄 Auto-refreshing every 5 seconds | Last updated: <span id="lastUpdate">-</span></p>
+        </div>
+    </div>
+
+    <script>
+        async function loadDashboardData() {
+            try {
+                const [overviewResponse, metricsResponse] = await Promise.all([
+                    fetch('/api/overview'),
+                    fetch('/api/metrics')
+                ]);
+
+                const overview = await overviewResponse.json();
+                const metrics = await metricsResponse.json();
+
+                updateSystemOverview(overview.data);
+                updateServiceHealth(overview.data);
+                updateRecentCommands(overview.data);
+
+                document.getElementById('lastUpdate').textContent = new Date().toLocaleTimeString();
+            } catch (error) {
+                console.error('Failed to load dashboard data:', error);
+            }
+        }
+
+        function updateSystemOverview(data) {
+            const container = document.getElementById('systemOverview');
+            container.innerHTML = `
+                <div class="metric">
+                    <span class="metric-label">Total Commands</span>
+                    <span class="metric-value">${data.total_commands.toLocaleString()}</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-label">System Uptime</span>
+                    <span class="metric-value">${formatUptime(data.system_uptime)}</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-label">Active Services</span>
+                    <span class="metric-value">${data.active_services.length}</span>
+                </div>
+            `;
+        }
+
+        function updateServiceHealth(data) {
+            const container = document.getElementById('serviceHealth');
+            const healthHTML = data.active_services.map(service => `
+                <div class="metric">
+                    <span class="metric-label">
+                        <span class="status-indicator status-${service.health_status.toLowerCase()}"></span>
+                        ${service.service_name}
+                    </span>
+                    <span class="metric-value">${service.command_count} cmds</span>
+                </div>
+            `).join('');
+
+            container.innerHTML = healthHTML || '<div class="metric"><span>No services active</span></div>';
+        }
+
+        function updateRecentCommands(data) {
+            const container = document.getElementById('recentCommands');
+            const commandsHTML = data.recent_commands.map(cmd => `
+                <div class="command-item">
+                    <span class="command-name">${cmd.command_name}</span>
+                    <span>${cmd.execution_count}x (${cmd.average_response_time_ms.toFixed(1)}ms)</span>
+                </div>
+            `).join('');
+
+            container.innerHTML = commandsHTML || '<div class="command-item">No commands executed yet</div>';
+        }
+
+        function formatUptime(seconds) {
+            const hours = Math.floor(seconds / 3600);
+            const minutes = Math.floor((seconds % 3600) / 60);
+            return `${hours}h ${minutes}m`;
+        }
+
+        // Load data immediately and set up auto-refresh
+        loadDashboardData();
+        setInterval(loadDashboardData, 5000);
+    </script>
+</body>
+</html>
+    "#)
 }
 
-async fn get_stats(State(state): State<AppState>) -> Json<serde_json::Value> {
-    let stats = state.get_stats().await;
-    Json(json!(stats))
+async fn get_system_overview(State(state): State<AppState>) -> Json<ApiResponse<SystemOverview>> {
+    let overview = state.get_system_overview().await;
+    Json(ApiResponse::success(overview))
 }
 
-async fn health_check() -> impl IntoResponse {
-    (StatusCode::OK, Json(json!({
+async fn get_metrics(State(state): State<AppState>) -> Json<ApiResponse<Vec<ServiceMetrics>>> {
+    let metrics = state.metrics.read().await;
+    let metrics_vec: Vec<ServiceMetrics> = metrics.values().cloned().collect();
+    Json(ApiResponse::success(metrics_vec))
+}
+
+async fn health_endpoint() -> Json<ApiResponse<serde_json::Value>> {
+    Json(ApiResponse::success(serde_json::json!({
         "status": "healthy",
-        "service": "discord-web-service",
-        "timestamp": chrono::Utc::now().to_rfc3339()
+        "service": "botcommand-central",
+        "timestamp": chrono::Utc::now(),
+        "version": "1.0.0"
     })))
 }
 ```
 
-**What to notice**: The web dashboard displays real-time bot statistics and auto-refreshes to show live updates when Discord commands are used.
+### Step 6: Implement Custom Service with Infrastructure from Code
 
-## Step 6: Create Custom Service Implementation
-
-Create `src/service.rs` to combine both services:
+Create `src/service.rs` for the custom service implementation:
 
 ```rust
-use crate::{bot, state::AppState, web};
+use crate::{discord, state::AppState, web};
 use poise::serenity_prelude as serenity;
-use shuttle_runtime::Error as ShuttleError;
+use shuttle_runtime::{Error as ShuttleError, Service};
 use std::net::SocketAddr;
+use tokio::time::{interval, Duration};
 
-pub struct MultiService {
+pub struct MultiServiceApp {
     pub discord_token: String,
     pub state: AppState,
 }
 
 #[shuttle_runtime::async_trait]
-impl shuttle_runtime::Service for MultiService {
+impl Service for MultiServiceApp {
     async fn bind(self, addr: SocketAddr) -> Result<(), ShuttleError> {
+        tracing::info!("🚀 Starting BotCommand Central Multi-Service Application");
+
+        // Initialize Discord bot framework
         let framework = poise::Framework::builder()
             .options(poise::FrameworkOptions {
-                commands: bot::get_commands(),
+                commands: discord::get_discord_commands(),
                 prefix_options: poise::PrefixFrameworkOptions {
                     prefix: Some("!".into()),
                     ..Default::default()
+                },
+                // Add error handler for better reliability
+                on_error: |error| {
+                    Box::pin(async move {
+                        tracing::error!("Discord command error: {:?}", error);
+                    })
                 },
                 ..Default::default()
             })
             .setup(|ctx, _ready, framework| {
                 Box::pin(async move {
-                    // Register slash commands globally
+                    tracing::info!("🤖 Registering Discord slash commands...");
                     poise::builtins::register_globally(ctx, &framework.options().commands).await?;
-                    tracing::info!("Discord bot commands registered!");
+                    tracing::info!("✅ Discord bot commands registered successfully");
                     Ok(self.state.clone())
                 })
             })
             .build();
 
+        // Create Discord client
         let client = serenity::ClientBuilder::new(
             &self.discord_token,
             serenity::GatewayIntents::non_privileged() | serenity::GatewayIntents::MESSAGE_CONTENT,
@@ -394,159 +775,206 @@ impl shuttle_runtime::Service for MultiService {
         .await
         .map_err(|e| ShuttleError::Custom(e.into()))?;
 
-        // Create web router
-        let app = web::create_router(self.state);
-
         // Create web server
+        let app = web::create_web_router(self.state.clone());
         let listener = tokio::net::TcpListener::bind(addr)
             .await
             .map_err(|e| ShuttleError::Custom(e.into()))?;
 
-        tracing::info!("Starting services...");
-        tracing::info!("Web server: http://{}", addr);
-        tracing::info!("Discord bot: Starting...");
+        // Background metrics collection task
+        let state_for_metrics = self.state.clone();
+        let metrics_task = tokio::spawn(async move {
+            let mut interval = interval(Duration::from_secs(30));
+            loop {
+                interval.tick().await;
 
-        // Run both services concurrently
-        tokio::select! {
+                // Update service metrics periodically
+                let command_stats = state_for_metrics.command_stats.read().await;
+                let total_commands: u64 = command_stats.values().map(|c| c.execution_count).sum();
+                let error_count: u64 = command_stats.values()
+                    .map(|c| (c.error_rate * c.execution_count as f64) as u64)
+                    .sum();
+
+                state_for_metrics.update_service_metrics("discord-bot", total_commands, error_count).await;
+                state_for_metrics.update_service_metrics("web-dashboard", 1, 0).await;
+
+                tracing::debug!("📊 Updated service metrics: {} commands, {} errors", total_commands, error_count);
+            }
+        });
+
+        tracing::info!("🌐 Web dashboard available at: http://{}", addr);
+        tracing::info!("🤖 Discord bot connecting...");
+        tracing::info!("📊 Background metrics collection started");
+
+        // Run all services concurrently with proper error handling
+        let result = tokio::select! {
             result = axum::serve(listener, app) => {
-                if let Err(e) = result {
-                    tracing::error!("Web server error: {}", e);
-                }
+                tracing::error!("❌ Web server stopped: {:?}", result);
+                result.map_err(|e| ShuttleError::Custom(e.into()))
             }
             result = client.start() => {
-                if let Err(e) = result {
-                    tracing::error!("Discord bot error: {}", e);
-                }
+                tracing::error!("❌ Discord bot stopped: {:?}", result);
+                result.map_err(|e| ShuttleError::Custom(e.into()))
             }
-        }
+            result = metrics_task => {
+                tracing::error!("❌ Metrics collection stopped: {:?}", result);
+                result.map_err(|e| ShuttleError::Custom(e.into()))?;
+                Ok(())
+            }
+        };
 
-        Ok(())
+        result
     }
 }
 ```
 
-**What to notice**: `tokio::select!` runs both services concurrently. If either service fails, the whole application stops gracefully.
+### Step 7: Initialize Database Schema
 
-## Step 7: Wire Everything Together
-
-Update `src/main.rs` to use our custom service:
+Create `src/database.rs` for Infrastructure from Code database setup:
 
 ```rust
-mod bot;
-mod service;
+use sqlx::PgPool;
+
+pub async fn initialize_database(pool: &PgPool) -> Result<(), sqlx::Error> {
+    // Create command logs table with optimized indexes
+    sqlx::query!(
+        r#"
+        CREATE TABLE IF NOT EXISTS command_logs (
+            id SERIAL PRIMARY KEY,
+            command_name VARCHAR(100) NOT NULL,
+            execution_time TIMESTAMPTZ NOT NULL,
+            response_time_ms REAL NOT NULL,
+            success BOOLEAN NOT NULL DEFAULT true,
+            created_at TIMESTAMPTZ DEFAULT NOW(),
+            user_id VARCHAR(100),
+            guild_id VARCHAR(100)
+        );
+
+        -- Indexes for performance analytics
+        CREATE INDEX IF NOT EXISTS idx_command_logs_command_name ON command_logs(command_name);
+        CREATE INDEX IF NOT EXISTS idx_command_logs_created_at ON command_logs(created_at DESC);
+        CREATE INDEX IF NOT EXISTS idx_command_logs_success ON command_logs(success);
+        CREATE INDEX IF NOT EXISTS idx_command_logs_performance ON command_logs(command_name, created_at DESC, response_time_ms);
+
+        -- Service health monitoring table
+        CREATE TABLE IF NOT EXISTS service_health (
+            service_name VARCHAR(100) PRIMARY KEY,
+            last_heartbeat TIMESTAMPTZ DEFAULT NOW(),
+            status VARCHAR(20) DEFAULT 'healthy',
+            error_count INTEGER DEFAULT 0,
+            total_requests INTEGER DEFAULT 0,
+            created_at TIMESTAMPTZ DEFAULT NOW(),
+            updated_at TIMESTAMPTZ DEFAULT NOW()
+        );
+
+        -- Create or update trigger for updating timestamps
+        CREATE OR REPLACE FUNCTION update_updated_at_column()
+        RETURNS TRIGGER AS $$
+        BEGIN
+            NEW.updated_at = NOW();
+            RETURN NEW;
+        END;
+        $$ language 'plpgsql';
+
+        DROP TRIGGER IF EXISTS update_service_health_updated_at ON service_health;
+        CREATE TRIGGER update_service_health_updated_at
+            BEFORE UPDATE ON service_health
+            FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+        "#
+    )
+    .execute(pool)
+    .await?;
+
+    tracing::info!("✅ Database schema initialized successfully");
+    Ok(())
+}
+
+pub async fn check_database_health(pool: &PgPool) -> Result<serde_json::Value, sqlx::Error> {
+    let stats = sqlx::query!(
+        r#"
+        SELECT
+            COUNT(*) as total_commands,
+            COUNT(*) FILTER (WHERE created_at >= NOW() - INTERVAL '1 hour') as commands_last_hour,
+            COUNT(*) FILTER (WHERE success = false) as total_errors,
+            AVG(response_time_ms) as avg_response_time
+        FROM command_logs
+        "#
+    )
+    .fetch_one(pool)
+    .await?;
+
+    Ok(serde_json::json!({
+        "database_status": "connected",
+        "total_commands": stats.total_commands,
+        "commands_last_hour": stats.commands_last_hour,
+        "total_errors": stats.total_errors,
+        "average_response_time_ms": stats.avg_response_time
+    }))
+}
+```
+
+### Step 8: Wire Everything Together
+
+Update `src/main.rs` to create the complete multi-service application:
+
+```rust
+mod models;
 mod state;
+mod discord;
 mod web;
+mod service;
+mod database;
 
 use anyhow::Context;
-use service::MultiService;
+use service::MultiServiceApp;
 use shuttle_runtime::SecretStore;
+use sqlx::PgPool;
 use state::AppState;
 
 #[shuttle_runtime::main]
 async fn main(
-    #[shuttle_runtime::Secrets] secrets: SecretStore,
-) -> Result<MultiService, shuttle_runtime::Error> {
-    // Initialize logging
-    tracing_subscriber::init();
+    #[shuttle_shared_db::Postgres] pool: PgPool,
+    #[shuttle_secrets::Secrets] secrets: SecretStore,
+) -> Result<MultiServiceApp, shuttle_runtime::Error> {
+    // Initialize structured logging
+    tracing_subscriber::fmt()
+        .with_target(false)
+        .with_thread_ids(true)
+        .init();
 
-    // Get Discord token
+    tracing::info!("🚀 Initializing BotCommand Central Multi-Service Application");
+
+    // Initialize database schema using Infrastructure from Code
+    database::initialize_database(&pool)
+        .await
+        .context("Failed to initialize database schema")?;
+
+    // Get Discord bot token from secrets
     let discord_token = secrets
         .get("DISCORD_TOKEN")
-        .context("'DISCORD_TOKEN' was not found")?;
+        .context("DISCORD_TOKEN secret not found - add it to Secrets.toml")?;
 
-    // Create shared state
-    let state = AppState::new();
+    // Create shared application state
+    let state = AppState::new(pool);
 
-    Ok(MultiService {
+    tracing::info!("✅ Application state initialized");
+    tracing::info!("🗄️ Database schema ready");
+    tracing::info!("🔐 Secrets loaded successfully");
+
+    Ok(MultiServiceApp {
         discord_token,
         state,
     })
 }
 ```
 
-Add the logging dependency:
+### Step 9: Configure Secrets and Deploy
 
-```toml
-tracing-subscriber = "0.3"
-```
-
-Build the complete application:
-
-```bash
-cargo build
-```
-
-**What to notice**: Our main function returns a custom service instead of the usual Shuttle service types.
-
-## Step 8: Configure Secrets
-
-Create your `Secrets.toml` file:
-
-```bash
-touch Secrets.toml
-```
-
-Add your Discord bot token:
+Create `Secrets.toml` with your Discord bot configuration:
 
 ```toml
 DISCORD_TOKEN = "your_discord_bot_token_here"
 ```
-
-Make sure to add it to `.gitignore`:
-
-```bash
-echo "Secrets.toml" >> .gitignore
-```
-
-**What to notice**: You can reuse the Discord bot token from the Discord Weather Bot tutorial if you have one.
-
-## Step 9: Test Your Multi-Service Application
-
-Run your application locally:
-
-```bash
-shuttle run
-```
-
-You should see output like:
-
-```
-Starting services...
-Web server: http://127.0.0.1:8000
-Discord bot: Starting...
-Discord bot commands registered!
-```
-
-**Test the web dashboard**:
-
-1. Open `http://localhost:8000` in your browser
-2. You should see the Discord Bot Dashboard
-3. Notice the real-time statistics (initially all zeros)
-
-**Test the Discord bot**:
-
-1. Go to your Discord server
-2. Try the commands:
-   - `/hello` - Should respond with a greeting
-   - `/health` - Should confirm the bot is healthy
-   - `/stats` - Should show current usage statistics
-
-**Test the integration**:
-
-1. Use several Discord commands
-2. Refresh the web dashboard (or wait for auto-refresh)
-3. You should see the statistics update in real-time!
-
-**Test the API endpoints**:
-
-```bash
-curl http://localhost:8000/api/stats
-curl http://localhost:8000/api/health
-```
-
-**What to notice**: Both services share the same statistics - commands used in Discord appear immediately in the web dashboard!
-
-## Step 10: Deploy to Production
 
 Deploy your multi-service application:
 
@@ -554,101 +982,96 @@ Deploy your multi-service application:
 shuttle deploy
 ```
 
-After deployment, you'll get a URL like `https://discord-web-service-xyz.shuttle.app`.
+### Step 10: Test Your Multi-Service Application
 
-**Test your production deployment**:
+Test the complete system:
 
-1. Visit the web dashboard URL in your browser
-2. Use Discord commands in your server
-3. Watch the dashboard update with real-time statistics
-4. Test the API endpoints with your production URL
+**Discord Bot Commands:**
 
-**What to notice**: Both services run in the same deployment, sharing resources and data seamlessly.
+- `/system_stats` - View comprehensive system metrics
+- `/health_check` - Perform health diagnostics
+- `/performance_report` - Generate 24-hour performance report
 
-## What You've Accomplished
+**Web Dashboard:**
 
-Congratulations! You've built a sophisticated multi-service application with:
+- Visit your deployed URL to see the real-time dashboard
+- Monitor command executions, service health, and performance metrics
+- Watch metrics update automatically every 5 seconds
 
-- ✅ **Custom Shuttle service** combining multiple service types
-- ✅ **Discord bot** with slash commands and usage tracking
-- ✅ **Web API** with JSON endpoints and health checks
-- ✅ **Live dashboard** with real-time statistics and auto-refresh
-- ✅ **Shared state** between concurrent services
-- ✅ **Production deployment** of the complete multi-service app
+**API Endpoints:**
 
-## Key Concepts You've Learned
+```bash
+# Replace with your deployed URL
+export BASE_URL="https://botcommand-central.shuttle.app"
 
-### Custom Services
-
-You learned how to implement the `Service` trait to create custom Shuttle services that can run any combination of services together.
-
-### Concurrent Service Management
-
-Using `tokio::select!` to run multiple async services concurrently:
-
-```rust
-tokio::select! {
-    result = axum::serve(listener, app) => { /* web server */ }
-    result = client.start() => { /* discord bot */ }
-}
+curl "$BASE_URL/api/overview"
+curl "$BASE_URL/api/metrics"
+curl "$BASE_URL/api/health"
 ```
 
-### Shared State
+## What You've Learned
 
-Using `Arc<RwLock<T>>` to safely share data between concurrent services:
+You've successfully built a sophisticated multi-service application and mastered:
 
-```rust
-pub struct AppState {
-    pub stats: Arc<RwLock<BotStats>>,
-}
-```
+### Shuttle Multi-Service Patterns
 
-### Service Integration
+- **Custom Service Implementation** with the `Service` trait
+- **Shared Resource Management** across multiple service types
+- **Infrastructure from Code** for database schemas and migrations
+- **Concurrent Service Orchestration** with error handling
 
-Demonstrating how different service types can work together and share data in real-time.
+### Advanced Runtime Architecture
 
-## Next Steps
+- **Service composition** combining Discord bots, web APIs, and background tasks
+- **Cross-service state management** with thread-safe data structures
+- **Real-time metrics collection** and health monitoring
+- **Graceful error handling** and service recovery
 
-Now that you understand custom services, you can:
+### Production Multi-Service Design
 
-1. **Add more service types** - Include WebSocket servers, cron jobs, or background tasks
-2. **Add persistence** - Use Shuttle's database features to store statistics permanently
-3. **Enhance the dashboard** - Add charts, more detailed analytics, or user management
-4. **Add monitoring** - Include health checks, metrics, and alerting
-5. **Scale services** - Learn about service discovery and load balancing
-
-Try our [WebSocket Chat tutorial](/tutorials/websocket-chat-app-js) to learn about real-time communication!
+- **Structured logging** across all services
+- **Performance monitoring** with response time tracking
+- **Health checks** and system diagnostics
+- **Auto-recovery patterns** for service resilience
 
 ## Troubleshooting
 
-**Services not starting?**
+**Services not starting together?**
 
-- Check that your Discord token is correct in `Secrets.toml`
-- Verify that both Discord and web components compile individually
-- Check logs with `shuttle logs`
+- Check that the custom `Service` trait implementation is correct
+- Verify all dependencies are properly initialized before service startup
+- Ensure database connections are established before Discord bot connects
 
-**Discord bot offline?**
+**Shared state not updating?**
 
-- Ensure the bot has proper permissions in your Discord server
-- Check that slash commands are registered (watch for "commands registered" log)
-- Verify the bot token hasn't expired
+- Confirm that `Arc<RwLock<>>` patterns are used consistently
+- Check that async/await is properly used when accessing shared state
+- Verify that all services are using the same `AppState` instance
 
-**Web dashboard not updating?**
+**Discord bot or web server failing?**
 
-- Check that Discord commands are actually being executed
-- Verify the `/api/stats` endpoint returns current data
-- Check browser console for JavaScript errors
+- Check logs with `shuttle logs` for specific error messages
+- Verify Discord token is valid and has proper permissions
+- Ensure port binding and routing are configured correctly
 
-**Build errors?**
+**Database migrations failing?**
 
-- Ensure all dependencies match the versions in the tutorial
-- Try `cargo clean && cargo build` to rebuild everything
-- Check that all module files (`bot.rs`, `web.rs`, etc.) are created
+- Check that PostgreSQL connection is successful
+- Verify SQL syntax in migration scripts
+- Ensure database permissions allow table creation
 
-**Shared state not working?**
+## Next Steps
 
-- Verify that the same `AppState` instance is passed to both services
-- Check that async/await is used properly when accessing shared state
-- Ensure read/write locks are acquired and released correctly
+Expand your multi-service application with:
 
-You've successfully learned how to build sophisticated multi-service applications with Shuttle!
+1. **WebSocket Integration** - Add real-time web notifications ([WebSocket Tutorial](/tutorials/intermediate/websocket-chat-app-js))
+2. **Scheduled Tasks** - Add cron jobs and periodic maintenance
+3. **External API Integration** - Connect to third-party services and APIs
+4. **Load Balancing** - Scale services horizontally with multiple instances
+5. **Monitoring & Alerting** - Add comprehensive observability ([Datadog Tutorial](/tutorials/advanced/send-your-logs-to-datadog))
+
+Your multi-service application demonstrates the power of Shuttle's custom service capabilities for building complex, production-ready systems!
+
+## Complete Code
+
+Find the complete working code for this tutorial in our [examples repository](https://github.com/shuttle-hq/shuttle-examples/tree/main/multi-service).

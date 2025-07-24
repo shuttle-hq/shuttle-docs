@@ -1,121 +1,178 @@
 ---
-title: "Adding User Authentication"
-description: "Learn to build a secure authentication system with user registration, login, and protected routes"
+title: "User Authentication with Shuttle Secrets"
+description: "Learn to build secure authentication systems using Shuttle's secrets management and stateful services"
 icon: "gear"
 ---
 
 ## Learning Objectives
 
-By the end of this tutorial, you will have built a **Protected Notes App** and learned how to:
+By the end of this tutorial, you will understand these **Shuttle authentication concepts**:
 
-- Create user registration with password hashing
-- Implement secure login with session cookies
-- Protect routes that require authentication
-- Build logout functionality
-- Store user data securely in a database
+- **Secrets Management** - Secure configuration with Shuttle secrets
+- **Stateful Services** - Session management and user state in Shuttle
+- **JWT Integration** - Token-based authentication with Shuttle secrets
+- **Password Security** - Secure password handling in Shuttle applications
+- **Route Protection** - Implementing authentication middleware with Shuttle
+
+You'll build a **Protected Notes App** that demonstrates Shuttle's approach to secure, production-ready authentication.
 
 ## Prerequisites
 
-- Completed [Your First Shuttle App](/tutorials/your-first-app) tutorial
-- Basic understanding of HTTP cookies and sessions
-- [Shuttle CLI installed](/getting-started/installation)
-
-**Time Required**: 60-75 minutes
+- **Time Required**: 30 minutes
+- **Rust Version**: 1.75.0 or higher with Cargo
+- **Experience Level**: Completed [Database Integration](/tutorials/beginner/databases-with-rust)
+- **Security Knowledge**: Basic understanding of JWT tokens, password hashing, and sessions
+- **Tools Required**: [Shuttle CLI](/getting-started/installation) installed and configured
+- **Accounts Needed**: [Shuttle account](https://shuttle.rs) (free tier available)
 
 ## What We're Building
 
-We'll create a **Protected Notes App** where users can:
+A **Protected Notes App** with JWT authentication, demonstrating Shuttle's secrets management and route protection patterns for secure user authentication.
 
-- Register a new account with email and password
-- Login to access their private notes
-- Create and view notes (only their own)
-- Logout securely
-- Have their passwords stored securely (hashed, never plain text)
+This tutorial shows production-ready authentication: user registration/login with password hashing, JWT token management with Shuttle secrets, middleware-based route protection, and user-owned resource isolation.
 
-Each user will only see their own notes - no one else's.
+### High-Level Components
 
-## Step 1: Create Your Project
+- **User Management** - Registration, login, and profile management with bcrypt password hashing
+- **JWT Authentication** - Token-based auth with configurable expiration using Shuttle secrets
+- **Route Protection Middleware** - Authentication middleware with dependency injection patterns
+- **PostgreSQL Database** - User accounts and notes with proper foreign key relationships
+- **Shuttle Secrets** - Secure configuration management for JWT secrets and auth settings
+- **Protected API Endpoints** - User-owned resource access with authorization enforcement
 
-Create a new Shuttle project for our authentication app:
+## Step 1: Initialize Secure Shuttle Project
 
-```bash
-shuttle init --template axum protected-notes
-cd protected-notes
-```
+**Shuttle Concept**: Shuttle's secrets management provides a secure foundation for authentication systems with zero configuration overhead.
 
-Let's verify the basic setup works:
+Create your authentication-enabled project:
 
 ```bash
-shuttle run
+# Create new Shuttle project with authentication focus
+cargo shuttle init notes-auth
+
+# Select "Axum" when prompted
+cd notes-auth
 ```
 
-Visit `http://localhost:8000`. You should see "Hello, world!". Press `Ctrl+C` to stop.
-
-**What to notice**: We're starting with a clean Axum project that we'll add authentication to step by step.
-
-## Step 2: Add Dependencies
-
-Update your `Cargo.toml` to include authentication-related dependencies:
+Update `Cargo.toml` for comprehensive authentication support:
 
 ```toml
 [package]
-name = "protected-notes"
+name = "notes-auth"
 version = "0.1.0"
 edition = "2021"
 
 [dependencies]
-axum = "0.8"
+# Shuttle core with secrets and database
+axum = { version = "0.8", features = ["macros"] }
 shuttle-axum = "0.56.0"
+shuttle-runtime = "0.56.0"
 shuttle-shared-db = "0.56.0"
-sqlx = { version = "0.8", features = ["runtime-tokio-rustls", "postgres", "chrono", "uuid"] }
-serde = { version = "1.0", features = ["derive"] }
-chrono = { version = "0.4", features = ["serde"] }
+shuttle-secrets = "0.56.0"
+
+# Database and async
+sqlx = { version = "0.8", features = ["runtime-tokio-rustls", "postgres", "uuid", "chrono"] }
 tokio = { version = "1.0", features = ["macros"] }
-tower = "0.5"
-tower-http = { version = "0.6", features = ["cors"] }
-uuid = { version = "1.0", features = ["v4", "serde"] }
+
+# Authentication and security
+jsonwebtoken = "9.2"
 bcrypt = "0.15"
-axum-extra = { version = "0.9", features = ["cookie", "cookie-signed"] }
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+uuid = { version = "1.0", features = ["v4", "serde"] }
+chrono = { version = "0.4", features = ["serde"] }
+
+# HTTP middleware and utilities
+axum-extra = { version = "0.9", features = ["cookie"] }
+tower = "0.5"
+tower-http = { version = "0.6", features = ["cors", "trace"] }
 ```
 
-Build to download dependencies:
+## Step 2: Configure Shuttle Secrets
 
-```bash
-cargo build
+**Shuttle Concept**: Shuttle secrets provide secure, environment-specific configuration that's automatically injected into your application.
+
+Create `Secrets.toml` for local development:
+
+```toml
+# Secrets.toml - Local development secrets
+JWT_SECRET = "your-super-secret-jwt-key-change-this-in-production"
+BCRYPT_COST = "10"
+SESSION_DURATION_HOURS = "24"
 ```
 
-You should see `Finished dev [unoptimized + debuginfo] target(s)`.
+Create `.gitignore` entry to protect secrets:
 
-**What to notice**: We've added `bcrypt` for password hashing and `axum-extra` for secure cookie handling.
+```gitignore
+# Ensure secrets don't get committed
+Secrets.toml
+```
 
-## Step 3: Create Data Models
+**Key Shuttle Patterns**:
 
-Create `src/models.rs` with our user and note structures:
+- Secrets are injected through function parameters
+- Different secrets for local development vs production
+- Automatic environment isolation
+- Type-safe secrets access
+
+## Step 3: Design Authentication Data Models
+
+**Shuttle Concept**: Shuttle applications benefit from comprehensive data models that integrate authentication state with business logic.
+
+Create `src/models.rs` with authentication entities:
 
 ```rust
 use serde::{Deserialize, Serialize};
 use chrono::{DateTime, Utc};
 use uuid::Uuid;
 
-#[derive(Debug, Serialize, Deserialize, sqlx::FromRow)]
+// User entity for authentication
+#[derive(Debug, Clone, Serialize, Deserialize, sqlx::FromRow)]
 pub struct User {
     pub id: Uuid,
     pub email: String,
+    pub username: String,
     pub password_hash: String,
     pub created_at: DateTime<Utc>,
+    pub updated_at: DateTime<Utc>,
+    pub is_active: bool,
 }
 
-#[derive(Debug, Serialize, Deserialize, sqlx::FromRow)]
+// User session for JWT claims
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct UserSession {
+    pub user_id: Uuid,
+    pub username: String,
+    pub email: String,
+    pub exp: usize, // JWT expiration timestamp
+}
+
+// Personal note entity (protected resource)
+#[derive(Debug, Clone, Serialize, Deserialize, sqlx::FromRow)]
 pub struct Note {
     pub id: Uuid,
     pub user_id: Uuid,
     pub title: String,
     pub content: String,
+    pub is_private: bool,
     pub created_at: DateTime<Utc>,
+    pub updated_at: DateTime<Utc>,
 }
 
+// Public user profile (no sensitive data)
+#[derive(Debug, Serialize)]
+pub struct UserProfile {
+    pub id: Uuid,
+    pub username: String,
+    pub email: String,
+    pub created_at: DateTime<Utc>,
+    pub note_count: i64,
+}
+
+// Authentication request payloads
 #[derive(Debug, Deserialize)]
 pub struct RegisterRequest {
+    pub username: String,
     pub email: String,
     pub password: String,
 }
@@ -126,556 +183,1041 @@ pub struct LoginRequest {
     pub password: String,
 }
 
+// Note management requests
 #[derive(Debug, Deserialize)]
 pub struct CreateNoteRequest {
     pub title: String,
     pub content: String,
-}
-```
-
-Test it compiles:
-
-```bash
-cargo check
-```
-
-**What to notice**: We store `password_hash`, never the actual password. The `user_id` in `Note` links notes to their owners.
-
-## Step 4: Set Up Database Schema
-
-Create the migrations directory and our database schema:
-
-```bash
-mkdir migrations
-touch migrations/20231201000000_create_users_and_notes.sql
-```
-
-Add this SQL to the migration file:
-
-```sql
-CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
-
-CREATE TABLE users (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    email TEXT NOT NULL UNIQUE,
-    password_hash TEXT NOT NULL,
-    created_at TIMESTAMPTZ DEFAULT NOW()
-);
-
-CREATE TABLE notes (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-    title TEXT NOT NULL,
-    content TEXT NOT NULL,
-    created_at TIMESTAMPTZ DEFAULT NOW()
-);
-
-CREATE INDEX idx_notes_user_id ON notes(user_id);
-```
-
-**What to notice**: Users have unique emails, notes are linked to users via `user_id`, and we have an index for fast note lookups.
-
-## Step 5: Create Authentication Utilities
-
-Create `src/auth.rs` for our authentication helpers:
-
-```rust
-use axum::extract::{FromRequestParts, Request};
-use axum::http::request::Parts;
-use axum::http::StatusCode;
-use axum::response::{IntoResponse, Response};
-use axum_extra::extract::cookie::{Cookie, Key, SignedCookieJar};
-use bcrypt::{hash, verify, DEFAULT_COST};
-use uuid::Uuid;
-
-// Hash a password securely
-pub fn hash_password(password: &str) -> Result<String, bcrypt::BcryptError> {
-    hash(password, DEFAULT_COST)
+    pub is_private: Option<bool>,
 }
 
-// Verify a password against a hash
-pub fn verify_password(password: &str, hash: &str) -> Result<bool, bcrypt::BcryptError> {
-    verify(password, hash)
+#[derive(Debug, Deserialize)]
+pub struct UpdateNoteRequest {
+    pub title: Option<String>,
+    pub content: Option<String>,
+    pub is_private: Option<bool>,
 }
 
-// Session data stored in cookies
-#[derive(Debug)]
-pub struct AuthSession {
-    pub user_id: Uuid,
+// Authentication responses
+#[derive(Debug, Serialize)]
+pub struct AuthResponse {
+    pub user: UserProfile,
+    pub token: String,
+    pub expires_at: DateTime<Utc>,
+    pub message: String,
 }
 
-// Extract the current user from the session cookie
-#[axum::async_trait]
-impl<S> FromRequestParts<S> for AuthSession
-where
-    S: Send + Sync,
-{
-    type Rejection = AuthError;
+#[derive(Debug, Serialize)]
+pub struct NoteResponse {
+    pub note: Note,
+    pub message: String,
+}
 
-    async fn from_request_parts(parts: &mut Parts, state: &S) -> Result<Self, Self::Rejection> {
-        let jar = SignedCookieJar::<Key>::from_request_parts(parts, state)
-            .await
-            .map_err(|_| AuthError::InvalidSession)?;
+#[derive(Debug, Serialize)]
+pub struct NotesResponse {
+    pub notes: Vec<Note>,
+    pub total: usize,
+    pub page: usize,
+    pub limit: usize,
+}
 
-        let session_cookie = jar
-            .get("session")
-            .ok_or(AuthError::MissingSession)?;
+// Standard error response
+#[derive(Debug, Serialize)]
+pub struct ErrorResponse {
+    pub error: String,
+    pub message: String,
+    pub timestamp: DateTime<Utc>,
+}
 
-        let user_id = session_cookie
-            .value()
-            .parse::<Uuid>()
-            .map_err(|_| AuthError::InvalidSession)?;
-
-        Ok(AuthSession { user_id })
+impl ErrorResponse {
+    pub fn new(error: &str, message: &str) -> Self {
+        Self {
+            error: error.to_string(),
+            message: message.to_string(),
+            timestamp: Utc::now(),
+        }
     }
 }
 
-// Authentication errors
-#[derive(Debug)]
-pub enum AuthError {
-    MissingSession,
-    InvalidSession,
+// User display without sensitive information
+impl From<User> for UserProfile {
+    fn from(user: User) -> Self {
+        Self {
+            id: user.id,
+            username: user.username,
+            email: user.email,
+            created_at: user.created_at,
+            note_count: 0, // Will be populated by separate query
+        }
+    }
 }
 
-impl IntoResponse for AuthError {
-    fn into_response(self) -> Response {
-        match self {
-            AuthError::MissingSession | AuthError::InvalidSession => {
-                (StatusCode::UNAUTHORIZED, "Authentication required").into_response()
-            }
+// JWT claims for token validation
+impl UserSession {
+    pub fn new(user: &User, duration_hours: u64) -> Self {
+        let exp = (Utc::now() + chrono::Duration::hours(duration_hours as i64)).timestamp() as usize;
+
+        Self {
+            user_id: user.id,
+            username: user.username.clone(),
+            email: user.email.clone(),
+            exp,
         }
     }
 }
 ```
 
-Test it compiles:
+## Step 4: Implement Shuttle-Based Authentication Service
 
-```bash
-cargo check
-```
+**Shuttle Concept**: Authentication services in Shuttle leverage secrets for secure configuration and integrate seamlessly with database resources.
 
-**What to notice**: We use signed cookies to store user sessions securely. The `AuthSession` extractor automatically checks if a user is logged in.
-
-## Step 6: Build the Authentication Handlers
-
-Create `src/handlers.rs` for our route handlers:
+Create `src/auth.rs` for authentication logic:
 
 ```rust
-use axum::{
-    extract::{State, Json},
-    http::StatusCode,
-    response::{IntoResponse, Json as ResponseJson, Redirect},
-};
-use axum_extra::extract::cookie::{Cookie, Key, SignedCookieJar};
+use crate::models::*;
+use bcrypt::{hash, verify, DEFAULT_COST};
+use chrono::{Duration, Utc};
+use jsonwebtoken::{decode, encode, Algorithm, DecodingKey, EncodingKey, Header, Validation};
 use sqlx::PgPool;
+use std::collections::HashMap;
 use uuid::Uuid;
 
-use crate::auth::{hash_password, verify_password, AuthSession};
-use crate::models::{User, Note, RegisterRequest, LoginRequest, CreateNoteRequest};
-
-#[derive(Clone)]
-pub struct AppState {
-    pub pool: PgPool,
-    pub cookie_key: Key,
+pub struct AuthService {
+    pool: PgPool,
+    jwt_secret: String,
+    bcrypt_cost: u32,
+    session_duration_hours: u64,
 }
 
-// Home page
-pub async fn home() -> &'static str {
-    "Protected Notes App - Please login or register to continue"
-}
-
-// Register a new user
-pub async fn register(
-    State(state): State<AppState>,
-    Json(payload): Json<RegisterRequest>,
-) -> Result<impl IntoResponse, StatusCode> {
-    // Hash the password
-    let password_hash = hash_password(&payload.password)
-        .map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?;
-
-    // Create user in database
-    let user = sqlx::query_as::<_, User>(
-        "INSERT INTO users (email, password_hash) VALUES ($1, $2)
-         RETURNING id, email, password_hash, created_at"
-    )
-    .bind(&payload.email)
-    .bind(&password_hash)
-    .fetch_one(&state.pool)
-    .await
-    .map_err(|_| StatusCode::CONFLICT)?; // Email already exists
-
-    Ok((StatusCode::CREATED, ResponseJson(serde_json::json!({
-        "message": "User created successfully",
-        "user_id": user.id
-    }))))
-}
-
-// Login user
-pub async fn login(
-    State(state): State<AppState>,
-    jar: SignedCookieJar<Key>,
-    Json(payload): Json<LoginRequest>,
-) -> Result<impl IntoResponse, StatusCode> {
-    // Find user by email
-    let user = sqlx::query_as::<_, User>(
-        "SELECT id, email, password_hash, created_at FROM users WHERE email = $1"
-    )
-    .bind(&payload.email)
-    .fetch_optional(&state.pool)
-    .await
-    .map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?
-    .ok_or(StatusCode::UNAUTHORIZED)?; // User not found
-
-    // Verify password
-    let is_valid = verify_password(&payload.password, &user.password_hash)
-        .map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?;
-
-    if !is_valid {
-        return Err(StatusCode::UNAUTHORIZED);
+impl AuthService {
+    pub fn new(
+        pool: PgPool,
+        jwt_secret: String,
+        bcrypt_cost: u32,
+        session_duration_hours: u64,
+    ) -> Self {
+        Self {
+            pool,
+            jwt_secret,
+            bcrypt_cost,
+            session_duration_hours,
+        }
     }
 
-    // Create session cookie
-    let session_cookie = Cookie::new("session", user.id.to_string());
-    let jar = jar.add(session_cookie);
+    // Register new user with secure password hashing
+    pub async fn register_user(&self, request: RegisterRequest) -> Result<AuthResponse, String> {
+        // Validate input
+        if request.username.trim().is_empty() {
+            return Err("Username cannot be empty".to_string());
+        }
 
-    Ok((jar, ResponseJson(serde_json::json!({
-        "message": "Login successful"
-    }))))
-}
+        if request.email.trim().is_empty() || !request.email.contains('@') {
+            return Err("Valid email address is required".to_string());
+        }
 
-// Logout user
-pub async fn logout(jar: SignedCookieJar<Key>) -> impl IntoResponse {
-    let jar = jar.remove(Cookie::named("session"));
-    (jar, ResponseJson(serde_json::json!({
-        "message": "Logout successful"
-    })))
-}
+        if request.password.len() < 8 {
+            return Err("Password must be at least 8 characters long".to_string());
+        }
 
-// Get user's notes (protected route)
-pub async fn get_notes(
-    State(state): State<AppState>,
-    session: AuthSession,
-) -> Result<impl IntoResponse, StatusCode> {
-    let notes = sqlx::query_as::<_, Note>(
-        "SELECT id, user_id, title, content, created_at FROM notes
-         WHERE user_id = $1 ORDER BY created_at DESC"
-    )
-    .bind(session.user_id)
-    .fetch_all(&state.pool)
-    .await
-    .map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?;
+        // Check if user already exists
+        let existing_user = sqlx::query!(
+            "SELECT id FROM users WHERE email = $1 OR username = $2",
+            request.email.trim().to_lowercase(),
+            request.username.trim()
+        )
+        .fetch_optional(&self.pool)
+        .await
+        .map_err(|e| format!("Database error: {}", e))?;
 
-    Ok(ResponseJson(notes))
-}
+        if existing_user.is_some() {
+            return Err("User with this email or username already exists".to_string());
+        }
 
-// Create a note (protected route)
-pub async fn create_note(
-    State(state): State<AppState>,
-    session: AuthSession,
-    Json(payload): Json<CreateNoteRequest>,
-) -> Result<impl IntoResponse, StatusCode> {
-    let note = sqlx::query_as::<_, Note>(
-        "INSERT INTO notes (user_id, title, content) VALUES ($1, $2, $3)
-         RETURNING id, user_id, title, content, created_at"
-    )
-    .bind(session.user_id)
-    .bind(&payload.title)
-    .bind(&payload.content)
-    .fetch_one(&state.pool)
-    .await
-    .map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?;
+        // Hash password securely
+        let password_hash = hash(&request.password, self.bcrypt_cost)
+            .map_err(|e| format!("Password hashing error: {}", e))?;
 
-    Ok((StatusCode::CREATED, ResponseJson(note)))
+        // Create user in database
+        let user = sqlx::query_as::<_, User>(
+            r#"
+            INSERT INTO users (username, email, password_hash)
+            VALUES ($1, $2, $3)
+            RETURNING id, username, email, password_hash, created_at, updated_at, is_active
+            "#,
+        )
+        .bind(request.username.trim())
+        .bind(request.email.trim().to_lowercase())
+        .bind(password_hash)
+        .fetch_one(&self.pool)
+        .await
+        .map_err(|e| format!("Failed to create user: {}", e))?;
+
+        // Generate JWT token
+        let token = self.generate_jwt_token(&user)?;
+        let expires_at = Utc::now() + Duration::hours(self.session_duration_hours as i64);
+
+        Ok(AuthResponse {
+            user: user.into(),
+            token,
+            expires_at,
+            message: "User registered successfully".to_string(),
+        })
+    }
+
+    // Authenticate user login
+    pub async fn login_user(&self, request: LoginRequest) -> Result<AuthResponse, String> {
+        // Find user by email
+        let user = sqlx::query_as::<_, User>(
+            "SELECT id, username, email, password_hash, created_at, updated_at, is_active FROM users WHERE email = $1"
+        )
+        .bind(request.email.trim().to_lowercase())
+        .fetch_optional(&self.pool)
+        .await
+        .map_err(|e| format!("Database error: {}", e))?
+        .ok_or_else(|| "Invalid email or password".to_string())?;
+
+        // Check if user account is active
+        if !user.is_active {
+            return Err("Account is deactivated".to_string());
+        }
+
+        // Verify password
+        if !verify(&request.password, &user.password_hash)
+            .map_err(|e| format!("Password verification error: {}", e))?
+        {
+            return Err("Invalid email or password".to_string());
+        }
+
+        // Generate JWT token
+        let token = self.generate_jwt_token(&user)?;
+        let expires_at = Utc::now() + Duration::hours(self.session_duration_hours as i64);
+
+        Ok(AuthResponse {
+            user: user.into(),
+            token,
+            expires_at,
+            message: "Login successful".to_string(),
+        })
+    }
+
+    // Validate JWT token and extract user session
+    pub async fn validate_token(&self, token: &str) -> Result<UserSession, String> {
+        let decoding_key = DecodingKey::from_secret(self.jwt_secret.as_ref());
+        let mut validation = Validation::new(Algorithm::HS256);
+        validation.required_spec_claims.clear(); // We'll check expiration manually
+
+        let token_data = decode::<UserSession>(token, &decoding_key, &validation)
+            .map_err(|e| format!("Invalid token: {}", e))?;
+
+        // Check if token is expired
+        let now = Utc::now().timestamp() as usize;
+        if token_data.claims.exp < now {
+            return Err("Token has expired".to_string());
+        }
+
+        // Verify user still exists and is active
+        let user_exists = sqlx::query!(
+            "SELECT is_active FROM users WHERE id = $1",
+            token_data.claims.user_id
+        )
+        .fetch_optional(&self.pool)
+        .await
+        .map_err(|e| format!("Database error: {}", e))?;
+
+        match user_exists {
+            Some(row) if row.is_active => Ok(token_data.claims),
+            Some(_) => Err("User account is deactivated".to_string()),
+            None => Err("User no longer exists".to_string()),
+        }
+    }
+
+    // Generate secure JWT token
+    fn generate_jwt_token(&self, user: &User) -> Result<String, String> {
+        let session = UserSession::new(user, self.session_duration_hours);
+
+        let encoding_key = EncodingKey::from_secret(self.jwt_secret.as_ref());
+        let header = Header::new(Algorithm::HS256);
+
+        encode(&header, &session, &encoding_key)
+            .map_err(|e| format!("JWT encoding error: {}", e))
+    }
+
+    // Get user profile with statistics
+    pub async fn get_user_profile(&self, user_id: Uuid) -> Result<UserProfile, String> {
+        let user = sqlx::query_as::<_, User>(
+            "SELECT id, username, email, password_hash, created_at, updated_at, is_active FROM users WHERE id = $1"
+        )
+        .bind(user_id)
+        .fetch_optional(&self.pool)
+        .await
+        .map_err(|e| format!("Database error: {}", e))?
+        .ok_or_else(|| "User not found".to_string())?;
+
+        // Get note count
+        let note_count: i64 = sqlx::query_scalar("SELECT COUNT(*) FROM notes WHERE user_id = $1")
+            .bind(user_id)
+            .fetch_one(&self.pool)
+            .await
+            .unwrap_or(0);
+
+        let mut profile: UserProfile = user.into();
+        profile.note_count = note_count;
+
+        Ok(profile)
+    }
 }
 ```
 
-Test it compiles:
+## Step 5: Set Up Database Schema with User Management
 
-```bash
-cargo check
+**Shuttle Concept**: Shuttle applications initialize complex authentication schemas with proper security constraints and indexing.
+
+Create `src/database.rs` for authentication schema:
+
+```rust
+use sqlx::PgPool;
+use tracing::{info, error};
+
+// Initialize authentication-enabled database schema
+pub async fn initialize_database(pool: &PgPool) -> Result<(), sqlx::Error> {
+    info!("🔧 Initializing Protected Notes database schema...");
+
+    // Create users table with security constraints
+    sqlx::query(
+        r#"
+        CREATE TABLE IF NOT EXISTS users (
+            id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+            username VARCHAR(50) NOT NULL UNIQUE,
+            email VARCHAR(255) NOT NULL UNIQUE,
+            password_hash VARCHAR(255) NOT NULL,
+            created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+            updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+            is_active BOOLEAN NOT NULL DEFAULT true,
+
+            -- Security constraints
+            CONSTRAINT username_length CHECK (length(username) >= 3),
+            CONSTRAINT email_format CHECK (email ~* '^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$')
+        );
+
+        -- Indexes for authentication queries
+        CREATE INDEX IF NOT EXISTS idx_users_email ON users(email);
+        CREATE INDEX IF NOT EXISTS idx_users_username ON users(username);
+        CREATE INDEX IF NOT EXISTS idx_users_active ON users(is_active);
+        "#,
+    )
+    .execute(pool)
+    .await?;
+
+    // Create notes table with user ownership
+    sqlx::query(
+        r#"
+        CREATE TABLE IF NOT EXISTS notes (
+            id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+            user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+            title VARCHAR(255) NOT NULL,
+            content TEXT NOT NULL,
+            is_private BOOLEAN NOT NULL DEFAULT true,
+            created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+            updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+
+            -- Security constraints
+            CONSTRAINT title_length CHECK (length(title) >= 1),
+            CONSTRAINT content_length CHECK (length(content) >= 1)
+        );
+
+        -- Indexes for note queries
+        CREATE INDEX IF NOT EXISTS idx_notes_user_id ON notes(user_id);
+        CREATE INDEX IF NOT EXISTS idx_notes_created_at ON notes(created_at);
+        CREATE INDEX IF NOT EXISTS idx_notes_private ON notes(is_private);
+        "#,
+    )
+    .execute(pool)
+    .await?;
+
+    // Create function to automatically update updated_at timestamp
+    sqlx::query(
+        r#"
+        CREATE OR REPLACE FUNCTION update_updated_at_column()
+        RETURNS TRIGGER AS $$
+        BEGIN
+            NEW.updated_at = NOW();
+            RETURN NEW;
+        END;
+        $$ language 'plpgsql';
+
+        -- Apply to both tables
+        DROP TRIGGER IF EXISTS update_users_updated_at ON users;
+        CREATE TRIGGER update_users_updated_at
+            BEFORE UPDATE ON users
+            FOR EACH ROW
+            EXECUTE FUNCTION update_updated_at_column();
+
+        DROP TRIGGER IF EXISTS update_notes_updated_at ON notes;
+        CREATE TRIGGER update_notes_updated_at
+            BEFORE UPDATE ON notes
+            FOR EACH ROW
+            EXECUTE FUNCTION update_updated_at_column();
+        "#,
+    )
+    .execute(pool)
+    .await?;
+
+    info!("✅ Authentication database schema initialized successfully");
+    Ok(())
+}
+
+// Database health check with user statistics
+pub async fn check_database_health(pool: &PgPool) -> Result<DatabaseStats, sqlx::Error> {
+    let stats = sqlx::query!(
+        r#"
+        SELECT
+            (SELECT COUNT(*) FROM users WHERE is_active = true) as active_users,
+            (SELECT COUNT(*) FROM users) as total_users,
+            (SELECT COUNT(*) FROM notes) as total_notes,
+            (SELECT COUNT(*) FROM notes WHERE is_private = false) as public_notes
+        "#
+    )
+    .fetch_one(pool)
+    .await?;
+
+    Ok(DatabaseStats {
+        active_users: stats.active_users.unwrap_or(0),
+        total_users: stats.total_users.unwrap_or(0),
+        total_notes: stats.total_notes.unwrap_or(0),
+        public_notes: stats.public_notes.unwrap_or(0),
+    })
+}
+
+#[derive(Debug, serde::Serialize)]
+pub struct DatabaseStats {
+    pub active_users: i64,
+    pub total_users: i64,
+    pub total_notes: i64,
+    pub public_notes: i64,
+}
 ```
 
-**What to notice**: Protected routes use `AuthSession` - if a user isn't logged in, they get a 401 error automatically.
+## Step 6: Implement Authentication Middleware
 
-## Step 7: Wire Everything Together
+**Shuttle Concept**: Shuttle applications use middleware for route protection, leveraging the framework's dependency injection for clean authentication patterns.
 
-Update `src/main.rs` to use our authentication system:
+Create `src/middleware.rs` for route protection:
+
+```rust
+use crate::{auth::AuthService, models::*};
+use axum::{
+    extract::{Request, State},
+    http::{header::AUTHORIZATION, StatusCode},
+    middleware::Next,
+    response::{IntoResponse, Json, Response},
+};
+use std::sync::Arc;
+
+// Authentication middleware for protected routes
+pub async fn auth_middleware(
+    State(auth_service): State<Arc<AuthService>>,
+    mut request: Request,
+    next: Next,
+) -> Response {
+    // Extract authorization header
+    let auth_header = request
+        .headers()
+        .get(AUTHORIZATION)
+        .and_then(|header| header.to_str().ok())
+        .and_then(|header| {
+            if header.starts_with("Bearer ") {
+                Some(&header[7..])
+            } else {
+                None
+            }
+        });
+
+    let token = match auth_header {
+        Some(token) => token,
+        None => {
+            return (
+                StatusCode::UNAUTHORIZED,
+                Json(ErrorResponse::new(
+                    "missing_token",
+                    "Authorization header with Bearer token is required",
+                )),
+            )
+                .into_response();
+        }
+    };
+
+    // Validate token and extract user session
+    let user_session = match auth_service.validate_token(token).await {
+        Ok(session) => session,
+        Err(error) => {
+            return (
+                StatusCode::UNAUTHORIZED,
+                Json(ErrorResponse::new("invalid_token", &error)),
+            )
+                .into_response();
+        }
+    };
+
+    // Add user session to request extensions for handlers to access
+    request.extensions_mut().insert(user_session);
+
+    // Continue to the handler
+    next.run(request).await
+}
+
+// Extract user session from request (for use in protected handlers)
+pub struct CurrentUser(pub UserSession);
+
+impl<S> axum::extract::FromRequestParts<S> for CurrentUser
+where
+    S: Send + Sync,
+{
+    type Rejection = (StatusCode, Json<ErrorResponse>);
+
+    async fn from_request_parts(
+        parts: &mut axum::http::request::Parts,
+        _state: &S,
+    ) -> Result<Self, Self::Rejection> {
+        parts
+            .extensions
+            .get::<UserSession>()
+            .cloned()
+            .map(CurrentUser)
+            .ok_or_else(|| {
+                (
+                    StatusCode::UNAUTHORIZED,
+                    Json(ErrorResponse::new(
+                        "missing_session",
+                        "User session not found in request",
+                    )),
+                )
+            })
+    }
+}
+```
+
+## Step 7: Build Complete Authentication API
+
+**Shuttle Concept**: Shuttle applications integrate secrets, database resources, and middleware into cohesive authentication systems.
+
+Update `src/main.rs` with the complete authentication flow:
 
 ```rust
 mod models;
 mod auth;
-mod handlers;
+mod database;
+mod middleware;
 
+use auth::AuthService;
 use axum::{
-    routing::{get, post},
+    extract::{Path, Query, State},
+    http::StatusCode,
+    middleware as axum_middleware,
+    response::Json,
+    routing::{get, post, put, delete},
     Router,
 };
-use axum_extra::extract::cookie::Key;
+use database::*;
+use middleware::{auth_middleware, CurrentUser};
+use models::*;
+use shuttle_secrets::SecretStore;
+use sqlx::PgPool;
+use std::sync::Arc;
 use tower_http::cors::CorsLayer;
+use uuid::Uuid;
 
-use handlers::{AppState, home, register, login, logout, get_notes, create_note};
+// Application state with authentication service
+#[derive(Clone)]
+pub struct AppState {
+    pub auth_service: Arc<AuthService>,
+}
 
 #[shuttle_runtime::main]
 async fn main(
-    #[shuttle_shared_db::Postgres] pool: sqlx::PgPool,
+    #[shuttle_shared_db::Postgres] pool: PgPool,
+    #[shuttle_secrets::Secrets] secret_store: SecretStore,
 ) -> shuttle_axum::ShuttleAxum {
-    // Run database migrations
-    sqlx::migrate!("./migrations").run(&pool).await.unwrap();
+    // Initialize database schema
+    initialize_database(&pool)
+        .await
+        .expect("Failed to initialize database schema");
 
-    // Generate a random key for signing cookies
-    let cookie_key = Key::generate();
+    // Extract secrets for authentication configuration
+    let jwt_secret = secret_store
+        .get("JWT_SECRET")
+        .expect("JWT_SECRET must be set in secrets");
 
-    // Create application state
-    let state = AppState { pool, cookie_key };
+    let bcrypt_cost: u32 = secret_store
+        .get("BCRYPT_COST")
+        .unwrap_or_else(|| "10".to_string())
+        .parse()
+        .expect("BCRYPT_COST must be a valid number");
 
-    // Build our application with routes
-    let router = Router::new()
-        .route("/", get(home))
-        .route("/register", post(register))
-        .route("/login", post(login))
-        .route("/logout", post(logout))
-        .route("/notes", get(get_notes).post(create_note))
+    let session_duration_hours: u64 = secret_store
+        .get("SESSION_DURATION_HOURS")
+        .unwrap_or_else(|| "24".to_string())
+        .parse()
+        .expect("SESSION_DURATION_HOURS must be a valid number");
+
+    // Create authentication service with Shuttle secrets
+    let auth_service = Arc::new(AuthService::new(
+        pool,
+        jwt_secret,
+        bcrypt_cost,
+        session_duration_hours,
+    ));
+
+    let state = AppState { auth_service };
+
+    // Build authentication-enabled API
+    let app = Router::new()
+        .route("/health", get(health_check))
+
+        // Public authentication routes
+        .route("/auth/register", post(register))
+        .route("/auth/login", post(login))
+
+        // Protected user routes
+        .route("/auth/profile", get(get_profile))
+        .route("/auth/logout", post(logout))
+
+        // Protected notes routes
+        .route("/notes", get(list_notes).post(create_note))
+        .route("/notes/:id", get(get_note).put(update_note).delete(delete_note))
+
+        // Apply authentication middleware to protected routes
+        .layer(axum_middleware::from_fn_with_state(
+            state.auth_service.clone(),
+            auth_middleware,
+        ))
+
         .layer(CorsLayer::permissive())
         .with_state(state);
 
-    Ok(router.into())
+    Ok(app.into())
+}
+
+// Health check with database and authentication statistics
+async fn health_check(State(state): State<AppState>) -> Json<serde_json::Value> {
+    let stats = check_database_health(&state.auth_service.pool)
+        .await
+        .unwrap_or(DatabaseStats {
+            active_users: 0,
+            total_users: 0,
+            total_notes: 0,
+            public_notes: 0,
+        });
+
+    Json(serde_json::json!({
+        "status": "healthy",
+        "database": "connected",
+        "authentication": "enabled",
+        "statistics": stats,
+        "timestamp": chrono::Utc::now(),
+        "service": "notes-auth"
+    }))
+}
+
+// Public authentication endpoints
+async fn register(
+    State(state): State<AppState>,
+    Json(request): Json<RegisterRequest>,
+) -> Result<(StatusCode, Json<AuthResponse>), (StatusCode, Json<ErrorResponse>)> {
+    match state.auth_service.register_user(request).await {
+        Ok(response) => Ok((StatusCode::CREATED, Json(response))),
+        Err(error) => Err((
+            StatusCode::BAD_REQUEST,
+            Json(ErrorResponse::new("registration_failed", &error)),
+        )),
+    }
+}
+
+async fn login(
+    State(state): State<AppState>,
+    Json(request): Json<LoginRequest>,
+) -> Result<Json<AuthResponse>, (StatusCode, Json<ErrorResponse>)> {
+    match state.auth_service.login_user(request).await {
+        Ok(response) => Ok(Json(response)),
+        Err(error) => Err((
+            StatusCode::UNAUTHORIZED,
+            Json(ErrorResponse::new("login_failed", &error)),
+        )),
+    }
+}
+
+// Protected user endpoints (require authentication)
+async fn get_profile(
+    State(state): State<AppState>,
+    current_user: CurrentUser,
+) -> Result<Json<UserProfile>, (StatusCode, Json<ErrorResponse>)> {
+    match state.auth_service.get_user_profile(current_user.0.user_id).await {
+        Ok(profile) => Ok(Json(profile)),
+        Err(error) => Err((
+            StatusCode::INTERNAL_SERVER_ERROR,
+            Json(ErrorResponse::new("profile_error", &error)),
+        )),
+    }
+}
+
+async fn logout(current_user: CurrentUser) -> Json<serde_json::Value> {
+    // In a more complete implementation, you might invalidate the token server-side
+    Json(serde_json::json!({
+        "message": "Logged out successfully",
+        "user": current_user.0.username
+    }))
+}
+
+// Protected notes endpoints
+async fn list_notes(
+    State(state): State<AppState>,
+    current_user: CurrentUser,
+    Query(params): Query<std::collections::HashMap<String, String>>,
+) -> Result<Json<NotesResponse>, (StatusCode, Json<ErrorResponse>)> {
+    let page: usize = params.get("page").and_then(|p| p.parse().ok()).unwrap_or(1);
+    let limit: usize = params.get("limit").and_then(|l| l.parse().ok()).unwrap_or(20).min(100);
+    let offset = (page - 1) * limit;
+
+    let notes = sqlx::query_as::<_, Note>(
+        "SELECT id, user_id, title, content, is_private, created_at, updated_at
+         FROM notes
+         WHERE user_id = $1
+         ORDER BY created_at DESC
+         LIMIT $2 OFFSET $3"
+    )
+    .bind(current_user.0.user_id)
+    .bind(limit as i64)
+    .bind(offset as i64)
+    .fetch_all(&state.auth_service.pool)
+    .await
+    .map_err(|e| {
+        tracing::error!("Database error: {}", e);
+        (
+            StatusCode::INTERNAL_SERVER_ERROR,
+            Json(ErrorResponse::new("database_error", "Failed to fetch notes")),
+        )
+    })?;
+
+    let total: i64 = sqlx::query_scalar("SELECT COUNT(*) FROM notes WHERE user_id = $1")
+        .bind(current_user.0.user_id)
+        .fetch_one(&state.auth_service.pool)
+        .await
+        .unwrap_or(0);
+
+    Ok(Json(NotesResponse {
+        notes,
+        total: total as usize,
+        page,
+        limit,
+    }))
+}
+
+async fn create_note(
+    State(state): State<AppState>,
+    current_user: CurrentUser,
+    Json(request): Json<CreateNoteRequest>,
+) -> Result<(StatusCode, Json<NoteResponse>), (StatusCode, Json<ErrorResponse>)> {
+    if request.title.trim().is_empty() {
+        return Err((
+            StatusCode::BAD_REQUEST,
+            Json(ErrorResponse::new("validation_error", "Note title cannot be empty")),
+        ));
+    }
+
+    let note = sqlx::query_as::<_, Note>(
+        r#"
+        INSERT INTO notes (user_id, title, content, is_private)
+        VALUES ($1, $2, $3, $4)
+        RETURNING id, user_id, title, content, is_private, created_at, updated_at
+        "#,
+    )
+    .bind(current_user.0.user_id)
+    .bind(request.title.trim())
+    .bind(request.content)
+    .bind(request.is_private.unwrap_or(true))
+    .fetch_one(&state.auth_service.pool)
+    .await
+    .map_err(|e| {
+        tracing::error!("Database error: {}", e);
+        (
+            StatusCode::INTERNAL_SERVER_ERROR,
+            Json(ErrorResponse::new("database_error", "Failed to create note")),
+        )
+    })?;
+
+    Ok((
+        StatusCode::CREATED,
+        Json(NoteResponse {
+            note,
+            message: "Note created successfully".to_string(),
+        }),
+    ))
+}
+
+async fn get_note(
+    State(state): State<AppState>,
+    current_user: CurrentUser,
+    Path(note_id): Path<Uuid>,
+) -> Result<Json<NoteResponse>, (StatusCode, Json<ErrorResponse>)> {
+    let note = sqlx::query_as::<_, Note>(
+        "SELECT id, user_id, title, content, is_private, created_at, updated_at
+         FROM notes
+         WHERE id = $1 AND user_id = $2"
+    )
+    .bind(note_id)
+    .bind(current_user.0.user_id)
+    .fetch_optional(&state.auth_service.pool)
+    .await
+    .map_err(|e| {
+        tracing::error!("Database error: {}", e);
+        (
+            StatusCode::INTERNAL_SERVER_ERROR,
+            Json(ErrorResponse::new("database_error", "Failed to fetch note")),
+        )
+    })?
+    .ok_or_else(|| {
+        (
+            StatusCode::NOT_FOUND,
+            Json(ErrorResponse::new("not_found", "Note not found or access denied")),
+        )
+    })?;
+
+    Ok(Json(NoteResponse {
+        note,
+        message: "Note retrieved successfully".to_string(),
+    }))
+}
+
+async fn update_note(
+    State(state): State<AppState>,
+    current_user: CurrentUser,
+    Path(note_id): Path<Uuid>,
+    Json(request): Json<UpdateNoteRequest>,
+) -> Result<Json<NoteResponse>, (StatusCode, Json<ErrorResponse>)> {
+    let note = sqlx::query_as::<_, Note>(
+        r#"
+        UPDATE notes
+        SET title = COALESCE($3, title),
+            content = COALESCE($4, content),
+            is_private = COALESCE($5, is_private),
+            updated_at = NOW()
+        WHERE id = $1 AND user_id = $2
+        RETURNING id, user_id, title, content, is_private, created_at, updated_at
+        "#,
+    )
+    .bind(note_id)
+    .bind(current_user.0.user_id)
+    .bind(request.title)
+    .bind(request.content)
+    .bind(request.is_private)
+    .fetch_optional(&state.auth_service.pool)
+    .await
+    .map_err(|e| {
+        tracing::error!("Database error: {}", e);
+        (
+            StatusCode::INTERNAL_SERVER_ERROR,
+            Json(ErrorResponse::new("database_error", "Failed to update note")),
+        )
+    })?
+    .ok_or_else(|| {
+        (
+            StatusCode::NOT_FOUND,
+            Json(ErrorResponse::new("not_found", "Note not found or access denied")),
+        )
+    })?;
+
+    Ok(Json(NoteResponse {
+        note,
+        message: "Note updated successfully".to_string(),
+    }))
+}
+
+async fn delete_note(
+    State(state): State<AppState>,
+    current_user: CurrentUser,
+    Path(note_id): Path<Uuid>,
+) -> Result<StatusCode, (StatusCode, Json<ErrorResponse>)> {
+    let rows_affected = sqlx::query("DELETE FROM notes WHERE id = $1 AND user_id = $2")
+        .bind(note_id)
+        .bind(current_user.0.user_id)
+        .execute(&state.auth_service.pool)
+        .await
+        .map_err(|e| {
+            tracing::error!("Database error: {}", e);
+            (
+                StatusCode::INTERNAL_SERVER_ERROR,
+                Json(ErrorResponse::new("database_error", "Failed to delete note")),
+            )
+        })?
+        .rows_affected();
+
+    if rows_affected == 0 {
+        return Err((
+            StatusCode::NOT_FOUND,
+            Json(ErrorResponse::new("not_found", "Note not found or access denied")),
+        ));
+    }
+
+    Ok(StatusCode::NO_CONTENT)
 }
 ```
 
-Build the complete application:
+## Step 8: Test Authentication Flow
+
+**Shuttle Concept**: Shuttle's local development environment provides the same authentication behavior as production, including secrets management.
+
+Start your authentication-enabled app:
 
 ```bash
-cargo build
+cargo shuttle run
 ```
 
-**What to notice**: The `/notes` routes are automatically protected by the `AuthSession` extractor.
-
-## Step 8: Test Your Authentication System
-
-Start your application:
+**Test the complete authentication flow**:
 
 ```bash
-shuttle run
-```
+# 1. Check health and statistics
+curl http://localhost:8000/health
 
-**Test user registration**:
-
-```bash
-curl -X POST http://localhost:8000/register \
+# 2. Register a new user
+curl -X POST http://localhost:8000/auth/register \
   -H "Content-Type: application/json" \
-  -d '{"email": "alice@example.com", "password": "mysecretpassword"}'
-```
+  -d '{
+    "username": "testuser",
+    "email": "test@example.com",
+    "password": "securepassword123"
+  }'
 
-You should see:
+# 3. Login with the user (save the token from response)
+curl -X POST http://localhost:8000/auth/login \
+  -H "Content-Type: application/json" \
+  -d '{
+    "email": "test@example.com",
+    "password": "securepassword123"
+  }'
 
-```json
-{ "message": "User created successfully", "user_id": "..." }
-```
+# 4. Get user profile (replace YOUR_JWT_TOKEN with actual token)
+curl http://localhost:8000/auth/profile \
+  -H "Authorization: Bearer YOUR_JWT_TOKEN"
 
-**Test accessing protected route without login** (should fail):
+# 5. Create a protected note
+curl -X POST http://localhost:8000/notes \
+  -H "Authorization: Bearer YOUR_JWT_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "title": "My Secure Note",
+    "content": "This note is protected by JWT authentication",
+    "is_private": true
+  }'
 
-```bash
+# 6. List user's notes
+curl http://localhost:8000/notes \
+  -H "Authorization: Bearer YOUR_JWT_TOKEN"
+
+# 7. Test unauthorized access (should fail)
 curl http://localhost:8000/notes
+
+# 8. Logout
+curl -X POST http://localhost:8000/auth/logout \
+  -H "Authorization: Bearer YOUR_JWT_TOKEN"
 ```
 
-You should see: `Authentication required`
+**What you'll observe**:
 
-**Test login**:
+- **Secure registration** - Passwords hashed with bcrypt
+- **JWT authentication** - Tokens signed with Shuttle secrets
+- **Route protection** - Middleware enforces authentication
+- **User isolation** - Notes are per-user with proper access control
+
+## Step 9: Deploy Secure Authentication to Production
+
+**Shuttle Concept**: Shuttle deployment handles production secrets securely and replicates authentication infrastructure.
+
+Set production secrets:
 
 ```bash
-curl -X POST http://localhost:8000/login \
+# Set production secrets (different from local development)
+shuttle secrets set JWT_SECRET="your-production-jwt-secret-make-it-long-and-random"
+shuttle secrets set BCRYPT_COST="12"  # Higher cost for production
+shuttle secrets set SESSION_DURATION_HOURS="24"
+```
+
+Deploy your authentication system:
+
+```bash
+cargo shuttle deploy
+```
+
+**What Shuttle provides for production authentication**:
+
+- **Secure secrets management** - Environment-isolated configuration
+- **Production database** - Managed PostgreSQL with user data
+- **HTTPS endpoints** - Secure token transmission
+- **Horizontal scaling** - Authentication that scales with demand
+
+Test production authentication:
+
+```bash
+# Replace with your deployment URL
+export API_URL="https://notes-auth-yourusername.shuttle.app"
+
+# Test production authentication flow
+curl $API_URL/health
+curl -X POST $API_URL/auth/register \
   -H "Content-Type: application/json" \
-  -d '{"email": "alice@example.com", "password": "mysecretpassword"}' \
-  -c cookies.txt
+  -d '{"username": "produser", "email": "prod@example.com", "password": "ProductionPassword123"}'
 ```
 
-You should see: `{"message": "Login successful"}`
+## What You've Learned (Key Shuttle Concepts)
 
-**Test accessing protected route with login** (should work):
+You've mastered these essential **Shuttle authentication patterns**:
 
-```bash
-curl http://localhost:8000/notes -b cookies.txt
-```
-
-You should see: `[]` (empty notes array)
-
-**Create a note**:
-
-```bash
-curl -X POST http://localhost:8000/notes \
-  -H "Content-Type: application/json" \
-  -d '{"title": "My Secret Note", "content": "This is private!"}' \
-  -b cookies.txt
-```
-
-**Get notes again**:
-
-```bash
-curl http://localhost:8000/notes -b cookies.txt
-```
-
-You should see your note!
-
-**Test logout**:
-
-```bash
-curl -X POST http://localhost:8000/logout -b cookies.txt -c cookies.txt
-```
-
-**Verify you can't access notes after logout**:
-
-```bash
-curl http://localhost:8000/notes -b cookies.txt
-```
-
-You should see: `Authentication required`
-
-**What to notice**: The authentication system works! Users must login to access their notes, and logout properly clears the session.
-
-## Step 9: Test with Multiple Users
-
-Let's verify users can only see their own notes:
-
-**Register a second user**:
-
-```bash
-curl -X POST http://localhost:8000/register \
-  -H "Content-Type: application/json" \
-  -d '{"email": "bob@example.com", "password": "bobspassword"}'
-```
-
-**Login as Bob**:
-
-```bash
-curl -X POST http://localhost:8000/login \
-  -H "Content-Type: application/json" \
-  -d '{"email": "bob@example.com", "password": "bobspassword"}' \
-  -c bob-cookies.txt
-```
-
-**Create a note as Bob**:
-
-```bash
-curl -X POST http://localhost:8000/notes \
-  -H "Content-Type: application/json" \
-  -d '{"title": "Bobs Note", "content": "Bob cannot see Alice notes"}' \
-  -b bob-cookies.txt
-```
-
-**Check that Bob only sees his note**:
-
-```bash
-curl http://localhost:8000/notes -b bob-cookies.txt
-```
-
-You should only see Bob's note, not Alice's!
-
-**What to notice**: Each user only sees their own notes. Our authentication system properly isolates user data.
-
-## Step 10: Deploy Your Authentication App
-
-Deploy your secure app to production:
-
-```bash
-shuttle deploy
-```
-
-After deployment, test it with your live URL:
-
-```bash
-# Replace with your actual URL
-curl -X POST https://protected-notes-xyz.shuttle.app/register \
-  -H "Content-Type: application/json" \
-  -d '{"email": "production@example.com", "password": "securepassword"}'
-```
-
-Your authentication system is now live and secure!
-
-## What You've Accomplished
-
-Congratulations! You've built a complete authentication system with:
-
-- ✅ **Secure user registration** with password hashing
-- ✅ **Session-based login** with signed cookies
-- ✅ **Protected routes** that require authentication
-- ✅ **User data isolation** - users only see their own data
-- ✅ **Secure logout** that clears sessions
-- ✅ **Production deployment** with real security
-
-## Key Security Concepts You've Learned
-
-### Password Hashing
-
-We never store passwords in plain text. bcrypt creates a secure hash that can't be reversed:
-
-```rust
-let password_hash = hash_password(&payload.password)?;
-```
-
-### Signed Cookies
-
-Session cookies are cryptographically signed to prevent tampering:
-
-```rust
-let jar = SignedCookieJar::<Key>::from_request_parts(parts, state).await?;
-```
-
-### Request Extractors
-
-The `AuthSession` extractor automatically protects routes:
-
-```rust
-pub async fn get_notes(session: AuthSession, ...) -> Result<...> {
-    // This function only runs if user is authenticated
-}
-```
-
-### Data Isolation
-
-Database queries filter by user ID to ensure privacy:
-
-```rust
-sqlx::query_as::<_, Note>("SELECT * FROM notes WHERE user_id = $1")
-    .bind(session.user_id)
-```
-
-## Next Steps
-
-Now that you understand authentication, you can:
-
-1. **Add password validation** - Require strong passwords
-2. **Add email verification** - Confirm email addresses before activation
-3. **Add session expiration** - Automatically logout inactive users
-4. **Add password reset** - Let users reset forgotten passwords
-5. **Add role-based permissions** - Different user types with different access
-
-Try our [Database tutorial](/tutorials/databases-with-rust) or [WebSocket tutorial](/tutorials/websocket-chat-app-js) next!
+- **Shuttle Secrets Management** - Environment-specific secrets injection (JWT keys, bcrypt cost) through function parameters with automatic environment isolation
+- **Authentication Service Integration** - Production-grade user registration and login with secure password hashing and JWT token generation
+- **Route Protection Middleware** - Authentication middleware using Shuttle's dependency injection and request extension patterns for clean authorization
+- **User State Management** - Complete user lifecycle management with database integration and account status handling
+- **Resource Access Control** - User-owned resource isolation using database foreign keys and authorization middleware
+- **Production Security Deployment** - Secure authentication deployment with different secrets for local vs production environments
 
 ## Troubleshooting
 
-**Registration fails with "conflict" error?**
+**JWT token issues?**
 
-- Email addresses must be unique
-- Try a different email address
+- Verify JWT_SECRET is set correctly in secrets
+- Check token expiration timestamps
+- Ensure Authorization header format: "Bearer TOKEN"
 
-**Can't access protected routes?**
+**Password authentication failures?**
 
-- Make sure you saved cookies during login (`-c cookies.txt`)
-- Use the saved cookies for subsequent requests (`-b cookies.txt`)
+- Confirm bcrypt cost configuration
+- Verify password meets minimum requirements
+- Check for trailing whitespace in credentials
 
-**Password verification fails?**
+**Database constraint violations?**
 
-- Check that email and password match exactly
-- Passwords are case-sensitive
+- Ensure email format validation
+- Check for duplicate username/email registrations
+- Verify foreign key relationships for notes
 
-**Build errors?**
+**Middleware not working?**
 
-- Ensure all files (`models.rs`, `auth.rs`, `handlers.rs`) are created
-- Check that your `Cargo.toml` matches Step 2 exactly
+- Confirm middleware is applied to correct routes
+- Check request extension handling
+- Verify authentication service state injection
 
-**Login works but session doesn't persist?**
+**Production secrets not loading?**
 
-- Make sure you're using the same cookie jar for all authenticated requests
-- Check that cookies aren't being blocked by your testing setup
+- Use `shuttle secrets list` to verify secrets are set
+- Check secret names match exactly (case-sensitive)
+- Ensure secrets are set for correct environment
 
-You've successfully learned how to build secure authentication systems with Rust and Shuttle!
+## Next Steps
+
+Now that you understand Shuttle authentication, explore:
+
+1. **[Real-time Features](/tutorials/intermediate/websocket-chat-app-js)** - WebSockets with authenticated users
+2. **[Advanced Security](/tutorials/advanced/custom-service)** - Multi-service authentication
+3. **[Production Monitoring](/tutorials/advanced/send-your-logs-to-datadog)** - Authentication metrics and logging
+4. **[Email Integration](/tutorials/advanced/email-service)** - Account verification and password reset
+
+## Complete Code
+
+The full working code for this tutorial is available in our [GitHub repository](https://github.com/shuttle-hq/shuttle-examples/tree/main/notes-auth).
