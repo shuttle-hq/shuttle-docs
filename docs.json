@@ -127,9 +127,12 @@
             ]
           },
           {
-            "group": "Database Management",
+            "group": "Databases",
             "icon": "database",
             "pages": [
+              "how-to-guides/add-database",
+              "how-to-guides/add-dedicated-database",
+              "how-to-guides/connect-directly-to-database",
               "how-to-guides/migrate-shared-postgres",
               "docs/migrating-rds-postgres"
             ]

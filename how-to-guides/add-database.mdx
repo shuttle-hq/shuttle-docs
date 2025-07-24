@@ -1,0 +1,148 @@
+---
+title: "Add a Shared Database"
+description: "Step-by-step guide to adding a shared database to your Shuttle project"
+icon: "database"
+---
+
+Add a shared database (e.g. Postgres) to your Shuttle project so your application can persist and query data. To evaluate other database options, see [Resources](/reference/resources#resources).
+
+## Prerequisites
+
+- Shuttle project repository (see [Quick Deployment](/how-to-guides/quick-deployment))
+- [Shuttle CLI installed](/getting-started/installation)
+- [Docker installed](https://docs.docker.com/get-docker/) for local development with databases (optional)
+
+## Instructions: Shared database with SQLx
+
+We recommend using the `sqlx` library when working with databases in Rust.
+
+**Want to use a different SQL library?** See [Using Other SQL Libraries](#using-other-sql-libraries) below.
+
+### 1. Update Your Cargo.toml
+
+Add the `sqlx` and `shuttle-shared-db` dependencies for the shared database with correct feature flags:
+
+```bash
+cargo add shuttle-shared-db -F postgres,sqlx
+cargo add sqlx
+```
+Your Cargo.toml should now contain the two following lines:
+```toml
+[dependencies]
+shuttle-shared-db = { version = "0.56.0", features = ["postgres", "sqlx"] }
+sqlx = "0.8.2"
+```
+
+If you use a different database (e.g., MySQL, MongoDB), use the corresponding Shuttle resource and driver crate.
+
+
+### 2. Add the Database Annotation
+
+In your `main.rs`, add the shared database annotation to your main function. For Postgres, it looks like this:
+
+<Tabs>
+<Tab title="Axum">
+
+```rust
+#[shuttle_runtime::main]
+async fn main(
+    #[shuttle_shared_db::Postgres] pool: sqlx::PgPool,
+) -> shuttle_axum::ShuttleAxum {
+    // ...
+    // Example query:
+    let result = sqlx::query("SELECT 1 as id")
+        .fetch_one(&pool)
+        .await.unwrap();
+    println!("{result:?}");
+    // ...
+}
+```
+
+</Tab>
+<Tab title="Actix Web">
+
+```rust
+#[shuttle_runtime::main]
+async fn main(
+    #[shuttle_shared_db::Postgres] pool: sqlx::PgPool,
+) -> shuttle_actix_web::ShuttleActixWeb {
+    // Use the pool to interact with your database
+}
+```
+
+</Tab>
+
+<Tab title="Other">
+
+<Note>
+Use one of our [supported frameworks](/reference/projects#supported-frameworks) or implement a [custom service](/tutorials/custom-service) to use any Rust web framework.
+</Note>
+
+</Tab>
+</Tabs>
+
+This tells Shuttle to provision a managed shared Postgres database for your project and inject a connection pool.
+
+### 3. Test Locally (optional)
+
+Run your project locally:
+
+```bash
+shuttle run
+```
+
+Shuttle will start a local Postgres container using Docker and inject the connection string for the shared database. 
+
+If you want to use another Postgres database for testing, you can set a custom local database URI, see [Local Runs with Databases](/how-to-guides/local-development#local-runs-with-databases).
+
+<Note>If Docker isn't running, you may get an error. Start Docker Desktop or your Docker engine before running locally.</Note>
+
+### 4. Deploy to the Cloud
+
+Deploy your project with the shared database:
+
+```bash
+shuttle deploy
+```
+
+Shuttle will provision a managed shared Postgres instance and connect your app automatically.
+
+You can use the injected `pool` in your code to run queries in your app against the shared database. Here are some resources that will help. 
+
+## Tutorial: Postgres Todo App
+
+Follow the quick [Postgres Todo App example](/examples/axum-postgres) to setup a complete working project.
+
+## Additional Documentation
+1. Check out the [SQLx documentation](https://github.com/launchbadge/sqlx) for query examples
+2. Explore a complete [Shuttle example with Axum & Postgres](https://github.com/shuttle-hq/shuttle-examples/blob/main/axum/postgres/src/main.rs)
+3. Read the [Working with Databases in Rust](https://docs.shuttle.dev/templates/tutorials/databases-with-rust) tutorial to understand database concepts
+
+
+## Using Other SQL Libraries
+Shuttle supports a few other Rust SQL libraries, listed in the [reference documentation here](/reference/shuttle-shared-db#output-type). For example, to use `diesel-async`,
+
+### 1. Add dependencies and feature flag
+
+
+### 2. Add the 
+
+## Troubleshooting
+
+- **Deployment failed?**
+  - Check `shuttle logs` for error details
+  - Ensure your `Cargo.toml` has the correct dependencies
+  - Try `shuttle project status` to see project state
+- **Local run issues?**
+  - Make sure Docker is running (needed for databases)
+  - Check if port 8000 is available, or use `--port` flag
+  - If the database container fails to start, try `docker pull postgres:16` manually
+- **Database connection errors?**
+  - Double-check your annotation and dependency versions
+  - Ensure your queries are valid and the database is running
+
+## Next Steps
+
+- [Migrate existing data](/how-to-guides/migrate-shared-postgres)
+- [Add secrets or other resources](/resources/resources)
+- [See more database examples](/reference/examples/overview) 
