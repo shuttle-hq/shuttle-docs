@@ -1,0 +1,1050 @@
+---
+title: "Building an Observability Dashboard with Datadog"
+description: "Learn to integrate comprehensive logging and monitoring into your Rust applications"
+icon: "telescope"
+---
+
+> This tutorial is based on the original work by [Roberto Huertas](https://robertohuertas.com/), adapted into a structured learning format.
+
+## Learning Objectives
+
+By the end of this tutorial, you will have built a **Fully Monitored Web Service** and learned how to:
+
+- Implement structured logging with tracing and custom subscribers
+- Send application logs to external monitoring services (Datadog)
+- Create custom tracing layers for real-time log forwarding
+- Build instrumented HTTP APIs with request/response tracking
+- Set up production-ready observability with metrics and alerts
+- Manage secrets securely for third-party integrations
+
+## Prerequisites
+
+- Completed [Building Your First REST API](/tutorials/rest-http-service-with-axum) tutorial
+- Basic understanding of logging concepts and HTTP APIs
+- Familiarity with JSON and structured data
+- [Shuttle CLI installed](/getting-started/installation)
+- [Datadog account](https://app.datadoghq.com/signup) (free tier available)
+
+**Time Required**: 60-75 minutes
+
+## What We're Building
+
+We'll create a **Task Management API with Full Observability** that provides:
+
+- **Structured logging** - JSON formatted logs with contextual information
+- **Real-time monitoring** - Live log streaming to Datadog
+- **Request tracing** - Track individual HTTP requests with unique IDs
+- **Performance metrics** - Response times, error rates, and throughput
+- **Custom instrumentation** - Business logic monitoring and alerts
+- **Production deployment** - Secure secrets management and configuration
+
+By the end, you'll have a production-ready service with comprehensive observability that helps you monitor, debug, and optimize your applications.
+
+## Step 1: Create Your Monitored Project
+
+Initialize a new Axum project for our monitored task API:
+
+```bash
+shuttle init --template axum task-monitor
+cd task-monitor
+```
+
+Update your `Cargo.toml` with observability dependencies:
+
+```toml
+[package]
+name = "task-monitor"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+axum = { version = "0.8", features = ["macros"] }
+shuttle-axum = "0.56.0"
+shuttle-runtime = { version = "0.56.0", default-features = false }
+shuttle-secrets = "0.56.0"
+tokio = { version = "1.0", features = ["macros", "rt-multi-thread"] }
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+uuid = { version = "1.0", features = ["v4", "serde"] }
+
+# Tracing and observability
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["env-filter", "json", "time"] }
+dd-tracing-layer = "0.1"
+
+# HTTP and middleware
+tower = "0.5"
+tower-http = { version = "0.6", features = ["trace", "request-id"] }
+```
+
+**What to notice**: We're using `tracing` for structured logging, `dd-tracing-layer` for Datadog integration, and Tower middleware for HTTP tracing.
+
+## Step 2: Create Your Data Models
+
+Create `src/models.rs` for our task management data structures:
+
+```rust
+use serde::{Deserialize, Serialize};
+use uuid::Uuid;
+use std::collections::HashMap;
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct Task {
+    pub id: Uuid,
+    pub title: String,
+    pub description: Option<String>,
+    pub completed: bool,
+    pub priority: Priority,
+    pub created_at: chrono::DateTime<chrono::Utc>,
+    pub updated_at: chrono::DateTime<chrono::Utc>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "lowercase")]
+pub enum Priority {
+    Low,
+    Medium,
+    High,
+    Critical,
+}
+
+#[derive(Debug, Deserialize)]
+pub struct CreateTask {
+    pub title: String,
+    pub description: Option<String>,
+    pub priority: Option<Priority>,
+}
+
+#[derive(Debug, Deserialize)]
+pub struct UpdateTask {
+    pub title: Option<String>,
+    pub description: Option<String>,
+    pub completed: Option<bool>,
+    pub priority: Option<Priority>,
+}
+
+#[derive(Debug, Serialize)]
+pub struct TaskResponse {
+    pub task: Task,
+    pub request_id: String,
+}
+
+#[derive(Debug, Serialize)]
+pub struct TasksResponse {
+    pub tasks: Vec<Task>,
+    pub total: usize,
+    pub request_id: String,
+}
+
+#[derive(Debug, Serialize)]
+pub struct ErrorResponse {
+    pub error: String,
+    pub message: String,
+    pub request_id: String,
+}
+
+impl Default for Priority {
+    fn default() -> Self {
+        Priority::Medium
+    }
+}
+
+// In-memory storage for this tutorial
+pub type TaskStore = HashMap<Uuid, Task>;
+```
+
+Add the module to `src/main.rs`:
+
+```rust
+mod models;
+
+use models::*;
+```
+
+**What to notice**: All response types include `request_id` for tracing individual requests through the system.
+
+## Step 3: Set Up Advanced Tracing Configuration
+
+Create `src/observability.rs` for observability setup:
+
+```rust
+use axum::http::{HeaderMap, HeaderValue};
+use dd_tracing_layer::{DatadogOptions, Region};
+use shuttle_runtime::SecretStore;
+use std::str::FromStr;
+use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt, EnvFilter, Layer};
+use uuid::Uuid;
+
+// App version for tracking deployments
+const APP_VERSION: &str = env!("CARGO_PKG_VERSION");
+
+pub fn setup_tracing(secret_store: &SecretStore) -> Result<(), Box<dyn std::error::Error>> {
+    // Get configuration from secrets
+    let dd_api_key = secret_store
+        .get("DD_API_KEY")
+        .ok_or("DD_API_KEY not found in secrets")?;
+
+    let service_name = secret_store
+        .get("SERVICE_NAME")
+        .unwrap_or_else(|| "task-monitor".to_string());
+
+    let environment = secret_store
+        .get("ENVIRONMENT")
+        .unwrap_or_else(|| "development".to_string());
+
+    let log_level = secret_store
+        .get("LOG_LEVEL")
+        .unwrap_or_else(|| "INFO".to_string());
+
+    // Create environment filter
+    let env_filter = EnvFilter::try_new(&log_level)
+        .map_err(|e| format!("Invalid log level '{}': {}", log_level, e))?;
+
+    // Create Datadog layer with enhanced tags
+    let dd_tags = format!(
+        "env:{},service:{},version:{},source:rust",
+        environment, service_name, APP_VERSION
+    );
+
+    let dd_layer = dd_tracing_layer::create(
+        DatadogOptions::new(&service_name, dd_api_key)
+            .with_region(Region::US1)
+            .with_tags(dd_tags),
+    );
+
+    // Create console layer for local development
+    let console_layer = tracing_subscriber::fmt::layer()
+        .with_ansi(true)
+        .with_timer(tracing_subscriber::fmt::time::UtcTime::rfc_3339())
+        .json()
+        .flatten_event(true)
+        .with_target(true)
+        .with_span_list(true)
+        .with_current_span(false)
+        .with_filter(env_filter.clone());
+
+    // Initialize the subscriber with multiple layers
+    tracing_subscriber::registry()
+        .with(console_layer)
+        .with(dd_layer.with_filter(env_filter))
+        .init();
+
+    tracing::info!(
+        service = service_name,
+        environment = environment,
+        version = APP_VERSION,
+        "Observability initialized successfully"
+    );
+
+    Ok(())
+}
+
+// Extract request ID from headers or generate a new one
+pub fn get_or_create_request_id(headers: &HeaderMap) -> String {
+    headers
+        .get("x-request-id")
+        .and_then(|h| h.to_str().ok())
+        .map(String::from)
+        .unwrap_or_else(|| Uuid::new_v4().to_string())
+}
+
+// Helper to add standard fields to all log events
+#[derive(Debug)]
+pub struct RequestContext {
+    pub request_id: String,
+    pub user_agent: Option<String>,
+    pub ip_address: Option<String>,
+}
+
+impl RequestContext {
+    pub fn from_headers(headers: &HeaderMap) -> Self {
+        let request_id = get_or_create_request_id(headers);
+
+        let user_agent = headers
+            .get("user-agent")
+            .and_then(|h| h.to_str().ok())
+            .map(String::from);
+
+        let ip_address = headers
+            .get("x-forwarded-for")
+            .or_else(|| headers.get("x-real-ip"))
+            .and_then(|h| h.to_str().ok())
+            .map(String::from);
+
+        Self {
+            request_id,
+            user_agent,
+            ip_address,
+        }
+    }
+}
+
+// Custom metrics tracking
+pub struct Metrics {
+    pub request_count: std::sync::atomic::AtomicU64,
+    pub error_count: std::sync::atomic::AtomicU64,
+    pub task_count: std::sync::atomic::AtomicU64,
+}
+
+impl Metrics {
+    pub fn new() -> Self {
+        Self {
+            request_count: std::sync::atomic::AtomicU64::new(0),
+            error_count: std::sync::atomic::AtomicU64::new(0),
+            task_count: std::sync::atomic::AtomicU64::new(0),
+        }
+    }
+
+    pub fn increment_requests(&self) {
+        self.request_count.fetch_add(1, std::sync::atomic::Ordering::Relaxed);
+    }
+
+    pub fn increment_errors(&self) {
+        self.error_count.fetch_add(1, std::sync::atomic::Ordering::Relaxed);
+    }
+
+    pub fn set_task_count(&self, count: u64) {
+        self.task_count.store(count, std::sync::atomic::Ordering::Relaxed);
+    }
+
+    pub fn get_stats(&self) -> (u64, u64, u64) {
+        (
+            self.request_count.load(std::sync::atomic::Ordering::Relaxed),
+            self.error_count.load(std::sync::atomic::Ordering::Relaxed),
+            self.task_count.load(std::sync::atomic::Ordering::Relaxed),
+        )
+    }
+}
+```
+
+**What to notice**: We configure multiple tracing layers - one for Datadog and one for local console output, with proper filtering and structured data.
+
+## Step 4: Build Instrumented HTTP Handlers
+
+Create `src/handlers.rs` for fully instrumented API endpoints:
+
+```rust
+use crate::{models::*, observability::*};
+use axum::{
+    extract::{Path, State},
+    http::{HeaderMap, StatusCode},
+    response::Json,
+};
+use std::sync::{Arc, Mutex};
+use tracing::{info, warn, error, instrument, Span};
+use uuid::Uuid;
+
+pub type AppState = Arc<Mutex<TaskStore>>;
+pub type AppMetrics = Arc<Metrics>;
+
+#[instrument(
+    skip(state, metrics, headers),
+    fields(
+        request_id = %context.request_id,
+        user_agent = %context.user_agent.as_deref().unwrap_or("unknown"),
+        endpoint = "create_task"
+    )
+)]
+pub async fn create_task(
+    State(state): State<AppState>,
+    State(metrics): State<AppMetrics>,
+    headers: HeaderMap,
+    Json(create_task): Json<CreateTask>,
+) -> Result<Json<TaskResponse>, (StatusCode, Json<ErrorResponse>)> {
+    let context = RequestContext::from_headers(&headers);
+
+    // Add context to current span
+    Span::current().record("title", &create_task.title);
+    Span::current().record("priority", &format!("{:?}", create_task.priority.as_ref().unwrap_or(&Priority::Medium)));
+
+    metrics.increment_requests();
+
+    info!(
+        request_id = %context.request_id,
+        title = %create_task.title,
+        priority = ?create_task.priority,
+        "Creating new task"
+    );
+
+    // Validate input
+    if create_task.title.trim().is_empty() {
+        warn!(
+            request_id = %context.request_id,
+            "Task creation failed: empty title"
+        );
+        metrics.increment_errors();
+        return Err((
+            StatusCode::BAD_REQUEST,
+            Json(ErrorResponse {
+                error: "validation_error".to_string(),
+                message: "Task title cannot be empty".to_string(),
+                request_id: context.request_id,
+            }),
+        ));
+    }
+
+    let task = Task {
+        id: Uuid::new_v4(),
+        title: create_task.title.trim().to_string(),
+        description: create_task.description,
+        completed: false,
+        priority: create_task.priority.unwrap_or_default(),
+        created_at: chrono::Utc::now(),
+        updated_at: chrono::Utc::now(),
+    };
+
+    // Store task
+    let task_id = task.id;
+    let mut store = state.lock().unwrap();
+    store.insert(task_id, task.clone());
+    let total_tasks = store.len();
+    drop(store);
+
+    metrics.set_task_count(total_tasks as u64);
+
+    info!(
+        request_id = %context.request_id,
+        task_id = %task_id,
+        total_tasks = total_tasks,
+        "Task created successfully"
+    );
+
+    Ok(Json(TaskResponse {
+        task,
+        request_id: context.request_id,
+    }))
+}
+
+#[instrument(
+    skip(state, metrics, headers),
+    fields(
+        request_id = %context.request_id,
+        endpoint = "get_tasks"
+    )
+)]
+pub async fn get_tasks(
+    State(state): State<AppState>,
+    State(metrics): State<AppMetrics>,
+    headers: HeaderMap,
+) -> Json<TasksResponse> {
+    let context = RequestContext::from_headers(&headers);
+
+    metrics.increment_requests();
+
+    let store = state.lock().unwrap();
+    let tasks: Vec<Task> = store.values().cloned().collect();
+    let total = tasks.len();
+    drop(store);
+
+    info!(
+        request_id = %context.request_id,
+        task_count = total,
+        "Retrieved all tasks"
+    );
+
+    Json(TasksResponse {
+        tasks,
+        total,
+        request_id: context.request_id,
+    })
+}
+
+#[instrument(
+    skip(state, metrics, headers),
+    fields(
+        request_id = %context.request_id,
+        task_id = %task_id,
+        endpoint = "get_task"
+    )
+)]
+pub async fn get_task(
+    Path(task_id): Path<Uuid>,
+    State(state): State<AppState>,
+    State(metrics): State<AppMetrics>,
+    headers: HeaderMap,
+) -> Result<Json<TaskResponse>, (StatusCode, Json<ErrorResponse>)> {
+    let context = RequestContext::from_headers(&headers);
+
+    metrics.increment_requests();
+
+    let store = state.lock().unwrap();
+    match store.get(&task_id) {
+        Some(task) => {
+            info!(
+                request_id = %context.request_id,
+                task_id = %task_id,
+                title = %task.title,
+                "Task retrieved successfully"
+            );
+
+            Ok(Json(TaskResponse {
+                task: task.clone(),
+                request_id: context.request_id,
+            }))
+        }
+        None => {
+            warn!(
+                request_id = %context.request_id,
+                task_id = %task_id,
+                "Task not found"
+            );
+
+            metrics.increment_errors();
+            Err((
+                StatusCode::NOT_FOUND,
+                Json(ErrorResponse {
+                    error: "not_found".to_string(),
+                    message: format!("Task with ID {} not found", task_id),
+                    request_id: context.request_id,
+                }),
+            ))
+        }
+    }
+}
+
+#[instrument(
+    skip(state, metrics, headers),
+    fields(
+        request_id = %context.request_id,
+        task_id = %task_id,
+        endpoint = "update_task"
+    )
+)]
+pub async fn update_task(
+    Path(task_id): Path<Uuid>,
+    State(state): State<AppState>,
+    State(metrics): State<AppMetrics>,
+    headers: HeaderMap,
+    Json(update_task): Json<UpdateTask>,
+) -> Result<Json<TaskResponse>, (StatusCode, Json<ErrorResponse>)> {
+    let context = RequestContext::from_headers(&headers);
+
+    metrics.increment_requests();
+
+    let mut store = state.lock().unwrap();
+    match store.get_mut(&task_id) {
+        Some(task) => {
+            let old_title = task.title.clone();
+            let old_completed = task.completed;
+
+            // Update fields if provided
+            if let Some(title) = update_task.title {
+                if title.trim().is_empty() {
+                    warn!(
+                        request_id = %context.request_id,
+                        task_id = %task_id,
+                        "Task update failed: empty title"
+                    );
+                    metrics.increment_errors();
+                    return Err((
+                        StatusCode::BAD_REQUEST,
+                        Json(ErrorResponse {
+                            error: "validation_error".to_string(),
+                            message: "Task title cannot be empty".to_string(),
+                            request_id: context.request_id,
+                        }),
+                    ));
+                }
+                task.title = title.trim().to_string();
+            }
+
+            if let Some(description) = update_task.description {
+                task.description = Some(description);
+            }
+
+            if let Some(completed) = update_task.completed {
+                task.completed = completed;
+            }
+
+            if let Some(priority) = update_task.priority {
+                task.priority = priority;
+            }
+
+            task.updated_at = chrono::Utc::now();
+
+            info!(
+                request_id = %context.request_id,
+                task_id = %task_id,
+                old_title = %old_title,
+                new_title = %task.title,
+                old_completed = old_completed,
+                new_completed = task.completed,
+                "Task updated successfully"
+            );
+
+            Ok(Json(TaskResponse {
+                task: task.clone(),
+                request_id: context.request_id,
+            }))
+        }
+        None => {
+            warn!(
+                request_id = %context.request_id,
+                task_id = %task_id,
+                "Task update failed: not found"
+            );
+
+            metrics.increment_errors();
+            Err((
+                StatusCode::NOT_FOUND,
+                Json(ErrorResponse {
+                    error: "not_found".to_string(),
+                    message: format!("Task with ID {} not found", task_id),
+                    request_id: context.request_id,
+                }),
+            ))
+        }
+    }
+}
+
+#[instrument(
+    skip(state, metrics, headers),
+    fields(
+        request_id = %context.request_id,
+        task_id = %task_id,
+        endpoint = "delete_task"
+    )
+)]
+pub async fn delete_task(
+    Path(task_id): Path<Uuid>,
+    State(state): State<AppState>,
+    State(metrics): State<AppMetrics>,
+    headers: HeaderMap,
+) -> Result<StatusCode, (StatusCode, Json<ErrorResponse>)> {
+    let context = RequestContext::from_headers(&headers);
+
+    metrics.increment_requests();
+
+    let mut store = state.lock().unwrap();
+    match store.remove(&task_id) {
+        Some(task) => {
+            let total_tasks = store.len();
+            drop(store);
+
+            metrics.set_task_count(total_tasks as u64);
+
+            info!(
+                request_id = %context.request_id,
+                task_id = %task_id,
+                title = %task.title,
+                total_tasks = total_tasks,
+                "Task deleted successfully"
+            );
+
+            Ok(StatusCode::NO_CONTENT)
+        }
+        None => {
+            warn!(
+                request_id = %context.request_id,
+                task_id = %task_id,
+                "Task deletion failed: not found"
+            );
+
+            metrics.increment_errors();
+            Err((
+                StatusCode::NOT_FOUND,
+                Json(ErrorResponse {
+                    error: "not_found".to_string(),
+                    message: format!("Task with ID {} not found", task_id),
+                    request_id: context.request_id,
+                }),
+            ))
+        }
+    }
+}
+
+#[instrument(
+    skip(metrics, headers),
+    fields(
+        request_id = %context.request_id,
+        endpoint = "health_check"
+    )
+)]
+pub async fn health_check(
+    State(metrics): State<AppMetrics>,
+    headers: HeaderMap,
+) -> Json<serde_json::Value> {
+    let context = RequestContext::from_headers(&headers);
+
+    let (requests, errors, tasks) = metrics.get_stats();
+
+    info!(
+        request_id = %context.request_id,
+        "Health check performed"
+    );
+
+    Json(serde_json::json!({
+        "status": "healthy",
+        "timestamp": chrono::Utc::now(),
+        "metrics": {
+            "total_requests": requests,
+            "total_errors": errors,
+            "total_tasks": tasks,
+            "error_rate": if requests > 0 { errors as f64 / requests as f64 } else { 0.0 }
+        },
+        "request_id": context.request_id
+    }))
+}
+```
+
+**What to notice**: Every handler is instrumented with tracing, includes structured logging with context, and tracks custom metrics.
+
+## Step 5: Wire Up the Application
+
+Update `src/main.rs` to create the fully monitored application:
+
+```rust
+mod models;
+mod observability;
+mod handlers;
+
+use crate::{
+    handlers::*,
+    observability::*,
+};
+use axum::{
+    routing::{get, post, put, delete},
+    Router,
+};
+use shuttle_runtime::SecretStore;
+use std::{collections::HashMap, sync::{Arc, Mutex}};
+use tower::ServiceBuilder;
+use tower_http::trace::TraceLayer;
+use tracing::info;
+
+#[shuttle_runtime::main]
+async fn main(
+    #[shuttle_runtime::Secrets] secret_store: SecretStore,
+) -> shuttle_axum::ShuttleAxum {
+    // Initialize observability first
+    setup_tracing(&secret_store).expect("Failed to setup tracing");
+
+    info!("Starting Task Monitor Service");
+
+    // Initialize application state
+    let task_store: AppState = Arc::new(Mutex::new(HashMap::new()));
+    let metrics: AppMetrics = Arc::new(Metrics::new());
+
+    // Create router with instrumented routes
+    let app = Router::new()
+        .route("/health", get(health_check))
+        .route("/tasks", get(get_tasks).post(create_task))
+        .route("/tasks/:id", get(get_task).put(update_task).delete(delete_task))
+        .with_state(task_store)
+        .with_state(metrics)
+        .layer(
+            ServiceBuilder::new()
+                .layer(TraceLayer::new_for_http())
+                .into_inner(),
+        );
+
+    info!("Task Monitor Service initialized successfully");
+
+    Ok(app.into())
+}
+```
+
+**What to notice**: We initialize tracing before creating any routes and use Tower's TraceLayer for automatic HTTP request tracing.
+
+## Step 6: Configure Secrets for Production
+
+Create `Secrets.dev.toml` for local development:
+
+```toml
+DD_API_KEY = "your-datadog-api-key-here"
+SERVICE_NAME = "task-monitor-dev"
+ENVIRONMENT = "development"
+LOG_LEVEL = "DEBUG"
+```
+
+Create `Secrets.toml` for production deployment:
+
+```toml
+DD_API_KEY = "your-production-datadog-api-key"
+SERVICE_NAME = "task-monitor"
+ENVIRONMENT = "production"
+LOG_LEVEL = "INFO"
+```
+
+> **Important**: Add these files to your `.gitignore` to keep secrets secure!
+
+**What to notice**: We use different log levels and service names for different environments to help with filtering and debugging.
+
+## Step 7: Test Your Monitored API
+
+Build and run your monitored service:
+
+```bash
+cargo build
+shuttle run
+```
+
+Test the API endpoints while watching the structured logs:
+
+**Create a task:**
+
+```bash
+curl -X POST "http://localhost:8000/tasks" \
+  -H "Content-Type: application/json" \
+  -H "X-Request-ID: test-create-123" \
+  -d '{
+    "title": "Learn Rust observability",
+    "description": "Complete the Datadog tutorial",
+    "priority": "high"
+  }'
+```
+
+**Get all tasks:**
+
+```bash
+curl "http://localhost:8000/tasks" \
+  -H "X-Request-ID: test-list-456"
+```
+
+**Update a task (replace with actual task ID):**
+
+```bash
+curl -X PUT "http://localhost:8000/tasks/YOUR_TASK_ID" \
+  -H "Content-Type: application/json" \
+  -H "X-Request-ID: test-update-789" \
+  -d '{
+    "completed": true,
+    "priority": "medium"
+  }'
+```
+
+**Check health and metrics:**
+
+```bash
+curl "http://localhost:8000/health" \
+  -H "X-Request-ID: test-health-000"
+```
+
+**Trigger an error for testing:**
+
+```bash
+curl -X GET "http://localhost:8000/tasks/invalid-uuid" \
+  -H "X-Request-ID: test-error-999"
+```
+
+**What to notice**: Each request generates structured logs with request IDs, and you can trace individual requests through the system.
+
+## Step 8: Set Up Your Datadog Account
+
+Get your Datadog API key:
+
+1. Go to [Datadog](https://app.datadoghq.com/)
+2. Navigate to **Organization Settings** → **API Keys**
+3. Create a new API key or copy an existing one
+4. Update your `Secrets.dev.toml` and `Secrets.toml` files
+
+Update your secrets with your actual API key and test locally:
+
+```bash
+# Edit Secrets.dev.toml with your API key
+shuttle run
+
+# Make some API calls to generate logs
+curl -X POST "http://localhost:8000/tasks" \
+  -H "Content-Type: application/json" \
+  -d '{"title": "Test Datadog Integration", "priority": "high"}'
+```
+
+**What to notice**: Logs should now appear both in your console and in Datadog's log viewer.
+
+## Step 9: Deploy and Monitor in Production
+
+Deploy your monitored service to production:
+
+```bash
+shuttle deploy
+```
+
+After deployment, generate some test traffic to see logs in Datadog:
+
+```bash
+# Replace with your actual Shuttle URL
+export API_URL="https://task-monitor-xyz.shuttle.app"
+
+# Create several tasks
+for i in {1..5}; do
+  curl -X POST "$API_URL/tasks" \
+    -H "Content-Type: application/json" \
+    -H "X-Request-ID: load-test-$i" \
+    -d "{\"title\": \"Task $i\", \"priority\": \"medium\"}"
+done
+
+# Get tasks multiple times
+for i in {1..10}; do
+  curl "$API_URL/tasks" \
+    -H "X-Request-ID: read-test-$i"
+done
+
+# Check health
+curl "$API_URL/health"
+
+# Trigger some errors
+curl "$API_URL/tasks/non-existent-id"
+curl -X POST "$API_URL/tasks" \
+  -H "Content-Type: application/json" \
+  -d '{"title": ""}'  # Empty title should trigger validation error
+```
+
+**What to notice**: All logs and metrics are now flowing to Datadog in real-time, giving you full visibility into your production application.
+
+## Step 10: Create Datadog Dashboards and Alerts
+
+In your Datadog dashboard, create custom views for your application:
+
+**Log Query Examples:**
+
+```
+# View all logs from your service
+service:task-monitor
+
+# Filter by environment
+service:task-monitor env:production
+
+# View only errors
+service:task-monitor status:error
+
+# Track specific request
+service:task-monitor @request_id:"test-create-123"
+
+# Monitor task operations
+service:task-monitor @endpoint:(create_task OR update_task OR delete_task)
+```
+
+**Create Custom Metrics Dashboard:**
+
+1. Go to **Dashboards** → **New Dashboard**
+2. Add widgets for:
+   - **Request Rate**: Count of logs by endpoint
+   - **Error Rate**: Count of error-level logs
+   - **Response Times**: P95/P99 response times
+   - **Task Operations**: Task creation, updates, and deletions
+
+**Set Up Alerts:**
+
+1. Go to **Monitors** → **New Monitor**
+2. Create alerts for:
+   - High error rate (> 5% errors in 5 minutes)
+   - Response time degradation (P95 > 500ms)
+   - Service unavailability (no logs for 5 minutes)
+
+**What to notice**: Datadog provides powerful querying, visualization, and alerting capabilities that give you comprehensive monitoring of your application.
+
+## What You've Accomplished
+
+Congratulations! You've built a production-ready observability stack with:
+
+- ✅ **Structured logging** - JSON formatted logs with rich context
+- ✅ **Real-time monitoring** - Live log streaming to Datadog
+- ✅ **Request tracing** - Track individual requests with unique IDs
+- ✅ **Custom instrumentation** - Business logic and performance monitoring
+- ✅ **Error tracking** - Automatic error detection and alerting
+- ✅ **Metrics collection** - Custom application metrics and health checks
+- ✅ **Production deployment** - Secure secrets management and environment configuration
+- ✅ **Dashboard creation** - Visual monitoring and alerting setup
+
+## Key Concepts You've Learned
+
+### Structured Logging
+
+Creating rich, queryable log events:
+
+```rust
+info!(
+    request_id = %context.request_id,
+    task_id = %task_id,
+    title = %task.title,
+    "Task created successfully"
+);
+```
+
+### Tracing Instrumentation
+
+Automatic span creation and context propagation:
+
+```rust
+#[instrument(
+    skip(state, headers),
+    fields(request_id = %context.request_id, endpoint = "create_task")
+)]
+pub async fn create_task(...) { ... }
+```
+
+### Custom Tracing Layers
+
+Sending logs to external services:
+
+```rust
+let dd_layer = dd_tracing_layer::create(
+    DatadogOptions::new(&service_name, dd_api_key)
+        .with_region(Region::US1)
+        .with_tags(dd_tags),
+);
+```
+
+### Request Context Propagation
+
+Maintaining context across function calls:
+
+```rust
+let context = RequestContext::from_headers(&headers);
+Span::current().record("request_id", &context.request_id);
+```
+
+## Next Steps
+
+Now that you understand comprehensive observability, you can:
+
+1. **Add distributed tracing** - Connect traces across multiple services
+2. **Implement custom metrics** - Business KPIs and application-specific metrics
+3. **Create log-based alerting** - Proactive monitoring and incident response
+4. **Add performance profiling** - CPU and memory usage monitoring
+5. **Integrate with other tools** - Connect to Grafana, Prometheus, or other monitoring platforms
+6. **Implement correlation IDs** - Track requests across microservices
+
+Try our [Building a Multi-Service Application](/tutorials/custom-service) tutorial to learn about observability across multiple services!
+
+## Troubleshooting
+
+**Logs not appearing in Datadog?**
+
+- Verify your DD_API_KEY is correct and has log submission permissions
+- Check that your Datadog region setting matches your account
+- Ensure the service name doesn't contain special characters
+- Verify network connectivity from your deployment environment
+
+**Tracing not working locally?**
+
+- Check that tracing is initialized before making any log calls
+- Verify the LOG_LEVEL is set appropriately (DEBUG for detailed logs)
+- Ensure the tracing subscriber is set up before any instrumented functions run
+
+**Performance issues with logging?**
+
+- Use appropriate log levels (avoid DEBUG in production)
+- Consider async logging for high-throughput applications
+- Filter sensitive information before sending to external services
+
+**Request IDs not propagating?**
+
+- Ensure X-Request-ID headers are being set by clients or load balancers
+- Verify that request context is being extracted in all handlers
+- Check that the trace layer is properly configured
+
+**Secrets management errors?**
+
+- Verify Secrets.toml exists and contains all required keys
+- Check that secret names match exactly (case-sensitive)
+- Ensure secrets are not committed to version control
+
+**Datadog dashboard not showing data?**
+
+- Verify the service name and tags match your log output
+- Check the time range in your dashboard queries
+- Ensure you're using the correct log query syntax
+
+You've successfully learned how to build observable, production-ready applications with comprehensive monitoring and logging!

@@ -72,33 +72,32 @@
       {
         "group": "Tutorials",
         "pages": [
+          "tutorials/your-first-app",
           {
-            "group": "Learning Path",
+            "group": "Beginner",
             "icon": "graduation-cap",
             "pages": [
-              "tutorials/your-first-app",
-              "tutorials/rest-http-service-with-axum",
-              "tutorials/databases-with-rust",
-              "tutorials/authentication",
-              "docs/telemetry/getting-started"
+              "tutorials/beginner/rest-http-service-with-axum",
+              "tutorials/beginner/databases-with-rust"
             ]
           },
           {
-            "group": "Project-Based Learning",
+            "group": "Intermediate", 
             "icon": "code",
             "pages": [
-              "tutorials/discord-weather-forecast",
-              "tutorials/serverless-calendar-app",
-              "tutorials/url-shortener",
-              "tutorials/websocket-chat-app-js"
+              "tutorials/intermediate/authentication",
+              "tutorials/intermediate/websocket-chat-app-js",
+              "tutorials/intermediate/serverless-calendar-app",
+              "tutorials/intermediate/url-shortener"
             ]
           },
           {
-            "group": "Advanced Tutorials",
+            "group": "Advanced",
             "icon": "rocket",
             "pages": [
-              "tutorials/custom-service",
-              "tutorials/send-your-logs-to-datadog"
+              "tutorials/advanced/custom-service",
+              "tutorials/advanced/discord-weather-forecast",
+              "tutorials/advanced/send-your-logs-to-datadog"
             ]
           }
         ]
@@ -123,7 +122,8 @@
               "docs/deployment-environment",
               "docs/logs",
               "docs/domain-names",
-              "docs/scaling"
+              "docs/scaling",
+              "docs/telemetry/getting-started"
             ]
           },
           {

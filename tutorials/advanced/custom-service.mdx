@@ -1,0 +1,654 @@
+---
+title: "Building a Multi-Service Application"
+description: "Learn to combine Discord bots with web APIs in a single Shuttle service"
+icon: "boxes-stacked"
+---
+
+## Learning Objectives
+
+By the end of this tutorial, you will have built a **Discord Bot + Web Dashboard** application and learned how to:
+
+- Create custom Shuttle services that run multiple services together
+- Build a Discord bot alongside a web API in the same application
+- Share data between different services within one deployment
+- Handle concurrent service management with Tokio
+- Deploy multi-service applications to production
+
+## Prerequisites
+
+- Completed [Discord Weather Bot tutorial](/tutorials/discord-weather-forecast)
+- Basic understanding of async Rust and Tokio
+- [Shuttle CLI installed](/getting-started/installation)
+- A Discord account and test server
+
+**Time Required**: 60-75 minutes
+
+## What We're Building
+
+We'll create a **Discord Bot with Web Dashboard** that includes:
+
+- **Discord Bot**: Responds to `/stats` command and tracks usage
+- **Web API**: Provides endpoints to view bot statistics and health
+- **Shared State**: Both services share data about bot usage
+- **Live Dashboard**: Web interface showing real-time bot activity
+
+Users will be able to interact with the bot in Discord while viewing live statistics through a web browser.
+
+## Step 1: Create Your Project
+
+Create a new Shuttle project without any template:
+
+```bash
+shuttle init --template none discord-web-service
+cd discord-web-service
+```
+
+This creates a minimal project with just `shuttle-runtime`. Let's examine what we got:
+
+```bash
+cat src/main.rs
+```
+
+You should see a basic structure:
+
+```rust
+#[shuttle_runtime::main]
+async fn main() -> shuttle_runtime::ShuttleAxum {
+    todo!()
+}
+```
+
+**What to notice**: The `--template none` gives us a blank slate to build our custom service from scratch.
+
+## Step 2: Set Up Dependencies
+
+Update your `Cargo.toml` to include all the dependencies we need:
+
+```toml
+[package]
+name = "discord-web-service"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+anyhow = "1.0"
+axum = "0.8"
+hyper = "0.14"
+poise = "0.6"
+serde = { version = "1.0", features = ["derive"] }
+shuttle-runtime = "0.56.0"
+tokio = { version = "1.28", features = ["full"] }
+tracing = "0.1"
+tower = "0.5"
+tower-http = { version = "0.6", features = ["cors"] }
+std::sync = { version = "1.0", package = "parking_lot" }
+```
+
+Build to download dependencies:
+
+```bash
+cargo build
+```
+
+**What to notice**: We're combining Discord bot dependencies (`poise`) with web server dependencies (`axum`) in one project.
+
+## Step 3: Create Shared State
+
+Create `src/state.rs` for data shared between services:
+
+```rust
+use serde::{Deserialize, Serialize};
+use std::collections::HashMap;
+use std::sync::Arc;
+use tokio::sync::RwLock;
+
+#[derive(Debug, Serialize, Deserialize, Clone)]
+pub struct BotStats {
+    pub total_commands: u64,
+    pub commands_by_type: HashMap<String, u64>,
+    pub uptime_seconds: u64,
+    pub last_command_time: Option<String>,
+}
+
+impl Default for BotStats {
+    fn default() -> Self {
+        Self {
+            total_commands: 0,
+            commands_by_type: HashMap::new(),
+            uptime_seconds: 0,
+            last_command_time: None,
+        }
+    }
+}
+
+#[derive(Clone)]
+pub struct AppState {
+    pub stats: Arc<RwLock<BotStats>>,
+    pub start_time: std::time::Instant,
+}
+
+impl AppState {
+    pub fn new() -> Self {
+        Self {
+            stats: Arc::new(RwLock::new(BotStats::default())),
+            start_time: std::time::Instant::now(),
+        }
+    }
+
+    pub async fn increment_command(&self, command_name: &str) {
+        let mut stats = self.stats.write().await;
+        stats.total_commands += 1;
+        *stats.commands_by_type.entry(command_name.to_string()).or_insert(0) += 1;
+        stats.last_command_time = Some(chrono::Utc::now().to_rfc3339());
+        stats.uptime_seconds = self.start_time.elapsed().as_secs();
+    }
+
+    pub async fn get_stats(&self) -> BotStats {
+        let mut stats = self.stats.read().await.clone();
+        stats.uptime_seconds = self.start_time.elapsed().as_secs();
+        stats
+    }
+}
+```
+
+Add chrono dependency to `Cargo.toml`:
+
+```toml
+chrono = { version = "0.4", features = ["serde"] }
+```
+
+Test it compiles:
+
+```bash
+cargo check
+```
+
+**What to notice**: We use `Arc<RwLock<>>` to safely share data between the Discord bot and web server running concurrently.
+
+## Step 4: Create Discord Bot Commands
+
+Create `src/bot.rs` for Discord bot functionality:
+
+```rust
+use crate::state::AppState;
+use poise::serenity_prelude as serenity;
+use std::sync::Arc;
+
+pub type Error = Box<dyn std::error::Error + Send + Sync>;
+pub type Context<'a> = poise::Context<'a, AppState, Error>;
+
+/// Get bot statistics
+#[poise::command(slash_command, description = "View bot usage statistics")]
+pub async fn stats(ctx: Context<'_>) -> Result<(), Error> {
+    let app_state = ctx.data();
+    app_state.increment_command("stats").await;
+
+    let stats = app_state.get_stats().await;
+
+    let response = format!(
+        "📊 **Bot Statistics**\n\
+        🔢 Total Commands: {}\n\
+        ⏱️ Uptime: {} seconds\n\
+        🕐 Last Command: {}\n\
+        📈 Commands by type:\n{}",
+        stats.total_commands,
+        stats.uptime_seconds,
+        stats.last_command_time.unwrap_or("Never".to_string()),
+        stats.commands_by_type
+            .iter()
+            .map(|(cmd, count)| format!("  • {}: {}", cmd, count))
+            .collect::<Vec<_>>()
+            .join("\n")
+    );
+
+    ctx.reply(response).await?;
+    Ok(())
+}
+
+/// Say hello and increment counter
+#[poise::command(slash_command, description = "Say hello")]
+pub async fn hello(ctx: Context<'_>) -> Result<(), Error> {
+    let app_state = ctx.data();
+    app_state.increment_command("hello").await;
+
+    let user = ctx.author().display_name();
+    ctx.reply(format!("Hello, {}! 👋", user)).await?;
+    Ok(())
+}
+
+/// Get bot health status
+#[poise::command(slash_command, description = "Check if bot is healthy")]
+pub async fn health(ctx: Context<'_>) -> Result<(), Error> {
+    let app_state = ctx.data();
+    app_state.increment_command("health").await;
+
+    ctx.reply("✅ Bot is healthy and running!").await?;
+    Ok(())
+}
+
+pub fn get_commands() -> Vec<poise::Command<AppState, Error>> {
+    vec![stats(), hello(), health()]
+}
+```
+
+**What to notice**: Each command increments our shared statistics, demonstrating how the bot and web API will share data.
+
+## Step 5: Create Web API
+
+Create `src/web.rs` for the web server:
+
+```rust
+use crate::state::AppState;
+use axum::{
+    extract::State,
+    http::StatusCode,
+    response::{Html, IntoResponse, Json},
+    routing::get,
+    Router,
+};
+use serde_json::json;
+
+pub fn create_router(state: AppState) -> Router {
+    Router::new()
+        .route("/", get(dashboard))
+        .route("/api/stats", get(get_stats))
+        .route("/api/health", get(health_check))
+        .with_state(state)
+}
+
+async fn dashboard() -> Html<&'static str> {
+    Html(
+        r#"
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <title>Discord Bot Dashboard</title>
+            <meta http-equiv="refresh" content="10">
+            <style>
+                body { font-family: Arial, sans-serif; margin: 40px; background: #36393f; color: #dcddde; }
+                .container { max-width: 800px; margin: 0 auto; }
+                .card { background: #2f3136; padding: 20px; border-radius: 8px; margin: 20px 0; }
+                .stat { display: inline-block; margin: 10px 20px; }
+                .number { font-size: 2em; font-weight: bold; color: #7289da; }
+                h1 { color: #7289da; }
+                .refresh { font-size: 0.8em; color: #b9bbbe; }
+            </style>
+        </head>
+        <body>
+            <div class="container">
+                <h1>🤖 Discord Bot Dashboard</h1>
+                <div class="card">
+                    <h3>Real-time Statistics</h3>
+                    <p class="refresh">This page refreshes every 10 seconds</p>
+                    <div id="stats">Loading...</div>
+                </div>
+                <div class="card">
+                    <h3>API Endpoints</h3>
+                    <ul>
+                        <li><a href="/api/stats" style="color: #7289da;">/api/stats</a> - JSON statistics</li>
+                        <li><a href="/api/health" style="color: #7289da;">/api/health</a> - Health check</li>
+                    </ul>
+                </div>
+                <div class="card">
+                    <h3>Discord Commands</h3>
+                    <ul>
+                        <li><code>/stats</code> - View bot statistics</li>
+                        <li><code>/hello</code> - Say hello</li>
+                        <li><code>/health</code> - Check bot health</li>
+                    </ul>
+                </div>
+            </div>
+            <script>
+                async function loadStats() {
+                    try {
+                        const response = await fetch('/api/stats');
+                        const stats = await response.json();
+                        document.getElementById('stats').innerHTML = `
+                            <div class="stat">
+                                <div class="number">${stats.total_commands}</div>
+                                <div>Total Commands</div>
+                            </div>
+                            <div class="stat">
+                                <div class="number">${stats.uptime_seconds}s</div>
+                                <div>Uptime</div>
+                            </div>
+                            <div class="stat">
+                                <div class="number">${Object.keys(stats.commands_by_type).length}</div>
+                                <div>Command Types</div>
+                            </div>
+                            <div style="clear: both; margin-top: 20px;">
+                                <strong>Last Command:</strong> ${stats.last_command_time || 'Never'}
+                            </div>
+                        `;
+                    } catch (error) {
+                        document.getElementById('stats').innerHTML = 'Error loading stats';
+                    }
+                }
+                loadStats();
+                setInterval(loadStats, 5000);
+            </script>
+        </body>
+        </html>
+        "#,
+    )
+}
+
+async fn get_stats(State(state): State<AppState>) -> Json<serde_json::Value> {
+    let stats = state.get_stats().await;
+    Json(json!(stats))
+}
+
+async fn health_check() -> impl IntoResponse {
+    (StatusCode::OK, Json(json!({
+        "status": "healthy",
+        "service": "discord-web-service",
+        "timestamp": chrono::Utc::now().to_rfc3339()
+    })))
+}
+```
+
+**What to notice**: The web dashboard displays real-time bot statistics and auto-refreshes to show live updates when Discord commands are used.
+
+## Step 6: Create Custom Service Implementation
+
+Create `src/service.rs` to combine both services:
+
+```rust
+use crate::{bot, state::AppState, web};
+use poise::serenity_prelude as serenity;
+use shuttle_runtime::Error as ShuttleError;
+use std::net::SocketAddr;
+
+pub struct MultiService {
+    pub discord_token: String,
+    pub state: AppState,
+}
+
+#[shuttle_runtime::async_trait]
+impl shuttle_runtime::Service for MultiService {
+    async fn bind(self, addr: SocketAddr) -> Result<(), ShuttleError> {
+        let framework = poise::Framework::builder()
+            .options(poise::FrameworkOptions {
+                commands: bot::get_commands(),
+                prefix_options: poise::PrefixFrameworkOptions {
+                    prefix: Some("!".into()),
+                    ..Default::default()
+                },
+                ..Default::default()
+            })
+            .setup(|ctx, _ready, framework| {
+                Box::pin(async move {
+                    // Register slash commands globally
+                    poise::builtins::register_globally(ctx, &framework.options().commands).await?;
+                    tracing::info!("Discord bot commands registered!");
+                    Ok(self.state.clone())
+                })
+            })
+            .build();
+
+        let client = serenity::ClientBuilder::new(
+            &self.discord_token,
+            serenity::GatewayIntents::non_privileged() | serenity::GatewayIntents::MESSAGE_CONTENT,
+        )
+        .framework(framework)
+        .await
+        .map_err(|e| ShuttleError::Custom(e.into()))?;
+
+        // Create web router
+        let app = web::create_router(self.state);
+
+        // Create web server
+        let listener = tokio::net::TcpListener::bind(addr)
+            .await
+            .map_err(|e| ShuttleError::Custom(e.into()))?;
+
+        tracing::info!("Starting services...");
+        tracing::info!("Web server: http://{}", addr);
+        tracing::info!("Discord bot: Starting...");
+
+        // Run both services concurrently
+        tokio::select! {
+            result = axum::serve(listener, app) => {
+                if let Err(e) = result {
+                    tracing::error!("Web server error: {}", e);
+                }
+            }
+            result = client.start() => {
+                if let Err(e) = result {
+                    tracing::error!("Discord bot error: {}", e);
+                }
+            }
+        }
+
+        Ok(())
+    }
+}
+```
+
+**What to notice**: `tokio::select!` runs both services concurrently. If either service fails, the whole application stops gracefully.
+
+## Step 7: Wire Everything Together
+
+Update `src/main.rs` to use our custom service:
+
+```rust
+mod bot;
+mod service;
+mod state;
+mod web;
+
+use anyhow::Context;
+use service::MultiService;
+use shuttle_runtime::SecretStore;
+use state::AppState;
+
+#[shuttle_runtime::main]
+async fn main(
+    #[shuttle_runtime::Secrets] secrets: SecretStore,
+) -> Result<MultiService, shuttle_runtime::Error> {
+    // Initialize logging
+    tracing_subscriber::init();
+
+    // Get Discord token
+    let discord_token = secrets
+        .get("DISCORD_TOKEN")
+        .context("'DISCORD_TOKEN' was not found")?;
+
+    // Create shared state
+    let state = AppState::new();
+
+    Ok(MultiService {
+        discord_token,
+        state,
+    })
+}
+```
+
+Add the logging dependency:
+
+```toml
+tracing-subscriber = "0.3"
+```
+
+Build the complete application:
+
+```bash
+cargo build
+```
+
+**What to notice**: Our main function returns a custom service instead of the usual Shuttle service types.
+
+## Step 8: Configure Secrets
+
+Create your `Secrets.toml` file:
+
+```bash
+touch Secrets.toml
+```
+
+Add your Discord bot token:
+
+```toml
+DISCORD_TOKEN = "your_discord_bot_token_here"
+```
+
+Make sure to add it to `.gitignore`:
+
+```bash
+echo "Secrets.toml" >> .gitignore
+```
+
+**What to notice**: You can reuse the Discord bot token from the Discord Weather Bot tutorial if you have one.
+
+## Step 9: Test Your Multi-Service Application
+
+Run your application locally:
+
+```bash
+shuttle run
+```
+
+You should see output like:
+
+```
+Starting services...
+Web server: http://127.0.0.1:8000
+Discord bot: Starting...
+Discord bot commands registered!
+```
+
+**Test the web dashboard**:
+
+1. Open `http://localhost:8000` in your browser
+2. You should see the Discord Bot Dashboard
+3. Notice the real-time statistics (initially all zeros)
+
+**Test the Discord bot**:
+
+1. Go to your Discord server
+2. Try the commands:
+   - `/hello` - Should respond with a greeting
+   - `/health` - Should confirm the bot is healthy
+   - `/stats` - Should show current usage statistics
+
+**Test the integration**:
+
+1. Use several Discord commands
+2. Refresh the web dashboard (or wait for auto-refresh)
+3. You should see the statistics update in real-time!
+
+**Test the API endpoints**:
+
+```bash
+curl http://localhost:8000/api/stats
+curl http://localhost:8000/api/health
+```
+
+**What to notice**: Both services share the same statistics - commands used in Discord appear immediately in the web dashboard!
+
+## Step 10: Deploy to Production
+
+Deploy your multi-service application:
+
+```bash
+shuttle deploy
+```
+
+After deployment, you'll get a URL like `https://discord-web-service-xyz.shuttle.app`.
+
+**Test your production deployment**:
+
+1. Visit the web dashboard URL in your browser
+2. Use Discord commands in your server
+3. Watch the dashboard update with real-time statistics
+4. Test the API endpoints with your production URL
+
+**What to notice**: Both services run in the same deployment, sharing resources and data seamlessly.
+
+## What You've Accomplished
+
+Congratulations! You've built a sophisticated multi-service application with:
+
+- ✅ **Custom Shuttle service** combining multiple service types
+- ✅ **Discord bot** with slash commands and usage tracking
+- ✅ **Web API** with JSON endpoints and health checks
+- ✅ **Live dashboard** with real-time statistics and auto-refresh
+- ✅ **Shared state** between concurrent services
+- ✅ **Production deployment** of the complete multi-service app
+
+## Key Concepts You've Learned
+
+### Custom Services
+
+You learned how to implement the `Service` trait to create custom Shuttle services that can run any combination of services together.
+
+### Concurrent Service Management
+
+Using `tokio::select!` to run multiple async services concurrently:
+
+```rust
+tokio::select! {
+    result = axum::serve(listener, app) => { /* web server */ }
+    result = client.start() => { /* discord bot */ }
+}
+```
+
+### Shared State
+
+Using `Arc<RwLock<T>>` to safely share data between concurrent services:
+
+```rust
+pub struct AppState {
+    pub stats: Arc<RwLock<BotStats>>,
+}
+```
+
+### Service Integration
+
+Demonstrating how different service types can work together and share data in real-time.
+
+## Next Steps
+
+Now that you understand custom services, you can:
+
+1. **Add more service types** - Include WebSocket servers, cron jobs, or background tasks
+2. **Add persistence** - Use Shuttle's database features to store statistics permanently
+3. **Enhance the dashboard** - Add charts, more detailed analytics, or user management
+4. **Add monitoring** - Include health checks, metrics, and alerting
+5. **Scale services** - Learn about service discovery and load balancing
+
+Try our [WebSocket Chat tutorial](/tutorials/websocket-chat-app-js) to learn about real-time communication!
+
+## Troubleshooting
+
+**Services not starting?**
+
+- Check that your Discord token is correct in `Secrets.toml`
+- Verify that both Discord and web components compile individually
+- Check logs with `shuttle logs`
+
+**Discord bot offline?**
+
+- Ensure the bot has proper permissions in your Discord server
+- Check that slash commands are registered (watch for "commands registered" log)
+- Verify the bot token hasn't expired
+
+**Web dashboard not updating?**
+
+- Check that Discord commands are actually being executed
+- Verify the `/api/stats` endpoint returns current data
+- Check browser console for JavaScript errors
+
+**Build errors?**
+
+- Ensure all dependencies match the versions in the tutorial
+- Try `cargo clean && cargo build` to rebuild everything
+- Check that all module files (`bot.rs`, `web.rs`, etc.) are created
+
+**Shared state not working?**
+
+- Verify that the same `AppState` instance is passed to both services
+- Check that async/await is used properly when accessing shared state
+- Ensure read/write locks are acquired and released correctly
+
+You've successfully learned how to build sophisticated multi-service applications with Shuttle!

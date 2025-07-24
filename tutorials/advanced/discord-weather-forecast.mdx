@@ -1,0 +1,568 @@
+---
+title: "Discord Weather Forecast Bot"
+description: "Learn how to write a Discord bot that can get the weather forecast and deploy it to production"
+icon: "robot"
+---
+
+## Learning Objectives
+
+By the end of this tutorial, you will have built a **Discord Weather Bot** and learned how to:
+
+- Register and configure a Discord bot application
+- Build a Discord bot using the Serenity library
+- Integrate with external APIs (OpenWeatherMap)
+- Handle Discord slash commands and responses
+- Deploy your bot to run 24/7 in the cloud
+- Manage API keys and secrets securely
+
+## Prerequisites
+
+- Basic Rust knowledge (structs, async/await, error handling)
+- [Shuttle CLI installed](/getting-started/installation)
+- A Discord account and access to a Discord server where you can test
+- Basic familiarity with Discord (what bots are, how commands work)
+
+**Time Required**: 45-60 minutes
+
+## What We're Building
+
+We'll create a Discord bot that responds to the `/weather <city>` command by fetching real-time weather data and posting a formatted forecast to Discord. Users will be able to get current weather conditions for any city worldwide.
+
+The bot will:
+
+- Respond to `/weather` slash commands
+- Fetch weather data from OpenWeatherMap API
+- Format and display temperature, conditions, and humidity
+- Handle errors gracefully (invalid cities, API failures)
+- Run continuously in the cloud
+
+## Step 1: Register Your Discord Bot
+
+First, we need to create a Discord application and bot.
+
+**Create a Discord Application**:
+
+1. Go to [Discord Developer Portal](https://discord.com/developers/applications)
+2. Click "New Application"
+3. Name it "Weather Bot" (or your preferred name)
+4. Click "Create"
+
+![Discord Create Application](/images/discord-weather-forecast-1.png)
+
+You should see your application dashboard. **Copy the Application ID** - we'll need it later.
+
+![Application Dashboard](/images/discord-weather-forecast-2.png)
+
+**What to notice**: The Application ID uniquely identifies your bot application. This is different from the bot token we'll get next.
+
+**Create the Bot**:
+
+1. Click "Bot" in the left sidebar
+2. Click "Add Bot" then "Yes, do it!"
+3. Set a username for your bot (this appears in Discord)
+4. Click "Reset Token" and copy the bot token that appears
+
+![Bot Configuration](/images/discord-weather-forecast-3.png)
+
+**Important**: Keep this token secret! This is like a password for your bot.
+
+**What to notice**: The bot token authenticates your code with Discord. Anyone with this token can control your bot.
+
+## Step 2: Add Bot to Your Discord Server
+
+Now let's add the bot to a Discord server for testing.
+
+**Generate Invite URL**:
+
+Replace `<application_id>` with your Application ID from Step 1:
+
+```
+https://discord.com/oauth2/authorize?client_id=<application_id>&scope=bot+applications.commands&permissions=2048
+```
+
+**Add to Server**:
+
+1. Open the URL in your browser
+2. Select a Discord server you can manage
+3. Click "Continue" then "Authorize"
+
+Your bot should now appear in your Discord server, but it will be offline:
+
+![Bot Offline](/images/discord-weather-forecast-4.png)
+
+**What to notice**: The bot shows as offline because we haven't written any code yet. Once we deploy our code, it will show as online.
+
+## Step 3: Create Your Shuttle Project
+
+Create a new Shuttle project with the Serenity template:
+
+```bash
+shuttle init --template serenity weather-bot
+cd weather-bot
+```
+
+Examine the generated code:
+
+```bash
+cat src/main.rs
+```
+
+You'll see a basic Discord bot that responds to `!hello`:
+
+```rust
+use anyhow::Context as _;
+use serenity::async_trait;
+use serenity::model::channel::Message;
+use serenity::model::gateway::Ready;
+use serenity::prelude::*;
+use shuttle_runtime::SecretStore;
+use tracing::{error, info};
+
+struct Bot;
+
+#[async_trait]
+impl EventHandler for Bot {
+    async fn message(&self, ctx: Context, msg: Message) {
+        if msg.content == "!hello" {
+            if let Err(e) = msg.channel_id.say(&ctx.http, "world!").await {
+                error!("Error sending message: {:?}", e);
+            }
+        }
+    }
+
+    async fn ready(&self, _: Context, ready: Ready) {
+        info!("{} is connected!", ready.user.name);
+    }
+}
+
+#[shuttle_runtime::main]
+async fn main(#[shuttle_runtime::Secrets] secrets: SecretStore) -> shuttle_serenity::ShuttleSerenity {
+    // Get the discord token set in `Secrets.toml`
+    let token = secrets.get("DISCORD_TOKEN")
+        .context("'DISCORD_TOKEN' was not found")?;
+
+    let intents = GatewayIntents::GUILD_MESSAGES
+        | GatewayIntents::DIRECT_MESSAGES
+        | GatewayIntents::MESSAGE_CONTENT;
+
+    let client = Client::builder(&token, intents)
+        .event_handler(Bot)
+        .await
+        .expect("Err creating client");
+
+    Ok(client.into())
+}
+```
+
+**What to notice**: This bot uses the `EventHandler` trait to respond to Discord events. It needs a `DISCORD_TOKEN` secret to authenticate.
+
+## Step 4: Configure Your Bot Token
+
+Create a `Secrets.toml` file in your project root:
+
+```bash
+touch Secrets.toml
+```
+
+Add your bot token to `Secrets.toml`:
+
+```toml
+DISCORD_TOKEN = "your_bot_token_from_step_1"
+```
+
+**Important**: Add `Secrets.toml` to your `.gitignore` to avoid committing secrets:
+
+```bash
+echo "Secrets.toml" >> .gitignore
+```
+
+Test your basic bot:
+
+```bash
+shuttle run
+```
+
+You should see output like:
+
+```
+Weather Bot is connected!
+```
+
+Your bot should now show as online in Discord! Try typing `!hello` in a channel - it should respond with "world!".
+
+**What to notice**: The bot is now running locally and connected to Discord. The `shuttle run` command automatically loads secrets and starts your bot.
+
+## Step 5: Get Weather API Access
+
+We'll use OpenWeatherMap for weather data.
+
+**Create OpenWeatherMap Account**:
+
+1. Go to [OpenWeatherMap](https://openweathermap.org/api)
+2. Sign up for a free account
+3. Go to "API keys" in your account
+4. Copy your API key
+
+**Add Weather API Key**:
+
+Update your `Secrets.toml`:
+
+```toml
+DISCORD_TOKEN = "your_bot_token_from_step_1"
+OPENWEATHER_API_KEY = "your_openweather_api_key"
+```
+
+**What to notice**: OpenWeatherMap's free tier allows 1,000 API calls per day, which is plenty for a personal Discord bot.
+
+## Step 6: Add Dependencies for Weather Features
+
+Update your `Cargo.toml` to include HTTP client and JSON parsing:
+
+```toml
+[package]
+name = "weather-bot"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+anyhow = "1.0"
+serenity = { version = "0.12", default-features = false, features = ["client", "gateway", "rustls_backend", "model"] }
+shuttle-runtime = "0.56.0"
+shuttle-serenity = "0.56.0"
+tokio = "1.28"
+tracing = "0.1"
+reqwest = { version = "0.11", features = ["json"] }
+serde = { version = "1.0", features = ["derive"] }
+```
+
+Build to download dependencies:
+
+```bash
+cargo build
+```
+
+**What to notice**: We've added `reqwest` for HTTP requests and `serde` for JSON parsing to interact with the weather API.
+
+## Step 7: Create Weather Data Structures
+
+Create `src/weather.rs` for weather-related code:
+
+```rust
+use serde::Deserialize;
+
+#[derive(Deserialize, Debug)]
+pub struct WeatherResponse {
+    pub weather: Vec<WeatherCondition>,
+    pub main: MainWeather,
+    pub name: String,
+}
+
+#[derive(Deserialize, Debug)]
+pub struct WeatherCondition {
+    pub main: String,
+    pub description: String,
+}
+
+#[derive(Deserialize, Debug)]
+pub struct MainWeather {
+    pub temp: f64,
+    pub humidity: u32,
+    pub feels_like: f64,
+}
+
+impl WeatherResponse {
+    pub fn to_celsius(&self) -> i32 {
+        (self.main.temp - 273.15) as i32
+    }
+
+    pub fn feels_like_celsius(&self) -> i32 {
+        (self.main.feels_like - 273.15) as i32
+    }
+
+    pub fn format_response(&self) -> String {
+        let condition = &self.weather[0];
+        format!(
+            "🌤️ **Weather in {}**\n🌡️ Temperature: {}°C (feels like {}°C)\n☁️ Conditions: {}\n💧 Humidity: {}%",
+            self.name,
+            self.to_celsius(),
+            self.feels_like_celsius(),
+            condition.description,
+            self.main.humidity
+        )
+    }
+}
+
+pub async fn get_weather(city: &str, api_key: &str) -> Result<WeatherResponse, reqwest::Error> {
+    let url = format!(
+        "https://api.openweathermap.org/data/2.5/weather?q={}&appid={}",
+        city, api_key
+    );
+
+    let response = reqwest::get(&url).await?;
+    let weather: WeatherResponse = response.json().await?;
+    Ok(weather)
+}
+```
+
+Test it compiles:
+
+```bash
+cargo check
+```
+
+**What to notice**: We parse OpenWeatherMap's JSON response into Rust structs and convert temperatures from Kelvin to Celsius for easier reading.
+
+## Step 8: Implement Slash Commands
+
+Now let's replace the basic message handler with modern Discord slash commands. Update `src/main.rs`:
+
+```rust
+mod weather;
+
+use anyhow::Context as _;
+use serenity::async_trait;
+use serenity::builder::{CreateCommand, CreateInteractionResponse, CreateInteractionResponseMessage};
+use serenity::model::application::{Interaction, InteractionResponseType};
+use serenity::model::gateway::Ready;
+use serenity::model::id::GuildId;
+use serenity::prelude::*;
+use shuttle_runtime::SecretStore;
+use tracing::{error, info};
+use weather::get_weather;
+
+struct Bot {
+    weather_api_key: String,
+}
+
+#[async_trait]
+impl EventHandler for Bot {
+    async fn interaction_create(&self, ctx: Context, interaction: Interaction) {
+        if let Interaction::ApplicationCommand(command) = interaction {
+            let response_content = match command.data.name.as_str() {
+                "weather" => {
+                    let city = command.data.options[0].value.as_ref()
+                        .and_then(|v| v.as_str())
+                        .unwrap_or("London");
+
+                    match get_weather(city, &self.weather_api_key).await {
+                        Ok(weather) => weather.format_response(),
+                        Err(_) => format!("❌ Sorry, I couldn't find weather data for '{}'", city),
+                    }
+                }
+                _ => "❓ Unknown command".to_string(),
+            };
+
+            let data = CreateInteractionResponseMessage::new().content(response_content);
+            let builder = CreateInteractionResponse::Message(data);
+
+            if let Err(why) = command.create_interaction_response(&ctx.http, builder).await {
+                error!("Cannot respond to slash command: {}", why);
+            }
+        }
+    }
+
+    async fn ready(&self, ctx: Context, ready: Ready) {
+        info!("{} is connected!", ready.user.name);
+
+        let commands = [
+            CreateCommand::new("weather")
+                .description("Get weather forecast for a city")
+                .add_option(
+                    serenity::builder::CreateCommandOption::new(
+                        serenity::model::application::CommandOptionType::String,
+                        "city",
+                        "City name"
+                    ).required(true)
+                )
+        ];
+
+        let commands = ready.user.id.global_commands(&ctx.http, commands).await;
+
+        match commands {
+            Ok(_) => info!("Registered slash commands"),
+            Err(why) => error!("Failed to register slash commands: {}", why),
+        }
+    }
+}
+
+#[shuttle_runtime::main]
+async fn main(#[shuttle_runtime::Secrets] secrets: SecretStore) -> shuttle_serenity::ShuttleSerenity {
+    let token = secrets.get("DISCORD_TOKEN")
+        .context("'DISCORD_TOKEN' was not found")?;
+
+    let weather_api_key = secrets.get("OPENWEATHER_API_KEY")
+        .context("'OPENWEATHER_API_KEY' was not found")?;
+
+    let intents = GatewayIntents::empty();
+
+    let client = Client::builder(&token, intents)
+        .event_handler(Bot { weather_api_key })
+        .await
+        .expect("Err creating client");
+
+    Ok(client.into())
+}
+```
+
+Build your updated bot:
+
+```bash
+cargo build
+```
+
+**What to notice**: Slash commands are Discord's modern way to interact with bots. They provide a better user experience with autocomplete and validation.
+
+## Step 9: Test Your Weather Bot
+
+Run your bot locally:
+
+```bash
+shuttle run
+```
+
+You should see:
+
+```
+Weather Bot is connected!
+Registered slash commands
+```
+
+**Test the weather command**:
+
+1. Go to your Discord server
+2. Type `/weather` - you should see the command appear
+3. Type a city name like "Paris" and press Enter
+
+Your bot should respond with formatted weather information!
+
+Try different cities:
+
+- `/weather Tokyo`
+- `/weather New York`
+- `/weather InvalidCity123` (should show error message)
+
+**What to notice**: The bot fetches real-time weather data and formats it nicely with emojis. Error handling ensures the bot doesn't crash on invalid cities.
+
+## Step 10: Deploy Your Bot to Production
+
+Deploy your bot to run 24/7 in the cloud:
+
+```bash
+shuttle deploy
+```
+
+This will take a few minutes to build and deploy. You'll see output like:
+
+```
+Deployment finished successfully.
+Service Name:  weather-bot
+Status:        running
+```
+
+Your bot is now running in production! Test it again in Discord - it should work the same way, but now it's running in the cloud instead of your local machine.
+
+**What to notice**: Shuttle automatically handled deploying your bot, managing secrets, and keeping it running continuously.
+
+## Step 11: Verify Production Deployment
+
+Your bot should now be online 24/7. Test thoroughly:
+
+**Basic functionality**:
+
+- `/weather London` - should return current weather
+- `/weather` without a city - should default to London
+- `/weather XYZ123` - should handle invalid cities gracefully
+
+**Monitor your bot**:
+
+- Check that the bot shows as "Online" in Discord
+- Try commands from different channels
+- Test with multiple users
+
+**View logs** (if needed):
+
+```bash
+shuttle logs
+```
+
+**What to notice**: Your bot is now a production service that will stay online even when you close your laptop!
+
+## What You've Accomplished
+
+Congratulations! You've built and deployed a complete Discord weather bot with:
+
+- ✅ **Discord bot registration** and proper permissions
+- ✅ **Modern slash command** interface
+- ✅ **External API integration** with OpenWeatherMap
+- ✅ **Error handling** for invalid requests
+- ✅ **Formatted responses** with emojis and clear information
+- ✅ **Secure secret management** for API keys
+- ✅ **Production deployment** running 24/7 in the cloud
+
+## Key Concepts You've Learned
+
+### Discord Bot Development
+
+- How to register and configure Discord applications
+- Using the Serenity library for Rust Discord bots
+- Implementing slash commands vs. text commands
+- Managing bot permissions and intents
+
+### API Integration
+
+- Making HTTP requests to external APIs
+- Parsing JSON responses with Serde
+- Error handling for network requests
+- API key management and security
+
+### Cloud Deployment
+
+- Using Shuttle for bot hosting
+- Managing secrets in production
+- Monitoring deployed applications
+
+## Next Steps
+
+Now that you have a working Discord bot, you can:
+
+1. **Add more commands** - Try weather alerts, forecasts, or other APIs
+2. **Improve error messages** - Add more specific error handling
+3. **Add weather alerts** - Notify users of severe weather
+4. **Cache API responses** - Reduce API calls with simple caching
+5. **Add slash command options** - Let users choose temperature units
+
+Try our [Custom Service tutorial](/tutorials/custom-service) to learn about building multi-service applications!
+
+## Troubleshooting
+
+**Bot appears offline?**
+
+- Check that `DISCORD_TOKEN` in `Secrets.toml` is correct
+- Verify the bot has proper permissions in your Discord server
+- Check logs with `shuttle logs`
+
+**Slash commands not appearing?**
+
+- Wait a few minutes - Discord can take time to register commands
+- Make sure the bot has "applications.commands" scope
+- Try kicking and re-inviting the bot
+
+**Weather commands returning errors?**
+
+- Verify `OPENWEATHER_API_KEY` in `Secrets.toml` is correct
+- Check that you haven't exceeded the free API limit (1,000 calls/day)
+- Test with common city names first
+
+**Build errors?**
+
+- Ensure all dependencies in `Cargo.toml` match Step 6
+- Check that `src/weather.rs` was created properly
+- Try `cargo clean && cargo build`
+
+**"Secrets not found" errors?**
+
+- Make sure `Secrets.toml` exists in your project root
+- Verify the secret names match exactly (`DISCORD_TOKEN`, `OPENWEATHER_API_KEY`)
+- Check that `Secrets.toml` is not in `.gitignore` during local development
+
+You've successfully learned how to build and deploy Discord bots with Rust and Shuttle!

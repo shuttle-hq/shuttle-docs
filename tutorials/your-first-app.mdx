@@ -18,6 +18,7 @@ By the end of this tutorial, you will:
 - Basic Rust knowledge (variables, functions, structs)
 - Familiarity with command line tools
 - [Rust installed](https://rustup.rs/) on your machine
+- [Docker installed](https://docs.docker.com/get-docker/) (for local database)
 
 **Time Required**: 30-45 minutes
 
@@ -25,10 +26,12 @@ By the end of this tutorial, you will:
 
 We'll create a simple **Personal Journal** web application where users can:
 
-- Create journal entries
-- View all entries
-- Store data in a PostgreSQL database
+- Create journal entries through a REST API
+- View all entries stored in a database
+- Store data in a PostgreSQL database (automatically provisioned)
 - Deploy to production with HTTPS
+
+By the end, you'll have a live web application on the internet!
 
 ## Step 1: Install Shuttle CLI
 
@@ -38,11 +41,17 @@ First, let's install the Shuttle command-line tool:
 cargo install cargo-shuttle
 ```
 
-Verify the installation:
+This will take a few minutes to compile and install.
+
+Verify the installation worked:
 
 ```bash
 shuttle --version
 ```
+
+You should see output like `cargo-shuttle 0.56.0`. If you see an error, make sure `~/.cargo/bin` is in your PATH.
+
+**What to notice**: The Shuttle CLI is how we'll create projects, run them locally, and deploy to production.
 
 ## Step 2: Create Your Account
 
@@ -52,7 +61,11 @@ Sign up and login to Shuttle:
 shuttle login
 ```
 
-This will open your browser where you can sign up with Google, GitHub, or email.
+This will open your browser to the Shuttle Console where you can sign up with Google, GitHub, or email. After signing up, return to your terminal.
+
+You should see a success message: `Logged in successfully!`
+
+**What to notice**: This authentication lets Shuttle know which projects belong to you and enables deployment.
 
 ## Step 3: Initialize Your Project
 
@@ -63,9 +76,29 @@ shuttle init --template axum personal-journal
 cd personal-journal
 ```
 
-This creates a basic web application using the Axum framework. Let's look at what was generated:
+This creates a new directory with starter files. Let's look at what was generated:
 
-```rust src/main.rs
+```bash
+ls -la
+```
+
+You should see:
+
+```
+.gitignore
+Cargo.toml
+src/
+```
+
+Let's examine the starting code:
+
+```bash
+cat src/main.rs
+```
+
+You'll see this basic Axum application:
+
+```rust
 use axum::{routing::get, Router};
 
 async fn hello_world() -> &'static str {
@@ -80,29 +113,43 @@ async fn main() -> shuttle_axum::ShuttleAxum {
 }
 ```
 
-**Key Concepts:**
+**What to notice**:
 
-- `#[shuttle_runtime::main]` - This macro wraps your app for Shuttle
-- `shuttle_axum::ShuttleAxum` - The return type Shuttle expects
-- We're using Axum, a popular Rust web framework
+- The `#[shuttle_runtime::main]` macro wraps your app for Shuttle
+- The return type `shuttle_axum::ShuttleAxum` tells Shuttle this is an Axum web app
+- This is a complete web application in just a few lines!
 
-## Step 4: Test Locally
+## Step 4: Test Your First App
 
-Run your app locally to make sure everything works:
+Run your app locally to verify everything works:
 
 ```bash
 shuttle run
 ```
 
-Open `http://localhost:8000` in your browser. You should see "Hello, world!"
+You should see output like:
 
-Press `Ctrl+C` to stop the server.
+```
+Starting personal-journal on http://127.0.0.1:8000
+```
 
-## Step 5: Add Database Support
+Open a new terminal and test your app:
 
-Now let's add a PostgreSQL database to store journal entries. First, update your `Cargo.toml`:
+```bash
+curl http://localhost:8000
+```
 
-```toml Cargo.toml
+You should see: `Hello, world!`
+
+You can also visit `http://localhost:8000` in your browser. Press `Ctrl+C` in the first terminal to stop the server.
+
+**What to notice**: Your app is running locally with live reloading. Any code changes will automatically restart the server.
+
+## Step 5: Add Database Dependencies
+
+Now let's add a PostgreSQL database to store journal entries. Update your `Cargo.toml` file:
+
+```toml
 [package]
 name = "personal-journal"
 version = "0.1.0"
@@ -121,11 +168,27 @@ tower-http = { version = "0.6", features = ["cors"] }
 uuid = { version = "1.0", features = ["v4", "serde"] }
 ```
 
-## Step 6: Create Data Structures
+Build to download dependencies:
 
-Create a new file for our data models:
+```bash
+cargo build
+```
 
-```rust src/models.rs
+This will take a few minutes the first time. You should see `Finished dev [unoptimized + debuginfo] target(s)`.
+
+**What to notice**: We've added `shuttle-shared-db` which will automatically provision a PostgreSQL database, and `sqlx` for database queries.
+
+## Step 6: Create Data Models
+
+Create a new file for our data structures:
+
+```bash
+touch src/models.rs
+```
+
+Add this content to `src/models.rs`:
+
+```rust
 use serde::{Deserialize, Serialize};
 use chrono::{DateTime, Utc};
 use uuid::Uuid;
@@ -145,14 +208,40 @@ pub struct CreateEntryRequest {
 }
 ```
 
-## Step 7: Set Up Database Schema
+Test that it compiles:
 
-Create a database schema file:
+```bash
+cargo check
+```
 
-```sql schema.sql
+You should see `Finished dev [unoptimized + debuginfo] target(s)`.
+
+**What to notice**:
+
+- `JournalEntry` represents a row in our database
+- `CreateEntryRequest` represents the JSON data users send to create entries
+- Serde annotations handle JSON conversion automatically
+
+## Step 7: Set Up Database Migrations
+
+Create a migrations directory:
+
+```bash
+mkdir migrations
+```
+
+Create your first migration file:
+
+```bash
+touch migrations/20231201000000_create_journal_entries.sql
+```
+
+Add this SQL to the migration file:
+
+```sql
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 
-CREATE TABLE IF NOT EXISTS journal_entries (
+CREATE TABLE journal_entries (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     title TEXT NOT NULL,
     content TEXT NOT NULL,
@@ -160,11 +249,13 @@ CREATE TABLE IF NOT EXISTS journal_entries (
 );
 ```
 
+**What to notice**: This creates our database table. The filename timestamp ensures migrations run in order.
+
 ## Step 8: Build the Web Application
 
-Now let's update our main application:
+Now let's update our main application. Replace the contents of `src/main.rs`:
 
-```rust src/main.rs
+```rust
 mod models;
 
 use axum::{
@@ -176,9 +267,7 @@ use axum::{
 };
 use models::{JournalEntry, CreateEntryRequest};
 use sqlx::PgPool;
-use std::sync::Arc;
 use tower_http::cors::CorsLayer;
-use uuid::Uuid;
 
 // Application state that will be shared across handlers
 #[derive(Clone)]
@@ -243,102 +332,146 @@ async fn create_entry(
 }
 ```
 
-## Step 9: Add Database Migrations
-
-Create a migrations directory and our schema:
+Build to check for errors:
 
 ```bash
-mkdir migrations
+cargo build
 ```
 
-```sql migrations/20231201000000_create_journal_entries.sql
-CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
+You should see `Finished dev [unoptimized + debuginfo] target(s)`.
 
-CREATE TABLE journal_entries (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    title TEXT NOT NULL,
-    content TEXT NOT NULL,
-    created_at TIMESTAMPTZ DEFAULT NOW()
-);
-```
+**What to notice**:
 
-## Step 10: Test Your Application
+- The `#[shuttle_shared_db::Postgres]` annotation automatically gives us a database
+- We have three endpoints: `/` (welcome), `GET /entries` (list), and `POST /entries` (create)
+- Shuttle automatically runs our migrations on startup
 
-Run your application locally:
+## Step 9: Test Your Complete Application
+
+Now let's test our complete application with database functionality:
 
 ```bash
 shuttle run
 ```
 
-**Test the API:**
+You should see:
 
-1. **Get entries** (should be empty initially):
+```
+Starting personal-journal on http://127.0.0.1:8000
+```
 
-   ```bash
-   curl http://localhost:8000/entries
-   ```
+**Test the welcome page**:
 
-2. **Create an entry**:
+```bash
+curl http://localhost:8000
+```
 
-   ```bash
-   curl -X POST http://localhost:8000/entries \
-     -H "Content-Type: application/json" \
-     -d '{"title": "My First Entry", "content": "Today I learned about Shuttle!"}'
-   ```
+Expected output: `Welcome to your Personal Journal! Visit /entries to see your entries.`
 
-3. **Get entries again**:
-   ```bash
-   curl http://localhost:8000/entries
-   ```
+**Test getting entries** (should be empty initially):
 
-You should see your journal entry returned as JSON!
+```bash
+curl http://localhost:8000/entries
+```
 
-## Step 11: Deploy to Production
+Expected output: `[]` (empty JSON array)
 
-Now comes the magic moment - deploying to production:
+**Create your first entry**:
+
+```bash
+curl -X POST http://localhost:8000/entries \
+  -H "Content-Type: application/json" \
+  -d '{"title": "My First Entry", "content": "Today I learned about Shuttle!"}'
+```
+
+You should see JSON output with your entry including an ID and timestamp:
+
+```json
+{
+  "id": "550e8400-e29b-41d4-a716-446655440000",
+  "title": "My First Entry",
+  "content": "Today I learned about Shuttle!",
+  "created_at": "2023-12-01T10:30:00Z"
+}
+```
+
+**Get entries again to see your entry**:
+
+```bash
+curl http://localhost:8000/entries
+```
+
+You should now see an array with your journal entry!
+
+**What to notice**: Your app is fully functional with database persistence. Data survives between requests and server restarts.
+
+## Step 10: Deploy to Production
+
+Now comes the magic moment - deploying to production with a single command:
 
 ```bash
 shuttle deploy
 ```
 
-That's it! Shuttle will:
+This process will:
 
-1. Build your application
+1. Build your application (may take 2-3 minutes)
 2. Provision a PostgreSQL database automatically
-3. Deploy your app to the cloud
-4. Give you a HTTPS URL
+3. Deploy your app to AWS
+4. Set up HTTPS and give you a URL
 
-Your app is now live on the internet!
+You'll see output like:
 
-## Step 12: Verify Your Deployment
-
-Once deployment completes, you'll get a URL like `https://personal-journal-1a2b.shuttle.app`.
-
-Test your live app:
-
-```bash
-# Replace with your actual URL
-curl https://personal-journal-1a2b.shuttle.app/entries
+```
+Deployment finished successfully.
+Service Name:  personal-journal
+Deployment ID: 01234567-89ab-cdef-0123-456789abcdef
+Status:        running
+Last Updated:  2023-12-01T10:30:00Z
+URI:           https://personal-journal-abc123.shuttle.app
 ```
 
-Create an entry in production:
+**What to notice**: Shuttle provisioned everything automatically - no configuration files, no manual database setup, no SSL certificates to manage!
+
+## Step 11: Test Your Live Application
+
+Your app is now live on the internet! Test it with your actual deployment URL:
 
 ```bash
-curl -X POST https://personal-journal-1a2b.shuttle.app/entries \
+# Replace with your actual URL from the deploy output
+curl https://personal-journal-abc123.shuttle.app
+```
+
+Expected output: `Welcome to your Personal Journal! Visit /entries to see your entries.`
+
+**Create an entry in production**:
+
+```bash
+curl -X POST https://personal-journal-abc123.shuttle.app/entries \
   -H "Content-Type: application/json" \
   -d '{"title": "Deployed!", "content": "My app is live on the internet!"}'
 ```
 
-## What You've Learned
+**Verify it was saved**:
+
+```bash
+curl https://personal-journal-abc123.shuttle.app/entries
+```
+
+You should see your entry! Your database in production is completely separate from your local one.
+
+**What to notice**: Your app works identically in production and locally, but the production version is accessible from anywhere in the world with HTTPS.
+
+## What You've Accomplished
 
 Congratulations! You've just:
 
 ✅ **Built a complete web application** with REST API endpoints  
 ✅ **Added a PostgreSQL database** with automatic provisioning  
-✅ **Deployed to production** with HTTPS and a custom domain  
+✅ **Deployed to production** with HTTPS and a custom subdomain  
 ✅ **Experienced Infrastructure from Code** - no configuration files needed!
 
-## Key Concepts Explained
+## Key Concepts You've Learned
 
 ### Infrastructure from Code
 
@@ -350,35 +483,43 @@ Notice how we got a database with just this annotation:
 
 No database setup, no connection strings, no environment variables - Shuttle handled everything!
 
-### Automatic Deployment
+### Automatic Resource Provisioning
 
-The `shuttle deploy` command:
+When you deployed, Shuttle:
 
 - Analyzed your code to see you needed a database
-- Provisioned PostgreSQL automatically
-- Built and deployed your app
+- Provisioned PostgreSQL automatically in the cloud
+- Connected your app to the database securely
 - Set up HTTPS and gave you a URL
 
 ### Type Safety
 
 Shuttle checks your resource requirements at compile time, preventing many deployment issues before they happen.
 
+### Development-Production Parity
+
+Your local development environment automatically mirrors production, reducing deployment surprises.
+
 ## Next Steps
 
 Now that you understand the basics, you can:
 
-1. **Add a web frontend** - Create HTML pages for your journal
-2. **Learn about secrets** - Add API keys and configuration
+1. **Add a web frontend** - Create HTML pages for your journal with templates
+2. **Learn about secrets** - Add API keys and configuration with `shuttle-secrets`
 3. **Try other databases** - Explore AWS RDS for production workloads
 4. **Add authentication** - Secure your journal with user accounts
+5. **Add more features** - Edit/delete entries, search, categories
+
+Try our [REST API with Axum tutorial](/tutorials/rest-http-service-with-axum) or [Authentication tutorial](/tutorials/authentication) next!
 
 ## What We Covered
 
 - ✅ Setting up your development environment
 - ✅ Creating your first Shuttle project
 - ✅ Adding a database with annotations
-- ✅ Building REST API endpoints
-- ✅ Testing locally and in production
+- ✅ Building REST API endpoints with JSON
+- ✅ Testing locally with real database
+- ✅ Deploying to production with one command
 - ✅ Understanding Infrastructure from Code
 
 You now have the foundation to build and deploy Rust web applications with Shuttle. The best part? This same pattern works for much more complex applications - Shuttle scales with your needs!
@@ -389,15 +530,30 @@ You now have the foundation to build and deploy Rust web applications with Shutt
 
 - Make sure Docker is running (needed for local database)
 - Check that all dependencies are in `Cargo.toml`
+- Try `cargo clean && cargo build` to rebuild
 
-**Deployment failed?**
+**Build errors?**
 
-- Run `shuttle project status` to check your project
-- View logs with `shuttle logs`
+- Ensure your `Cargo.toml` matches the one in Step 5 exactly
+- Check that `src/models.rs` was created properly
+- Verify the migration file exists in `migrations/`
 
 **Database connection issues?**
 
 - Ensure your migrations are in the `migrations/` folder
 - Check that `sqlx::migrate!()` is called in your main function
+- Make sure Docker is running for local development
+
+**Deployment failed?**
+
+- Run `shuttle project status` to check your project
+- View logs with `shuttle logs`
+- Ensure you're logged in with `shuttle login`
+
+**JSON parsing errors?**
+
+- Verify your request has `Content-Type: application/json` header
+- Check that field names in your JSON match the struct exactly
+- Use single quotes around your curl command's JSON data
 
 Ready to build something amazing? Check out our other tutorials for more advanced features!

@@ -1,0 +1,1101 @@
+---
+title: "Real-Time Chat App with WebSockets"
+description: "Learn to build a real-time chat application using Rust WebSockets and React frontend"
+icon: "plug"
+---
+
+## Learning Objectives
+
+By the end of this tutorial, you will have built a **Real-Time Chat Application** and learned how to:
+
+- Create WebSocket connections for real-time communication
+- Build a Rust WebSocket server with message broadcasting
+- Create a React frontend that connects to WebSocket servers
+- Handle user authentication and message persistence
+- Manage concurrent users and real-time message delivery
+- Deploy full-stack applications with static asset serving
+
+## Prerequisites
+
+- Completed [Building Your First REST API](/tutorials/rest-http-service-with-axum) tutorial
+- Basic React/JavaScript knowledge (components, state, events)
+- [Node.js installed](https://nodejs.org/) for frontend development
+- [Shuttle CLI installed](/getting-started/installation)
+
+**Time Required**: 90-120 minutes
+
+## What We're Building
+
+We'll create a **Real-Time Chat Room** where users can:
+
+- **Join with a username** and enter the chat room
+- **Send messages** that appear instantly for all users
+- **See live user count** and connection status
+- **View message history** from previous conversations
+- **Auto-reconnect** if the connection drops
+
+The application uses WebSockets for real-time bidirectional communication between all connected clients.
+
+## Step 1: Create the Project Structure
+
+Set up the project with both frontend and backend:
+
+```bash
+mkdir chat-app
+cd chat-app
+
+# Create React frontend
+npm create vite@latest frontend -- --template react-ts
+cd frontend
+
+# Create Shuttle backend
+shuttle init --template axum backend
+cd ..
+```
+
+Your project structure should look like:
+
+```
+chat-app/
+  frontend/          # React TypeScript app
+  backend/           # Shuttle Rust backend
+```
+
+**What to notice**: We're building a full-stack application with separate frontend and backend directories.
+
+## Step 2: Set Up the Backend WebSocket Server
+
+Navigate to the backend and update dependencies:
+
+```bash
+cd backend
+```
+
+Update `Cargo.toml`:
+
+```toml
+[package]
+name = "chat-backend"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+axum = { version = "0.8", features = ["ws"] }
+shuttle-axum = "0.56.0"
+shuttle-runtime = "0.56.0"
+tokio = { version = "1.0", features = ["full"] }
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+tower = "0.5"
+tower-http = { version = "0.6", features = ["fs", "cors"] }
+futures-util = "0.3"
+uuid = { version = "1.0", features = ["v4", "serde"] }
+chrono = { version = "0.4", features = ["serde"] }
+tracing = "0.1"
+```
+
+Build to download dependencies:
+
+```bash
+cargo build
+```
+
+**What to notice**: We've added WebSocket support to Axum and utilities for handling concurrent connections.
+
+## Step 3: Create Message Types
+
+Create `src/types.rs` for our chat message structures:
+
+```rust
+use serde::{Deserialize, Serialize};
+use chrono::{DateTime, Utc};
+use uuid::Uuid;
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct ChatMessage {
+    pub id: Uuid,
+    pub username: String,
+    pub content: String,
+    pub timestamp: DateTime<Utc>,
+    pub message_type: MessageType,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(tag = "type")]
+pub enum MessageType {
+    UserMessage,
+    UserJoined,
+    UserLeft,
+    SystemMessage,
+}
+
+#[derive(Debug, Deserialize)]
+pub struct IncomingMessage {
+    pub username: String,
+    pub content: String,
+}
+
+#[derive(Debug, Serialize)]
+pub struct ChatState {
+    pub user_count: usize,
+    pub recent_messages: Vec<ChatMessage>,
+}
+
+impl ChatMessage {
+    pub fn new_user_message(username: String, content: String) -> Self {
+        Self {
+            id: Uuid::new_v4(),
+            username,
+            content,
+            timestamp: Utc::now(),
+            message_type: MessageType::UserMessage,
+        }
+    }
+
+    pub fn new_system_message(content: String) -> Self {
+        Self {
+            id: Uuid::new_v4(),
+            username: "System".to_string(),
+            content,
+            timestamp: Utc::now(),
+            message_type: MessageType::SystemMessage,
+        }
+    }
+
+    pub fn user_joined(username: String) -> Self {
+        Self {
+            id: Uuid::new_v4(),
+            username: username.clone(),
+            content: format!("{} joined the chat", username),
+            timestamp: Utc::now(),
+            message_type: MessageType::UserJoined,
+        }
+    }
+
+    pub fn user_left(username: String) -> Self {
+        Self {
+            id: Uuid::new_v4(),
+            username: username.clone(),
+            content: format!("{} left the chat", username),
+            timestamp: Utc::now(),
+            message_type: MessageType::UserLeft,
+        }
+    }
+}
+```
+
+Test it compiles:
+
+```bash
+cargo check
+```
+
+**What to notice**: We define different message types (user messages, system messages, join/leave events) and helper methods to create them.
+
+## Step 4: Build the Chat Server
+
+Create `src/chat.rs` for the core chat functionality:
+
+```rust
+use crate::types::*;
+use axum::extract::ws::{Message, WebSocket};
+use futures_util::{SinkExt, StreamExt};
+use std::collections::HashMap;
+use std::sync::Arc;
+use tokio::sync::{broadcast, RwLock};
+use uuid::Uuid;
+
+#[derive(Clone)]
+pub struct ChatServer {
+    // Broadcast channel for sending messages to all clients
+    sender: broadcast::Sender<ChatMessage>,
+    // Store connected users
+    users: Arc<RwLock<HashMap<Uuid, String>>>,
+    // Store recent message history
+    message_history: Arc<RwLock<Vec<ChatMessage>>>,
+}
+
+impl ChatServer {
+    pub fn new() -> Self {
+        let (sender, _) = broadcast::channel(1000);
+
+        Self {
+            sender,
+            users: Arc::new(RwLock::new(HashMap::new())),
+            message_history: Arc::new(RwLock::new(Vec::new())),
+        }
+    }
+
+    pub async fn get_user_count(&self) -> usize {
+        self.users.read().await.len()
+    }
+
+    pub async fn get_recent_messages(&self) -> Vec<ChatMessage> {
+        let history = self.message_history.read().await;
+        // Return last 50 messages
+        history.iter().rev().take(50).cloned().rev().collect()
+    }
+
+    pub async fn get_chat_state(&self) -> ChatState {
+        ChatState {
+            user_count: self.get_user_count().await,
+            recent_messages: self.get_recent_messages().await,
+        }
+    }
+
+    pub async fn user_connected(&self, user_id: Uuid, username: String) {
+        // Add user to connected users
+        self.users.write().await.insert(user_id, username.clone());
+
+        // Create and broadcast join message
+        let join_message = ChatMessage::user_joined(username);
+        self.add_message_to_history(join_message.clone()).await;
+        let _ = self.sender.send(join_message);
+    }
+
+    pub async fn user_disconnected(&self, user_id: Uuid) {
+        // Remove user and get their username
+        if let Some(username) = self.users.write().await.remove(&user_id) {
+            // Create and broadcast leave message
+            let leave_message = ChatMessage::user_left(username);
+            self.add_message_to_history(leave_message.clone()).await;
+            let _ = self.sender.send(leave_message);
+        }
+    }
+
+    pub async fn broadcast_message(&self, message: ChatMessage) {
+        // Add to history
+        self.add_message_to_history(message.clone()).await;
+
+        // Broadcast to all connected clients
+        let _ = self.sender.send(message);
+    }
+
+    async fn add_message_to_history(&self, message: ChatMessage) {
+        let mut history = self.message_history.write().await;
+        history.push(message);
+
+        // Keep only last 1000 messages
+        if history.len() > 1000 {
+            history.remove(0);
+        }
+    }
+
+    pub async fn handle_client(&self, websocket: WebSocket, user_id: Uuid) {
+        let (mut ws_sender, mut ws_receiver) = websocket.split();
+        let mut rx = self.sender.subscribe();
+
+        // Send current chat state to new user
+        let chat_state = self.get_chat_state().await;
+        if let Ok(state_json) = serde_json::to_string(&chat_state) {
+            let _ = ws_sender.send(Message::Text(state_json)).await;
+        }
+
+        // Handle incoming messages from this client
+        let chat_server = self.clone();
+        let tx = self.sender.clone();
+
+        tokio::spawn(async move {
+            while let Some(msg) = ws_receiver.next().await {
+                if let Ok(Message::Text(text)) = msg {
+                    // Parse incoming message
+                    if let Ok(incoming) = serde_json::from_str::<IncomingMessage>(&text) {
+                        // First message is usually the username connection
+                        if incoming.content == "USER_CONNECTED" {
+                            chat_server.user_connected(user_id, incoming.username).await;
+                        } else {
+                            // Regular chat message
+                            let chat_message = ChatMessage::new_user_message(
+                                incoming.username,
+                                incoming.content,
+                            );
+                            chat_server.broadcast_message(chat_message).await;
+                        }
+                    }
+                } else if let Ok(Message::Close(_)) = msg {
+                    break;
+                }
+            }
+        });
+
+        // Handle outgoing messages to this client
+        tokio::spawn(async move {
+            while let Ok(msg) = rx.recv().await {
+                if let Ok(json) = serde_json::to_string(&msg) {
+                    if ws_sender.send(Message::Text(json)).await.is_err() {
+                        break;
+                    }
+                }
+            }
+        });
+    }
+}
+```
+
+**What to notice**: We use broadcast channels to send messages to all connected clients simultaneously, and maintain user lists and message history.
+
+## Step 5: Create WebSocket Handler
+
+Create `src/websocket.rs` for handling WebSocket connections:
+
+```rust
+use crate::chat::ChatServer;
+use axum::{
+    extract::{ws::WebSocketUpgrade, State},
+    response::Response,
+};
+use uuid::Uuid;
+
+pub async fn websocket_handler(
+    ws: WebSocketUpgrade,
+    State(chat_server): State<ChatServer>,
+) -> Response {
+    let user_id = Uuid::new_v4();
+
+    ws.on_upgrade(move |socket| {
+        handle_socket(socket, chat_server, user_id)
+    })
+}
+
+async fn handle_socket(socket: axum::extract::ws::WebSocket, chat_server: ChatServer, user_id: Uuid) {
+    tracing::info!("New WebSocket connection: {}", user_id);
+
+    // Handle the client connection
+    chat_server.handle_client(socket, user_id).await;
+
+    // Clean up when connection closes
+    chat_server.user_disconnected(user_id).await;
+    tracing::info!("WebSocket connection closed: {}", user_id);
+}
+```
+
+**What to notice**: Each WebSocket connection gets a unique ID, and we clean up properly when users disconnect.
+
+## Step 6: Wire Up the Backend
+
+Update `src/main.rs`:
+
+```rust
+mod chat;
+mod types;
+mod websocket;
+
+use axum::{
+    routing::get,
+    Router,
+};
+use chat::ChatServer;
+use tower_http::cors::CorsLayer;
+
+#[shuttle_runtime::main]
+async fn main() -> shuttle_axum::ShuttleAxum {
+    // Initialize logging
+    tracing_subscriber::init();
+
+    // Create shared chat server
+    let chat_server = ChatServer::new();
+
+    // Build router
+    let router = Router::new()
+        .route("/", get(|| async { "Chat Server is running! Connect via WebSocket at /ws" }))
+        .route("/ws", get(websocket::websocket_handler))
+        .route("/health", get(|| async { "OK" }))
+        .layer(CorsLayer::permissive())
+        .with_state(chat_server);
+
+    Ok(router.into())
+}
+```
+
+Add tracing dependency to `Cargo.toml`:
+
+```toml
+tracing-subscriber = "0.3"
+```
+
+Test the backend:
+
+```bash
+cargo build
+shuttle run
+```
+
+You should see the server start. Visit `http://localhost:8000` to see the status message.
+
+**What to notice**: The server is ready to accept WebSocket connections at `/ws`.
+
+## Step 7: Create the React Frontend
+
+Navigate to the frontend directory:
+
+```bash
+cd ../frontend
+npm install
+```
+
+Install additional dependencies:
+
+```bash
+npm install @types/uuid uuid
+```
+
+Create `src/types.ts` for TypeScript types:
+
+```typescript
+export interface ChatMessage {
+  id: string;
+  username: string;
+  content: string;
+  timestamp: string;
+  message_type: MessageType;
+}
+
+export interface MessageType {
+  type: "UserMessage" | "UserJoined" | "UserLeft" | "SystemMessage";
+}
+
+export interface ChatState {
+  user_count: number;
+  recent_messages: ChatMessage[];
+}
+
+export interface ConnectionStatus {
+  connected: boolean;
+  error?: string;
+}
+```
+
+**What to notice**: These types match our Rust backend types for seamless communication.
+
+## Step 8: Build the Chat Components
+
+Create `src/components/ChatRoom.tsx`:
+
+```typescript
+import React, { useState, useEffect, useRef } from "react";
+import { ChatMessage, ChatState, ConnectionStatus } from "../types";
+
+interface ChatRoomProps {
+  username: string;
+  onLeave: () => void;
+}
+
+export const ChatRoom: React.FC<ChatRoomProps> = ({ username, onLeave }) => {
+  const [messages, setMessages] = useState<ChatMessage[]>([]);
+  const [newMessage, setNewMessage] = useState("");
+  const [userCount, setUserCount] = useState(0);
+  const [connection, setConnection] = useState<ConnectionStatus>({
+    connected: false,
+  });
+  const ws = useRef<WebSocket | null>(null);
+  const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  const scrollToBottom = () => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  };
+
+  useEffect(scrollToBottom, [messages]);
+
+  useEffect(() => {
+    // Create WebSocket connection
+    const wsUrl = `${window.location.protocol === "https:" ? "wss:" : "ws:"}//${
+      window.location.host
+    }/ws`;
+
+    ws.current = new WebSocket(wsUrl);
+
+    ws.current.onopen = () => {
+      console.log("Connected to chat server");
+      setConnection({ connected: true });
+
+      // Send connection message
+      ws.current?.send(
+        JSON.stringify({
+          username,
+          content: "USER_CONNECTED",
+        })
+      );
+    };
+
+    ws.current.onmessage = (event) => {
+      try {
+        const data = JSON.parse(event.data);
+
+        // Check if it's initial chat state
+        if (
+          data.user_count !== undefined &&
+          data.recent_messages !== undefined
+        ) {
+          const chatState: ChatState = data;
+          setMessages(chatState.recent_messages);
+          setUserCount(chatState.user_count);
+        } else {
+          // It's a new message
+          const message: ChatMessage = data;
+          setMessages((prev) => [...prev, message]);
+
+          // Update user count if it's a join/leave message
+          if (message.message_type.type === "UserJoined") {
+            setUserCount((prev) => prev + 1);
+          } else if (message.message_type.type === "UserLeft") {
+            setUserCount((prev) => Math.max(0, prev - 1));
+          }
+        }
+      } catch (error) {
+        console.error("Error parsing message:", error);
+      }
+    };
+
+    ws.current.onclose = () => {
+      console.log("Disconnected from chat server");
+      setConnection({ connected: false });
+    };
+
+    ws.current.onerror = (error) => {
+      console.error("WebSocket error:", error);
+      setConnection({ connected: false, error: "Connection failed" });
+    };
+
+    return () => {
+      ws.current?.close();
+    };
+  }, [username]);
+
+  const sendMessage = (e: React.FormEvent) => {
+    e.preventDefault();
+
+    if (
+      !newMessage.trim() ||
+      !ws.current ||
+      ws.current.readyState !== WebSocket.OPEN
+    ) {
+      return;
+    }
+
+    ws.current.send(
+      JSON.stringify({
+        username,
+        content: newMessage.trim(),
+      })
+    );
+
+    setNewMessage("");
+  };
+
+  const getMessageStyle = (messageType: string) => {
+    switch (messageType) {
+      case "UserJoined":
+        return "text-green-600 italic text-sm";
+      case "UserLeft":
+        return "text-red-600 italic text-sm";
+      case "SystemMessage":
+        return "text-blue-600 italic text-sm";
+      default:
+        return "";
+    }
+  };
+
+  return (
+    <div className="flex flex-col h-screen bg-gray-100">
+      {/* Header */}
+      <div className="bg-blue-600 text-white p-4 flex justify-between items-center">
+        <h1 className="text-xl font-bold">Chat Room</h1>
+        <div className="flex items-center gap-4">
+          <span className="text-sm">
+            👥 {userCount} user{userCount !== 1 ? "s" : ""} online
+          </span>
+          <div className="flex items-center gap-2">
+            <div
+              className={`w-3 h-3 rounded-full ${
+                connection.connected ? "bg-green-400" : "bg-red-400"
+              }`}
+            ></div>
+            <span className="text-sm">
+              {connection.connected ? "Connected" : "Disconnected"}
+            </span>
+          </div>
+          <button
+            onClick={onLeave}
+            className="bg-blue-700 hover:bg-blue-800 px-3 py-1 rounded text-sm"
+          >
+            Leave
+          </button>
+        </div>
+      </div>
+
+      {/* Messages */}
+      <div className="flex-1 overflow-y-auto p-4 space-y-2">
+        {messages.map((message) => (
+          <div
+            key={message.id}
+            className={`p-3 rounded-lg ${
+              message.username === username
+                ? "bg-blue-500 text-white ml-auto max-w-xs"
+                : message.message_type.type === "UserMessage"
+                ? "bg-white shadow mr-auto max-w-xs"
+                : "bg-gray-200 text-center max-w-full"
+            } ${getMessageStyle(message.message_type.type)}`}
+          >
+            {message.message_type.type === "UserMessage" &&
+              message.username !== username && (
+                <div className="font-semibold text-sm text-gray-600 mb-1">
+                  {message.username}
+                </div>
+              )}
+            <div
+              className={
+                message.message_type.type === "UserMessage" ? "" : "text-center"
+              }
+            >
+              {message.content}
+            </div>
+            <div className="text-xs opacity-75 mt-1">
+              {new Date(message.timestamp).toLocaleTimeString()}
+            </div>
+          </div>
+        ))}
+        <div ref={messagesEndRef} />
+      </div>
+
+      {/* Message Input */}
+      <form onSubmit={sendMessage} className="p-4 bg-white border-t">
+        <div className="flex gap-2">
+          <input
+            type="text"
+            value={newMessage}
+            onChange={(e) => setNewMessage(e.target.value)}
+            placeholder="Type a message..."
+            disabled={!connection.connected}
+            className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-100"
+          />
+          <button
+            type="submit"
+            disabled={!connection.connected || !newMessage.trim()}
+            className="bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 text-white px-6 py-2 rounded-lg"
+          >
+            Send
+          </button>
+        </div>
+      </form>
+    </div>
+  );
+};
+```
+
+**What to notice**: The component handles WebSocket connection, displays live user count, shows different message types with different styling, and auto-scrolls to new messages.
+
+## Step 9: Create the Username Entry
+
+Create `src/components/UsernameEntry.tsx`:
+
+```typescript
+import React, { useState } from "react";
+
+interface UsernameEntryProps {
+  onUsernameSet: (username: string) => void;
+}
+
+export const UsernameEntry: React.FC<UsernameEntryProps> = ({
+  onUsernameSet,
+}) => {
+  const [username, setUsername] = useState("");
+  const [error, setError] = useState("");
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+
+    const trimmedUsername = username.trim();
+
+    if (!trimmedUsername) {
+      setError("Username is required");
+      return;
+    }
+
+    if (trimmedUsername.length < 2) {
+      setError("Username must be at least 2 characters");
+      return;
+    }
+
+    if (trimmedUsername.length > 20) {
+      setError("Username must be less than 20 characters");
+      return;
+    }
+
+    onUsernameSet(trimmedUsername);
+  };
+
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center p-4">
+      <div className="bg-white rounded-lg shadow-xl p-8 w-full max-w-md">
+        <div className="text-center mb-6">
+          <h1 className="text-3xl font-bold text-gray-800 mb-2">
+            💬 Chat Room
+          </h1>
+          <p className="text-gray-600">
+            Enter your username to join the conversation
+          </p>
+        </div>
+
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div>
+            <label
+              htmlFor="username"
+              className="block text-sm font-medium text-gray-700 mb-2"
+            >
+              Username
+            </label>
+            <input
+              type="text"
+              id="username"
+              value={username}
+              onChange={(e) => {
+                setUsername(e.target.value);
+                setError("");
+              }}
+              placeholder="Enter your username"
+              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            />
+            {error && <p className="text-red-500 text-sm mt-1">{error}</p>}
+          </div>
+
+          <button
+            type="submit"
+            className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-4 rounded-lg transition duration-200"
+          >
+            Join Chat
+          </button>
+        </form>
+
+        <div className="mt-6 text-center text-sm text-gray-500">
+          <p>👋 Be respectful and have fun!</p>
+        </div>
+      </div>
+    </div>
+  );
+};
+```
+
+**What to notice**: The entry form validates usernames and provides a welcoming interface to join the chat.
+
+## Step 10: Wire Up the Frontend
+
+Update `src/App.tsx`:
+
+```typescript
+import React, { useState } from "react";
+import { UsernameEntry } from "./components/UsernameEntry";
+import { ChatRoom } from "./components/ChatRoom";
+import "./App.css";
+
+function App() {
+  const [username, setUsername] = useState<string | null>(null);
+
+  const handleUsernameSet = (newUsername: string) => {
+    setUsername(newUsername);
+  };
+
+  const handleLeaveChat = () => {
+    setUsername(null);
+  };
+
+  return (
+    <div className="App">
+      {username ? (
+        <ChatRoom username={username} onLeave={handleLeaveChat} />
+      ) : (
+        <UsernameEntry onUsernameSet={handleUsernameSet} />
+      )}
+    </div>
+  );
+}
+
+export default App;
+```
+
+Install and configure Tailwind CSS:
+
+```bash
+npm install -D tailwindcss postcss autoprefixer
+npx tailwindcss init -p
+```
+
+Update `tailwind.config.js`:
+
+```javascript
+/** @type {import('tailwindcss').Config} */
+export default {
+  content: ["./index.html", "./src/**/*.{js,ts,jsx,tsx}"],
+  theme: {
+    extend: {},
+  },
+  plugins: [],
+};
+```
+
+Update `src/index.css`:
+
+```css
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+body {
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto",
+    "Oxygen", "Ubuntu", "Cantarell", "Fira Sans", "Droid Sans",
+    "Helvetica Neue", sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+```
+
+**What to notice**: The app switches between username entry and chat room based on state.
+
+## Step 11: Test Your Chat Application
+
+**Test the backend:**
+
+```bash
+cd backend
+shuttle run
+```
+
+**Test the frontend** (in a new terminal):
+
+```bash
+cd frontend
+npm run dev
+```
+
+Visit `http://localhost:5173`. You should see the username entry screen.
+
+**Test the full application:**
+
+1. **Enter a username** - You should see the chat room interface
+2. **Check connection status** - Should show "Connected" with a green dot
+3. **Check user count** - Should show "1 users online"
+4. **Open multiple browser tabs** - Each should see updated user counts
+5. **Send messages** - Should appear in all open tabs instantly
+6. **Leave and rejoin** - Should see join/leave messages
+
+**What to notice**: Messages appear instantly across all connected clients, demonstrating real-time WebSocket communication.
+
+## Step 12: Set Up Development Environment
+
+Create a development script to run both frontend and backend together.
+
+In the project root, create `package.json`:
+
+```json
+{
+  "name": "chat-app",
+  "scripts": {
+    "dev": "concurrently \"cd backend && shuttle run\" \"cd frontend && npm run dev\"",
+    "build": "cd frontend && npm run build",
+    "start-backend": "cd backend && shuttle run",
+    "start-frontend": "cd frontend && npm run dev"
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.0"
+  }
+}
+```
+
+Install and test:
+
+```bash
+npm install
+npm run dev
+```
+
+This starts both servers simultaneously. Open multiple browser windows to test real-time messaging.
+
+**What to notice**: Both frontend and backend run together, making development easier.
+
+## Step 13: Deploy Your Chat Application
+
+**Configure static file serving** in the backend.
+
+Update `backend/src/main.rs`:
+
+```rust
+// ... existing imports ...
+use tower_http::services::{ServeDir, ServeFile};
+
+#[shuttle_runtime::main]
+async fn main() -> shuttle_axum::ShuttleAxum {
+    // Initialize logging
+    tracing_subscriber::init();
+
+    // Create shared chat server
+    let chat_server = ChatServer::new();
+
+    // Build router with static file serving
+    let router = Router::new()
+        .route("/ws", get(websocket::websocket_handler))
+        .route("/api/health", get(|| async { "OK" }))
+        .fallback_service(
+            ServeDir::new("static").not_found_service(ServeFile::new("static/index.html"))
+        )
+        .layer(CorsLayer::permissive())
+        .with_state(chat_server);
+
+    Ok(router.into())
+}
+```
+
+**Build and deploy:**
+
+```bash
+# Build frontend
+cd frontend
+npm run build
+
+# Copy build to backend static directory
+cp -r dist/* ../backend/static/
+
+# Deploy to Shuttle
+cd ../backend
+shuttle deploy
+```
+
+After deployment, visit your Shuttle URL to see your live chat application!
+
+**What to notice**: The entire application (frontend + backend) runs from a single Shuttle deployment.
+
+## Step 14: Test Real-Time Functionality
+
+**Test your deployed application:**
+
+1. **Open the deployed URL** in multiple browser windows
+2. **Use different usernames** in each window
+3. **Send messages** and watch them appear instantly across all windows
+4. **Close one window** and see the user count decrease in others
+5. **Refresh a page** and see message history loaded
+6. **Test on different devices** to verify real-time sync
+
+**Advanced testing:**
+
+```bash
+# Test the WebSocket endpoint directly
+curl -i -N -H "Connection: Upgrade" \
+  -H "Upgrade: websocket" \
+  -H "Sec-WebSocket-Key: SGVsbG8gV29ybGQ=" \
+  -H "Sec-WebSocket-Version: 13" \
+  https://your-app-url.shuttle.app/ws
+```
+
+**What to notice**: Messages sync instantly across all devices and browsers, demonstrating true real-time communication.
+
+## What You've Accomplished
+
+Congratulations! You've built a complete real-time chat application with:
+
+- ✅ **WebSocket server** with broadcast messaging and user management
+- ✅ **React frontend** with real-time UI updates and responsive design
+- ✅ **User authentication** with username validation and session management
+- ✅ **Message history** with persistent storage and retrieval
+- ✅ **Connection management** with auto-reconnection and status indicators
+- ✅ **Multi-user support** with live user counts and join/leave notifications
+- ✅ **Production deployment** with static file serving
+
+## Key WebSocket Concepts You've Learned
+
+### Real-Time Communication
+
+WebSockets provide bidirectional communication between client and server:
+
+```rust
+// Server broadcasts to all clients
+let _ = self.sender.send(message);
+
+// Client receives and updates UI
+ws.current.onmessage = (event) => {
+  const message = JSON.parse(event.data);
+  setMessages(prev => [...prev, message]);
+};
+```
+
+### Connection Management
+
+Handling user connections and disconnections:
+
+```rust
+pub async fn user_connected(&self, user_id: Uuid, username: String) {
+    self.users.write().await.insert(user_id, username.clone());
+    let join_message = ChatMessage::user_joined(username);
+    let _ = self.sender.send(join_message);
+}
+```
+
+### Message Broadcasting
+
+Using broadcast channels for efficient message distribution:
+
+```rust
+let (sender, _) = broadcast::channel(1000);
+// All subscribers receive messages automatically
+```
+
+### State Synchronization
+
+Keeping all clients synchronized with server state:
+
+```typescript
+// Send initial state to new connections
+const chat_state = self.get_chat_state().await;
+ws_sender.send(Message::Text(state_json)).await;
+```
+
+## Next Steps
+
+Now that you understand real-time WebSocket communication, you can:
+
+1. **Add user authentication** - Require login before joining chat
+2. **Create multiple chat rooms** - Support different conversation topics
+3. **Add file sharing** - Send images and documents through chat
+4. **Implement private messages** - Direct messaging between users
+5. **Add message reactions** - Like, dislike, and emoji reactions
+6. **Create chat moderation** - Admin controls and message filtering
+
+Try our [Authentication tutorial](/tutorials/authentication) to add user accounts!
+
+## Troubleshooting
+
+**WebSocket connection failed?**
+
+- Check that the backend is running on the correct port
+- Verify CORS settings allow WebSocket connections
+- Ensure the WebSocket URL uses the correct protocol (ws/wss)
+
+**Messages not appearing?**
+
+- Check browser console for JavaScript errors
+- Verify message format matches backend expectations
+- Ensure WebSocket connection is established before sending
+
+**Users not seeing each other?**
+
+- Check that broadcast channel is working correctly
+- Verify user tracking in the backend
+- Ensure all clients are connected to the same server instance
+
+**Frontend not connecting to backend?**
+
+- Verify the WebSocket URL construction
+- Check that the backend WebSocket route is configured
+- Ensure no firewall blocking connections
+
+**Build or deployment issues?**
+
+- Check that all dependencies are installed
+- Verify static file paths are correct
+- Ensure build output is copied to the right directory
+
+**Real-time updates slow?**
+
+- Check network latency between client and server
+- Verify message broadcasting logic
+- Consider optimizing message size and frequency
+
+You've successfully learned how to build real-time applications with WebSockets!

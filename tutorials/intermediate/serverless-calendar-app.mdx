@@ -1,0 +1,1023 @@
+---
+title: "Serverless Calendar Event Generator"
+description: "Learn to build a serverless app that generates calendar events from URL parameters"
+icon: "globe"
+---
+
+> This tutorial is based on the original creative work by [Matthias Endler](https://endler.dev/), adapted into a structured learning format.
+
+## Learning Objectives
+
+By the end of this tutorial, you will have built a **Serverless Calendar Event Generator** and learned how to:
+
+- Create stateless serverless applications that generate dynamic content
+- Parse and validate URL query parameters for API input
+- Generate iCalendar (.ics) files programmatically using the iCalendar standard
+- Handle date and time parsing with multiple formats and durations
+- Serve dynamic files with proper MIME types and HTTP headers
+- Build browser-friendly forms alongside API endpoints
+
+## Prerequisites
+
+- Completed [Building Your First REST API](/tutorials/rest-http-service-with-axum) tutorial
+- Basic understanding of web forms and query parameters
+- Familiarity with date/time concepts and timezones
+- [Shuttle CLI installed](/getting-started/installation)
+
+**Time Required**: 45-60 minutes
+
+## What We're Building
+
+We'll create a **Calendar Event Generator** that provides:
+
+- **API endpoint** - Generate .ics files from URL parameters
+- **Web form** - Browser interface for creating calendar events
+- **Date parsing** - Support multiple date formats (ISO, human-readable)
+- **Duration handling** - Parse durations like "3h", "30min", "2 days"
+- **iCalendar output** - Generate standard calendar files that work with all calendar apps
+- **Command-line friendly** - Easy to use with curl or scripts
+
+Users can create calendar events by visiting URLs like:
+
+```
+https://your-app.shuttle.app?start=2024-01-15+14:00&duration=2h&title=Meeting&description=Project%20sync
+```
+
+## Step 1: Create Your Project
+
+Initialize a new Axum project:
+
+```bash
+shuttle init --template axum zerocal
+cd zerocal
+```
+
+Test the basic setup:
+
+```bash
+shuttle run
+```
+
+Visit `http://localhost:8000/hello` to see "Hello, world!". Press `Ctrl+C` to stop.
+
+**What to notice**: We start with a minimal Axum web server that we'll extend with calendar functionality.
+
+## Step 2: Add Calendar Dependencies
+
+Update your `Cargo.toml` to include calendar and date parsing libraries:
+
+```toml
+[package]
+name = "zerocal"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+axum = "0.8"
+shuttle-axum = "0.56.0"
+shuttle-runtime = "0.56.0"
+tokio = { version = "1.0", features = ["macros"] }
+serde = { version = "1.0", features = ["derive"] }
+icalendar = "0.16"
+chrono = { version = "0.4", features = ["serde"] }
+dateparser = "0.2"
+humantime = "2.1"
+uuid = { version = "1.0", features = ["v4"] }
+tower = "0.5"
+tower-http = { version = "0.6", features = ["fs"] }
+```
+
+Build to download dependencies:
+
+```bash
+cargo build
+```
+
+**What to notice**: We're using `icalendar` for generating calendar files, `dateparser` for flexible date parsing, and `humantime` for duration parsing.
+
+## Step 3: Create Calendar Response Types
+
+Create `src/calendar.rs` for calendar-specific functionality:
+
+```rust
+use axum::{
+    http::{header, HeaderValue, Response},
+    response::IntoResponse,
+};
+use http_body_util::Full;
+use bytes::Bytes;
+use icalendar::{Calendar, Event, Class};
+
+/// Newtype wrapper around Calendar for `IntoResponse` impl
+#[derive(Debug)]
+pub struct CalendarResponse(pub Calendar);
+
+impl IntoResponse for CalendarResponse {
+    fn into_response(self) -> Response<axum::body::Body> {
+        let calendar_content = self.0.to_string();
+        let body = Full::new(Bytes::from(calendar_content));
+
+        let mut response = Response::new(axum::body::Body::from(body));
+        response.headers_mut().insert(
+            header::CONTENT_TYPE,
+            HeaderValue::from_static("text/calendar; charset=utf-8"),
+        );
+        response.headers_mut().insert(
+            header::CONTENT_DISPOSITION,
+            HeaderValue::from_static("attachment; filename=\"event.ics\""),
+        );
+
+        response
+    }
+}
+
+pub fn create_calendar_event(
+    title: &str,
+    description: &str,
+    start: chrono::DateTime<chrono::Utc>,
+    end: chrono::DateTime<chrono::Utc>,
+) -> Calendar {
+    let event = Event::new()
+        .summary(title)
+        .description(description)
+        .starts(start)
+        .ends(end)
+        .class(Class::Confidential)
+        .uid(&uuid::Uuid::new_v4().to_string())
+        .done();
+
+    Calendar::new()
+        .push(event)
+        .done()
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use chrono::Utc;
+
+    #[test]
+    fn test_create_calendar_event() {
+        let start = Utc::now();
+        let end = start + chrono::Duration::hours(1);
+
+        let calendar = create_calendar_event(
+            "Test Event",
+            "Test Description",
+            start,
+            end,
+        );
+
+        let ical_string = calendar.to_string();
+        assert!(ical_string.contains("SUMMARY:Test Event"));
+        assert!(ical_string.contains("DESCRIPTION:Test Description"));
+        assert!(ical_string.contains("BEGIN:VEVENT"));
+        assert!(ical_string.contains("END:VEVENT"));
+    }
+}
+```
+
+**What to notice**: We create a custom response type that sets the correct MIME type (`text/calendar`) so browsers and calendar apps recognize the file correctly.
+
+## Step 4: Create Date and Duration Parsing
+
+Create `src/parsing.rs` for handling date and duration parsing:
+
+```rust
+use chrono::{DateTime, Utc, Duration};
+use std::collections::HashMap;
+
+#[derive(Debug)]
+pub struct EventParams {
+    pub title: String,
+    pub description: String,
+    pub start: DateTime<Utc>,
+    pub end: DateTime<Utc>,
+}
+
+pub fn parse_event_params(params: &HashMap<String, String>) -> Result<EventParams, String> {
+    // Get title with default
+    let title = params
+        .get("title")
+        .cloned()
+        .unwrap_or_else(|| "Untitled Event".to_string());
+
+    // Get description with default
+    let description = params
+        .get("description")
+        .cloned()
+        .unwrap_or_else(|| "Event created with zerocal".to_string());
+
+    // Parse start and end times
+    let (start, end) = parse_time_range(params)?;
+
+    Ok(EventParams {
+        title,
+        description,
+        start,
+        end,
+    })
+}
+
+fn parse_time_range(params: &HashMap<String, String>) -> Result<(DateTime<Utc>, DateTime<Utc>), String> {
+    match (params.get("start"), params.get("end"), params.get("duration")) {
+        // Start + Duration
+        (Some(start_str), None, Some(duration_str)) => {
+            let start = parse_datetime(start_str)?;
+            let duration = parse_duration(duration_str)?;
+            let end = start + duration;
+            Ok((start, end))
+        }
+
+        // End + Duration (calculate start)
+        (None, Some(end_str), Some(duration_str)) => {
+            let end = parse_datetime(end_str)?;
+            let duration = parse_duration(duration_str)?;
+            let start = end - duration;
+            Ok((start, end))
+        }
+
+        // Start + End
+        (Some(start_str), Some(end_str), _) => {
+            let start = parse_datetime(start_str)?;
+            let end = parse_datetime(end_str)?;
+
+            if end <= start {
+                return Err("End time must be after start time".to_string());
+            }
+
+            Ok((start, end))
+        }
+
+        // Only start (default 1 hour duration)
+        (Some(start_str), None, None) => {
+            let start = parse_datetime(start_str)?;
+            let end = start + Duration::hours(1);
+            Ok((start, end))
+        }
+
+        // No time specified (default to now + 1 hour)
+        (None, None, _) => {
+            let start = Utc::now();
+            let end = start + Duration::hours(1);
+            Ok((start, end))
+        }
+
+        _ => Err("Invalid time specification. Provide 'start' with optional 'duration', or 'start' and 'end'".to_string()),
+    }
+}
+
+fn parse_datetime(date_str: &str) -> Result<DateTime<Utc>, String> {
+    // First try parsing with dateparser (supports many formats)
+    if let Ok(parsed) = dateparser::parse(date_str) {
+        return Ok(parsed);
+    }
+
+    // Fallback to manual parsing for common formats
+    let formats = [
+        "%Y-%m-%d %H:%M",           // 2024-01-15 14:00
+        "%Y-%m-%d+%H:%M",           // 2024-01-15+14:00 (URL-safe)
+        "%Y-%m-%dT%H:%M:%S",        // 2024-01-15T14:00:00
+        "%Y-%m-%dT%H:%M:%SZ",       // 2024-01-15T14:00:00Z
+        "%Y-%m-%d",                 // 2024-01-15 (default to noon)
+    ];
+
+    for format in &formats {
+        if let Ok(naive_dt) = chrono::NaiveDateTime::parse_from_str(date_str, format) {
+            return Ok(DateTime::from_naive_utc_and_offset(naive_dt, Utc));
+        }
+
+        // Try parsing as date only
+        if let Ok(naive_date) = chrono::NaiveDate::parse_from_str(date_str, "%Y-%m-%d") {
+            let naive_dt = naive_date.and_hms_opt(12, 0, 0).unwrap(); // Default to noon
+            return Ok(DateTime::from_naive_utc_and_offset(naive_dt, Utc));
+        }
+    }
+
+    Err(format!("Unable to parse date: '{}'", date_str))
+}
+
+fn parse_duration(duration_str: &str) -> Result<Duration, String> {
+    // Use humantime to parse durations like "2h", "30min", "1d"
+    match humantime::parse_duration(duration_str) {
+        Ok(std_duration) => {
+            match Duration::from_std(std_duration) {
+                Ok(duration) => Ok(duration),
+                Err(_) => Err("Duration too large".to_string()),
+            }
+        }
+        Err(_) => Err(format!("Unable to parse duration: '{}'", duration_str)),
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_parse_datetime() {
+        // Test various date formats
+        assert!(parse_datetime("2024-01-15 14:00").is_ok());
+        assert!(parse_datetime("2024-01-15+14:00").is_ok());
+        assert!(parse_datetime("2024-01-15T14:00:00Z").is_ok());
+        assert!(parse_datetime("2024-01-15").is_ok());
+    }
+
+    #[test]
+    fn test_parse_duration() {
+        assert!(parse_duration("2h").is_ok());
+        assert!(parse_duration("30min").is_ok());
+        assert!(parse_duration("1d").is_ok());
+        assert!(parse_duration("invalid").is_err());
+    }
+
+    #[test]
+    fn test_parse_event_params() {
+        let mut params = HashMap::new();
+        params.insert("title".to_string(), "Test Event".to_string());
+        params.insert("start".to_string(), "2024-01-15 14:00".to_string());
+        params.insert("duration".to_string(), "2h".to_string());
+
+        let result = parse_event_params(&params);
+        assert!(result.is_ok());
+
+        let event = result.unwrap();
+        assert_eq!(event.title, "Test Event");
+    }
+}
+```
+
+**What to notice**: We support multiple date formats and flexible duration parsing, making the API user-friendly for both humans and scripts.
+
+## Step 5: Create the Main Calendar Handler
+
+Update `src/main.rs` to implement the calendar endpoint:
+
+```rust
+mod calendar;
+mod parsing;
+
+use axum::{
+    extract::Query,
+    http::StatusCode,
+    response::{Html, IntoResponse},
+    routing::get,
+    Router,
+};
+use calendar::{CalendarResponse, create_calendar_event};
+use parsing::parse_event_params;
+use std::collections::HashMap;
+
+#[shuttle_runtime::main]
+async fn main() -> shuttle_axum::ShuttleAxum {
+    let router = Router::new()
+        .route("/", get(calendar_handler))
+        .route("/health", get(|| async { "OK" }));
+
+    Ok(router.into())
+}
+
+async fn calendar_handler(
+    Query(params): Query<HashMap<String, String>>,
+) -> impl IntoResponse {
+    // If no parameters, show the form
+    if params.is_empty() {
+        return show_form().into_response();
+    }
+
+    // Parse parameters and create calendar event
+    match parse_event_params(&params) {
+        Ok(event_params) => {
+            let calendar = create_calendar_event(
+                &event_params.title,
+                &event_params.description,
+                event_params.start,
+                event_params.end,
+            );
+
+            CalendarResponse(calendar).into_response()
+        }
+        Err(error) => {
+            (
+                StatusCode::BAD_REQUEST,
+                format!("Error creating calendar event: {}", error),
+            ).into_response()
+        }
+    }
+}
+
+fn show_form() -> Html<&'static str> {
+    Html(r#"
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Zero-Config Calendar Event Generator</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            max-width: 600px;
+            margin: 40px auto;
+            padding: 20px;
+            line-height: 1.6;
+            background: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 40px;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        h1 {
+            color: #2563eb;
+            margin-bottom: 30px;
+            text-align: center;
+        }
+        form {
+            display: grid;
+            gap: 20px;
+        }
+        label {
+            font-weight: 600;
+            color: #374151;
+        }
+        input, textarea {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e5e7eb;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: border-color 0.2s;
+        }
+        input:focus, textarea:focus {
+            outline: none;
+            border-color: #2563eb;
+        }
+        button {
+            background: #2563eb;
+            color: white;
+            border: none;
+            padding: 14px 28px;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+        button:hover {
+            background: #1d4ed8;
+        }
+        .example {
+            background: #f3f4f6;
+            padding: 20px;
+            border-radius: 8px;
+            margin-top: 30px;
+        }
+        .example h3 {
+            margin-top: 0;
+            color: #374151;
+        }
+        code {
+            background: #e5e7eb;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-family: 'Monaco', 'Consolas', monospace;
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>📅 Calendar Event Generator</h1>
+
+        <form method="GET">
+            <div>
+                <label for="title">Event Title</label>
+                <input type="text" id="title" name="title" placeholder="Team Meeting" required>
+            </div>
+
+            <div>
+                <label for="description">Description</label>
+                <textarea id="description" name="description" rows="3" placeholder="Weekly sync meeting"></textarea>
+            </div>
+
+            <div>
+                <label for="start">Start Date & Time</label>
+                <input type="datetime-local" id="start" name="start" required>
+            </div>
+
+            <div>
+                <label for="duration">Duration</label>
+                <input type="text" id="duration" name="duration" placeholder="1h" required>
+                <small>Examples: 30min, 1h, 2h30m, 1d</small>
+            </div>
+
+            <button type="submit">📥 Download Calendar Event</button>
+        </form>
+
+        <div class="example">
+            <h3>📋 API Usage</h3>
+            <p>You can also create calendar events via URL parameters:</p>
+            <code>/?start=2024-01-15+14:00&duration=2h&title=Meeting&description=Project%20sync</code>
+
+            <h3>🛠️ Command Line Usage</h3>
+            <p>Create and open calendar events from your terminal:</p>
+            <code>curl "https://zerocal.shuttle.app?start=2024-01-15+14:00&duration=2h&title=Meeting" > meeting.ics && open meeting.ics</code>
+        </div>
+    </div>
+
+    <script>
+        // Set default datetime to 1 hour from now
+        const now = new Date();
+        now.setHours(now.getHours() + 1);
+        const defaultDateTime = now.toISOString().slice(0, 16);
+        document.getElementById('start').value = defaultDateTime;
+    </script>
+</body>
+</html>
+    "#)
+}
+```
+
+Test your calendar generator:
+
+```bash
+cargo build
+shuttle run
+```
+
+Visit `http://localhost:8000` to see the form interface.
+
+**What to notice**: The same endpoint serves both a user-friendly form and a programmatic API based on whether parameters are provided.
+
+## Step 6: Test Calendar Generation
+
+Test your calendar generator with different approaches:
+
+**Using the web form:**
+
+1. Visit `http://localhost:8000`
+2. Fill in event details
+3. Click "Download Calendar Event"
+4. Your browser should download an `.ics` file
+
+**Using URL parameters:**
+
+```bash
+# Basic event
+curl "http://localhost:8000?title=Meeting&start=2024-01-15+14:00&duration=1h" > meeting.ics
+
+# Detailed event
+curl "http://localhost:8000?title=Birthday%20Party&description=Sarah%27s%20birthday&start=2024-01-20+18:00&duration=3h" > birthday.ics
+
+# Event with end time instead of duration
+curl "http://localhost:8000?title=Conference&start=2024-01-25+09:00&end=2024-01-25+17:00" > conference.ics
+```
+
+**Test date parsing flexibility:**
+
+```bash
+# Different date formats
+curl "http://localhost:8000?title=Test&start=2024-01-15%2014:00&duration=30min"
+curl "http://localhost:8000?title=Test&start=2024-01-15T14:00:00Z&duration=2h"
+curl "http://localhost:8000?title=Test&start=2024-01-15&duration=1d"  # Defaults to noon
+```
+
+**Open the generated calendar file:**
+
+```bash
+# On macOS
+open meeting.ics
+
+# On Linux
+xdg-open meeting.ics
+
+# On Windows
+start meeting.ics
+```
+
+**What to notice**: The generated `.ics` files work with all major calendar applications (Apple Calendar, Google Calendar, Outlook, etc.).
+
+## Step 7: Add Validation and Error Handling
+
+Create `src/validation.rs` for input validation:
+
+```rust
+use chrono::{DateTime, Utc, Duration};
+
+pub fn validate_event_params(
+    title: &str,
+    description: &str,
+    start: DateTime<Utc>,
+    end: DateTime<Utc>,
+) -> Result<(), String> {
+    // Validate title
+    if title.trim().is_empty() {
+        return Err("Event title cannot be empty".to_string());
+    }
+
+    if title.len() > 255 {
+        return Err("Event title too long (max 255 characters)".to_string());
+    }
+
+    // Validate description
+    if description.len() > 1000 {
+        return Err("Event description too long (max 1000 characters)".to_string());
+    }
+
+    // Validate times
+    if end <= start {
+        return Err("Event end time must be after start time".to_string());
+    }
+
+    let duration = end - start;
+    if duration > Duration::days(30) {
+        return Err("Event duration cannot exceed 30 days".to_string());
+    }
+
+    if duration < Duration::minutes(1) {
+        return Err("Event duration must be at least 1 minute".to_string());
+    }
+
+    // Validate that event is not too far in the past
+    let now = Utc::now();
+    if start < now - Duration::days(30) {
+        return Err("Event cannot be more than 30 days in the past".to_string());
+    }
+
+    // Validate that event is not too far in the future
+    if start > now + Duration::days(365 * 2) {
+        return Err("Event cannot be more than 2 years in the future".to_string());
+    }
+
+    Ok(())
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_valid_event() {
+        let now = Utc::now();
+        let start = now + Duration::hours(1);
+        let end = start + Duration::hours(2);
+
+        assert!(validate_event_params("Meeting", "Description", start, end).is_ok());
+    }
+
+    #[test]
+    fn test_empty_title() {
+        let now = Utc::now();
+        let start = now + Duration::hours(1);
+        let end = start + Duration::hours(2);
+
+        assert!(validate_event_params("", "Description", start, end).is_err());
+    }
+
+    #[test]
+    fn test_end_before_start() {
+        let now = Utc::now();
+        let start = now + Duration::hours(1);
+        let end = start - Duration::hours(1);
+
+        assert!(validate_event_params("Meeting", "Description", start, end).is_err());
+    }
+}
+```
+
+Update `src/parsing.rs` to include validation:
+
+```rust
+use crate::validation::validate_event_params;
+
+// In parse_event_params function, add validation before returning:
+pub fn parse_event_params(params: &HashMap<String, String>) -> Result<EventParams, String> {
+    // ... existing parsing code ...
+
+    // Validate the parsed parameters
+    validate_event_params(&title, &description, start, end)?;
+
+    Ok(EventParams {
+        title,
+        description,
+        start,
+        end,
+    })
+}
+```
+
+Update `src/main.rs` to include the validation module:
+
+```rust
+mod validation;
+```
+
+**What to notice**: Validation prevents invalid events and provides clear error messages for debugging.
+
+## Step 8: Add Advanced Features
+
+Create `src/features.rs` for additional calendar features:
+
+```rust
+use icalendar::{Calendar, Event, Class, Alarm, Action};
+use chrono::{DateTime, Utc, Duration};
+use uuid::Uuid;
+
+pub fn create_advanced_calendar_event(
+    title: &str,
+    description: &str,
+    start: DateTime<Utc>,
+    end: DateTime<Utc>,
+    location: Option<&str>,
+    reminder_minutes: Option<i64>,
+) -> Calendar {
+    let mut event = Event::new()
+        .summary(title)
+        .description(description)
+        .starts(start)
+        .ends(end)
+        .class(Class::Confidential)
+        .uid(&Uuid::new_v4().to_string());
+
+    // Add location if provided
+    if let Some(loc) = location {
+        event.location(loc);
+    }
+
+    // Add reminder alarm if specified
+    if let Some(minutes) = reminder_minutes {
+        let alarm = Alarm::display(&format!("Reminder: {}", title))
+            .trigger_duration(-Duration::minutes(minutes))
+            .action(Action::Display)
+            .done();
+
+        event.alarm(alarm);
+    }
+
+    let event = event.done();
+
+    Calendar::new()
+        .push(event)
+        .done()
+}
+
+pub fn create_recurring_event(
+    title: &str,
+    description: &str,
+    start: DateTime<Utc>,
+    end: DateTime<Utc>,
+    recurrence_rule: &str, // e.g., "FREQ=WEEKLY;COUNT=10"
+) -> Calendar {
+    let event = Event::new()
+        .summary(title)
+        .description(description)
+        .starts(start)
+        .ends(end)
+        .class(Class::Confidential)
+        .uid(&Uuid::new_v4().to_string())
+        .add_property("RRULE", recurrence_rule)
+        .done();
+
+    Calendar::new()
+        .push(event)
+        .done()
+}
+```
+
+Update your parsing to support these features:
+
+```rust
+// In src/parsing.rs, add to EventParams struct:
+pub struct EventParams {
+    pub title: String,
+    pub description: String,
+    pub start: DateTime<Utc>,
+    pub end: DateTime<Utc>,
+    pub location: Option<String>,
+    pub reminder_minutes: Option<i64>,
+    pub recurrence: Option<String>,
+}
+
+// Add parsing for new parameters:
+pub fn parse_event_params(params: &HashMap<String, String>) -> Result<EventParams, String> {
+    // ... existing code ...
+
+    let location = params.get("location").cloned();
+
+    let reminder_minutes = params.get("reminder")
+        .and_then(|r| r.parse::<i64>().ok());
+
+    let recurrence = params.get("recurrence").cloned();
+
+    Ok(EventParams {
+        title,
+        description,
+        start,
+        end,
+        location,
+        reminder_minutes,
+        recurrence,
+    })
+}
+```
+
+**What to notice**: Advanced features like reminders and recurring events make the calendar generator more useful for real-world scenarios.
+
+## Step 9: Deploy Your Calendar Service
+
+Deploy your calendar generator to production:
+
+```bash
+shuttle deploy
+```
+
+Test your deployed service:
+
+```bash
+# Replace with your actual Shuttle URL
+export BASE_URL="https://zerocal-xyz.shuttle.app"
+
+# Test basic event creation
+curl "$BASE_URL?title=Production%20Test&start=2024-01-15+14:00&duration=1h" > test.ics
+
+# Test with location and reminder
+curl "$BASE_URL?title=Meeting&start=2024-01-20+10:00&duration=2h&location=Conference%20Room&reminder=15" > meeting.ics
+
+# Test the web interface
+open $BASE_URL
+```
+
+**What to notice**: Your calendar service is now accessible globally and can be integrated into scripts, bookmarks, or other applications.
+
+## Step 10: Advanced Usage and Integration
+
+Create automation scripts and integration examples:
+
+**Shell function for quick calendar events:**
+
+```bash
+# Add to ~/.bashrc or ~/.zshrc
+cal_event() {
+    local title="$1"
+    local start="$2"
+    local duration="${3:-1h}"
+    local url="https://zerocal-xyz.shuttle.app"
+
+    local filename="${title// /_}.ics"
+    curl -s "$url?title=$title&start=$start&duration=$duration" > "$filename"
+    open "$filename"
+    echo "Created calendar event: $filename"
+}
+
+# Usage:
+cal_event "Team Meeting" "2024-01-15+14:00" "1h30m"
+```
+
+**Bookmarklet for quick events:**
+
+```javascript
+javascript: (function () {
+  var title = prompt("Event title:");
+  var start = prompt("Start time (YYYY-MM-DD HH:MM):");
+  var duration = prompt("Duration (e.g., 1h, 30min):", "1h");
+  if (title && start) {
+    window.open(
+      "https://zerocal-xyz.shuttle.app?title=" +
+        encodeURIComponent(title) +
+        "&start=" +
+        encodeURIComponent(start) +
+        "&duration=" +
+        encodeURIComponent(duration)
+    );
+  }
+})();
+```
+
+**Integration with other tools:**
+
+```bash
+# Create event from calendar app
+echo "Meeting tomorrow 2pm for 1 hour" | \
+    # Your natural language parser here
+    # Then call: curl "https://zerocal-xyz.shuttle.app?..."
+
+# Cron job to create recurring reminders
+0 9 * * 1 curl "https://zerocal-xyz.shuttle.app?title=Weekly%20Review&start=$(date -d 'next monday 9:00' '+%Y-%m-%d+%H:%M')&duration=30min" > ~/weekly_review.ics && open ~/weekly_review.ics
+```
+
+**What to notice**: The serverless nature of the app makes it perfect for automation and integration with other tools.
+
+## What You've Accomplished
+
+Congratulations! You've built a complete serverless calendar event generator with:
+
+- ✅ **Stateless architecture** - No database required, pure computation
+- ✅ **Flexible date parsing** - Support for multiple date and time formats
+- ✅ **Duration parsing** - Human-readable durations like "2h", "30min"
+- ✅ **iCalendar generation** - Standard-compliant calendar files
+- ✅ **Web interface** - User-friendly form for non-technical users
+- ✅ **API endpoint** - Scriptable interface for automation
+- ✅ **Input validation** - Comprehensive error handling and validation
+- ✅ **Advanced features** - Location, reminders, and recurring events
+
+## Key Concepts You've Learned
+
+### Serverless Architecture
+
+Building stateless applications that process input and generate output:
+
+```rust
+// No database, no persistent state - pure function
+let calendar = create_calendar_event(title, description, start, end);
+```
+
+### HTTP Response Types
+
+Creating custom response types with proper MIME types:
+
+```rust
+impl IntoResponse for CalendarResponse {
+    fn into_response(self) -> Response<axum::body::Body> {
+        response.headers_mut().insert(
+            header::CONTENT_TYPE,
+            HeaderValue::from_static("text/calendar; charset=utf-8"),
+        );
+    }
+}
+```
+
+### Flexible Parsing
+
+Supporting multiple input formats for better user experience:
+
+```rust
+// Support both "2024-01-15 14:00" and "2024-01-15+14:00"
+let parsed = dateparser::parse(date_str)?;
+```
+
+### Standard Compliance
+
+Generating standard iCalendar files that work everywhere:
+
+```rust
+Event::new()
+    .summary(title)
+    .starts(start)
+    .ends(end)
+    .uid(&Uuid::new_v4().to_string())
+```
+
+## Next Steps
+
+Now that you understand serverless applications and calendar standards, you can:
+
+1. **Add timezone support** - Handle different timezones explicitly
+2. **Implement recurring events** - Support complex recurrence patterns
+3. **Add event templates** - Pre-defined event types (meetings, appointments)
+4. **Create batch processing** - Generate multiple events from CSV/JSON
+5. **Add authentication** - User accounts and saved preferences
+6. **Integrate with external APIs** - Pull in meeting details from other services
+
+Try our [Real-Time Chat tutorial](/tutorials/websocket-chat-app-js) to learn about stateful applications!
+
+## Troubleshooting
+
+**Calendar files not opening correctly?**
+
+- Verify the Content-Type header is set to "text/calendar"
+- Check that the iCalendar format is valid using online validators
+- Ensure the file extension is .ics
+
+**Date parsing errors?**
+
+- Check that dates are in supported formats (ISO 8601 recommended)
+- URL-encode special characters in query parameters
+- Use + instead of spaces in URLs (e.g., "2024-01-15+14:00")
+
+**Duration parsing not working?**
+
+- Use standard duration formats: "30min", "1h", "2h30m", "1d"
+- Avoid ambiguous formats like "1.5h" (use "1h30m" instead)
+- Check for typos in duration units
+
+**Form not submitting correctly?**
+
+- Verify that required fields (title, start, duration) are filled
+- Check browser console for JavaScript errors
+- Ensure datetime-local input is supported in your browser
+
+**Events appearing at wrong times?**
+
+- Remember that the service uses UTC times internally
+- Consider timezone differences when creating events
+- Use ISO 8601 format with timezone information when possible
+
+**Validation errors?**
+
+- Check that event duration is between 1 minute and 30 days
+- Verify that end time is after start time
+- Ensure title is not empty and under 255 characters
+
+You've successfully learned how to build serverless applications that generate dynamic content!

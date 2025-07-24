@@ -1,0 +1,838 @@
+---
+title: "Building a Recipe Manager with PostgreSQL"
+description: "Learn to work with databases in Rust by building a complete recipe management application"
+icon: "database"
+---
+
+## Learning Objectives
+
+By the end of this tutorial, you will have built a **Recipe Manager API** and learned how to:
+
+- Set up and connect to PostgreSQL databases with SQLx
+- Create and run database migrations
+- Build CRUD operations with type-safe queries
+- Handle database relationships (recipes and ingredients)
+- Use SQLx compile-time query verification
+- Deploy applications with persistent data
+
+## Prerequisites
+
+- Completed [Your First Shuttle App](/tutorials/your-first-app) tutorial
+- Basic SQL knowledge (CREATE TABLE, SELECT, INSERT, UPDATE, DELETE)
+- [Shuttle CLI installed](/getting-started/installation)
+
+**Time Required**: 45-60 minutes
+
+## What We're Building
+
+We'll create a **Recipe Manager API** where users can:
+
+- **Create recipes** with names, descriptions, and cooking instructions
+- **Add ingredients** to recipes with quantities and units
+- **Search recipes** by name or ingredient
+- **Update recipe details** and modify ingredients
+- **Delete recipes** and their associated ingredients
+- **List all recipes** with their ingredient counts
+
+The database will have two tables with a relationship: `recipes` and `ingredients`.
+
+## Step 1: Create Your Project
+
+Create a new Shuttle project for our recipe manager:
+
+```bash
+shuttle init --template axum recipe-manager
+cd recipe-manager
+```
+
+Let's verify the basic setup works:
+
+```bash
+shuttle run
+```
+
+Visit `http://localhost:8000`. You should see "Hello, world!". Press `Ctrl+C` to stop.
+
+**What to notice**: We're starting with the Axum template and will add database functionality step by step.
+
+## Step 2: Add Database Dependencies
+
+Update your `Cargo.toml` to include SQLx and database support:
+
+```toml
+[package]
+name = "recipe-manager"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+axum = "0.8"
+shuttle-axum = "0.56.0"
+shuttle-shared-db = "0.56.0"
+sqlx = { version = "0.8", features = ["runtime-tokio-rustls", "postgres", "chrono", "uuid", "macros"] }
+serde = { version = "1.0", features = ["derive"] }
+chrono = { version = "0.4", features = ["serde"] }
+tokio = { version = "1.0", features = ["macros"] }
+tower = "0.5"
+tower-http = { version = "0.6", features = ["cors"] }
+uuid = { version = "1.0", features = ["v4", "serde"] }
+anyhow = "1.0"
+```
+
+Install the SQLx CLI for managing migrations:
+
+```bash
+cargo install sqlx-cli
+```
+
+Build to download dependencies:
+
+```bash
+cargo build
+```
+
+**What to notice**: We've added `sqlx` with the `macros` feature for compile-time query checking, and `shuttle-shared-db` for automatic database provisioning.
+
+## Step 3: Create Database Schema
+
+Create the migrations directory and our first migration:
+
+```bash
+mkdir migrations
+touch migrations/20231201000000_create_recipes_and_ingredients.sql
+```
+
+Add this SQL to create our database schema:
+
+```sql
+-- Create extension for UUID generation
+CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
+
+-- Create recipes table
+CREATE TABLE recipes (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    name VARCHAR NOT NULL,
+    description TEXT,
+    instructions TEXT NOT NULL,
+    cooking_time_minutes INTEGER,
+    servings INTEGER,
+    created_at TIMESTAMPTZ DEFAULT NOW(),
+    updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- Create ingredients table
+CREATE TABLE ingredients (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    recipe_id UUID NOT NULL REFERENCES recipes(id) ON DELETE CASCADE,
+    name VARCHAR NOT NULL,
+    quantity DECIMAL(10,2) NOT NULL,
+    unit VARCHAR NOT NULL,
+    created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- Create indexes for better performance
+CREATE INDEX idx_ingredients_recipe_id ON ingredients(recipe_id);
+CREATE INDEX idx_recipes_name ON recipes(name);
+
+-- Insert some sample data for testing
+INSERT INTO recipes (id, name, description, instructions, cooking_time_minutes, servings) VALUES
+(
+    '550e8400-e29b-41d4-a716-446655440000',
+    'Chocolate Chip Cookies',
+    'Classic homemade chocolate chip cookies',
+    '1. Preheat oven to 375°F. 2. Mix dry ingredients. 3. Cream butter and sugars. 4. Combine wet and dry ingredients. 5. Add chocolate chips. 6. Bake for 9-11 minutes.',
+    25,
+    24
+);
+
+INSERT INTO ingredients (recipe_id, name, quantity, unit) VALUES
+('550e8400-e29b-41d4-a716-446655440000', 'All-purpose flour', 2.25, 'cups'),
+('550e8400-e29b-41d4-a716-446655440000', 'Butter', 1.0, 'cup'),
+('550e8400-e29b-41d4-a716-446655440000', 'Brown sugar', 0.75, 'cup'),
+('550e8400-e29b-41d4-a716-446655440000', 'White sugar', 0.5, 'cup'),
+('550e8400-e29b-41d4-a716-446655440000', 'Eggs', 2.0, 'large'),
+('550e8400-e29b-41d4-a716-446655440000', 'Vanilla extract', 1.0, 'teaspoon'),
+('550e8400-e29b-41d4-a716-446655440000', 'Chocolate chips', 2.0, 'cups');
+```
+
+**What to notice**: We create two related tables with foreign key constraints, add indexes for performance, and include sample data to test with immediately.
+
+## Step 4: Create Data Models
+
+Create `src/models.rs` for our data structures:
+
+```rust
+use serde::{Deserialize, Serialize};
+use chrono::{DateTime, Utc};
+use uuid::Uuid;
+
+#[derive(Debug, Serialize, Deserialize, sqlx::FromRow)]
+pub struct Recipe {
+    pub id: Uuid,
+    pub name: String,
+    pub description: Option<String>,
+    pub instructions: String,
+    pub cooking_time_minutes: Option<i32>,
+    pub servings: Option<i32>,
+    pub created_at: DateTime<Utc>,
+    pub updated_at: DateTime<Utc>,
+}
+
+#[derive(Debug, Serialize, Deserialize, sqlx::FromRow)]
+pub struct Ingredient {
+    pub id: Uuid,
+    pub recipe_id: Uuid,
+    pub name: String,
+    pub quantity: rust_decimal::Decimal,
+    pub unit: String,
+    pub created_at: DateTime<Utc>,
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+pub struct RecipeWithIngredients {
+    #[serde(flatten)]
+    pub recipe: Recipe,
+    pub ingredients: Vec<Ingredient>,
+}
+
+#[derive(Debug, Deserialize)]
+pub struct CreateRecipeRequest {
+    pub name: String,
+    pub description: Option<String>,
+    pub instructions: String,
+    pub cooking_time_minutes: Option<i32>,
+    pub servings: Option<i32>,
+    pub ingredients: Vec<CreateIngredientRequest>,
+}
+
+#[derive(Debug, Deserialize)]
+pub struct CreateIngredientRequest {
+    pub name: String,
+    pub quantity: f64,
+    pub unit: String,
+}
+
+#[derive(Debug, Deserialize)]
+pub struct UpdateRecipeRequest {
+    pub name: Option<String>,
+    pub description: Option<String>,
+    pub instructions: Option<String>,
+    pub cooking_time_minutes: Option<i32>,
+    pub servings: Option<i32>,
+}
+```
+
+Add the decimal dependency to `Cargo.toml`:
+
+```toml
+rust_decimal = { version = "1.35", features = ["serde"] }
+```
+
+Test it compiles:
+
+```bash
+cargo check
+```
+
+**What to notice**: We use `sqlx::FromRow` to automatically map database rows to structs, and separate request types for creating/updating data.
+
+## Step 5: Build Database Operations
+
+Create `src/database.rs` for our database operations:
+
+```rust
+use crate::models::*;
+use anyhow::Result;
+use sqlx::PgPool;
+use uuid::Uuid;
+
+pub struct RecipeDatabase {
+    pub pool: PgPool,
+}
+
+impl RecipeDatabase {
+    pub fn new(pool: PgPool) -> Self {
+        Self { pool }
+    }
+
+    // Create a new recipe with ingredients
+    pub async fn create_recipe(&self, request: CreateRecipeRequest) -> Result<RecipeWithIngredients> {
+        let mut tx = self.pool.begin().await?;
+
+        // Insert recipe
+        let recipe = sqlx::query_as!(
+            Recipe,
+            r#"
+            INSERT INTO recipes (name, description, instructions, cooking_time_minutes, servings)
+            VALUES ($1, $2, $3, $4, $5)
+            RETURNING id, name, description, instructions, cooking_time_minutes, servings, created_at, updated_at
+            "#,
+            request.name,
+            request.description,
+            request.instructions,
+            request.cooking_time_minutes,
+            request.servings
+        )
+        .fetch_one(&mut *tx)
+        .await?;
+
+        // Insert ingredients
+        let mut ingredients = Vec::new();
+        for ingredient_req in request.ingredients {
+            let ingredient = sqlx::query_as!(
+                Ingredient,
+                r#"
+                INSERT INTO ingredients (recipe_id, name, quantity, unit)
+                VALUES ($1, $2, $3, $4)
+                RETURNING id, recipe_id, name, quantity, unit, created_at
+                "#,
+                recipe.id,
+                ingredient_req.name,
+                rust_decimal::Decimal::from_f64_retain(ingredient_req.quantity).unwrap_or_default(),
+                ingredient_req.unit
+            )
+            .fetch_one(&mut *tx)
+            .await?;
+
+            ingredients.push(ingredient);
+        }
+
+        tx.commit().await?;
+
+        Ok(RecipeWithIngredients {
+            recipe,
+            ingredients,
+        })
+    }
+
+    // Get all recipes with ingredient counts
+    pub async fn get_all_recipes(&self) -> Result<Vec<Recipe>> {
+        let recipes = sqlx::query_as!(
+            Recipe,
+            "SELECT id, name, description, instructions, cooking_time_minutes, servings, created_at, updated_at
+             FROM recipes
+             ORDER BY created_at DESC"
+        )
+        .fetch_all(&self.pool)
+        .await?;
+
+        Ok(recipes)
+    }
+
+    // Get a recipe with all its ingredients
+    pub async fn get_recipe_with_ingredients(&self, recipe_id: Uuid) -> Result<Option<RecipeWithIngredients>> {
+        let recipe = sqlx::query_as!(
+            Recipe,
+            "SELECT id, name, description, instructions, cooking_time_minutes, servings, created_at, updated_at
+             FROM recipes WHERE id = $1",
+            recipe_id
+        )
+        .fetch_optional(&self.pool)
+        .await?;
+
+        let Some(recipe) = recipe else {
+            return Ok(None);
+        };
+
+        let ingredients = sqlx::query_as!(
+            Ingredient,
+            "SELECT id, recipe_id, name, quantity, unit, created_at
+             FROM ingredients WHERE recipe_id = $1
+             ORDER BY name",
+            recipe_id
+        )
+        .fetch_all(&self.pool)
+        .await?;
+
+        Ok(Some(RecipeWithIngredients {
+            recipe,
+            ingredients,
+        }))
+    }
+
+    // Update recipe details
+    pub async fn update_recipe(&self, recipe_id: Uuid, request: UpdateRecipeRequest) -> Result<Option<Recipe>> {
+        let recipe = sqlx::query_as!(
+            Recipe,
+            r#"
+            UPDATE recipes
+            SET name = COALESCE($2, name),
+                description = COALESCE($3, description),
+                instructions = COALESCE($4, instructions),
+                cooking_time_minutes = COALESCE($5, cooking_time_minutes),
+                servings = COALESCE($6, servings),
+                updated_at = NOW()
+            WHERE id = $1
+            RETURNING id, name, description, instructions, cooking_time_minutes, servings, created_at, updated_at
+            "#,
+            recipe_id,
+            request.name,
+            request.description,
+            request.instructions,
+            request.cooking_time_minutes,
+            request.servings
+        )
+        .fetch_optional(&self.pool)
+        .await?;
+
+        Ok(recipe)
+    }
+
+    // Delete recipe (ingredients deleted automatically due to CASCADE)
+    pub async fn delete_recipe(&self, recipe_id: Uuid) -> Result<bool> {
+        let result = sqlx::query!(
+            "DELETE FROM recipes WHERE id = $1",
+            recipe_id
+        )
+        .execute(&self.pool)
+        .await?;
+
+        Ok(result.rows_affected() > 0)
+    }
+
+    // Search recipes by name or ingredient
+    pub async fn search_recipes(&self, search_term: &str) -> Result<Vec<Recipe>> {
+        let recipes = sqlx::query_as!(
+            Recipe,
+            r#"
+            SELECT DISTINCT r.id, r.name, r.description, r.instructions,
+                   r.cooking_time_minutes, r.servings, r.created_at, r.updated_at
+            FROM recipes r
+            LEFT JOIN ingredients i ON r.id = i.recipe_id
+            WHERE r.name ILIKE $1 OR i.name ILIKE $1
+            ORDER BY r.created_at DESC
+            "#,
+            format!("%{}%", search_term)
+        )
+        .fetch_all(&self.pool)
+        .await?;
+
+        Ok(recipes)
+    }
+}
+```
+
+**What to notice**: We use SQLx's compile-time query checking with `query_as!`, transactions for data consistency, and SQL JOINs to search across related tables.
+
+## Step 6: Create API Handlers
+
+Create `src/handlers.rs` for our HTTP endpoints:
+
+```rust
+use crate::{database::RecipeDatabase, models::*};
+use axum::{
+    extract::{Path, Query, State},
+    http::StatusCode,
+    response::{IntoResponse, Json},
+};
+use serde::Deserialize;
+use std::collections::HashMap;
+use uuid::Uuid;
+
+#[derive(Clone)]
+pub struct AppState {
+    pub db: RecipeDatabase,
+}
+
+#[derive(Deserialize)]
+pub struct SearchQuery {
+    q: Option<String>,
+}
+
+// Get all recipes
+pub async fn get_recipes(
+    State(state): State<AppState>,
+    Query(params): Query<SearchQuery>,
+) -> impl IntoResponse {
+    match params.q {
+        Some(search_term) if !search_term.trim().is_empty() => {
+            match state.db.search_recipes(&search_term).await {
+                Ok(recipes) => (StatusCode::OK, Json(recipes)),
+                Err(_) => (StatusCode::INTERNAL_SERVER_ERROR, Json(vec![])),
+            }
+        }
+        _ => {
+            match state.db.get_all_recipes().await {
+                Ok(recipes) => (StatusCode::OK, Json(recipes)),
+                Err(_) => (StatusCode::INTERNAL_SERVER_ERROR, Json(vec![])),
+            }
+        }
+    }
+}
+
+// Get a specific recipe with ingredients
+pub async fn get_recipe(
+    State(state): State<AppState>,
+    Path(recipe_id): Path<Uuid>,
+) -> impl IntoResponse {
+    match state.db.get_recipe_with_ingredients(recipe_id).await {
+        Ok(Some(recipe)) => (StatusCode::OK, Json(recipe)).into_response(),
+        Ok(None) => StatusCode::NOT_FOUND.into_response(),
+        Err(_) => StatusCode::INTERNAL_SERVER_ERROR.into_response(),
+    }
+}
+
+// Create a new recipe
+pub async fn create_recipe(
+    State(state): State<AppState>,
+    Json(payload): Json<CreateRecipeRequest>,
+) -> impl IntoResponse {
+    // Validate that we have at least one ingredient
+    if payload.ingredients.is_empty() {
+        return (
+            StatusCode::BAD_REQUEST,
+            Json(serde_json::json!({
+                "error": "Recipe must have at least one ingredient"
+            }))
+        ).into_response();
+    }
+
+    match state.db.create_recipe(payload).await {
+        Ok(recipe) => (StatusCode::CREATED, Json(recipe)).into_response(),
+        Err(e) => (
+            StatusCode::INTERNAL_SERVER_ERROR,
+            Json(serde_json::json!({
+                "error": format!("Failed to create recipe: {}", e)
+            }))
+        ).into_response(),
+    }
+}
+
+// Update a recipe
+pub async fn update_recipe(
+    State(state): State<AppState>,
+    Path(recipe_id): Path<Uuid>,
+    Json(payload): Json<UpdateRecipeRequest>,
+) -> impl IntoResponse {
+    match state.db.update_recipe(recipe_id, payload).await {
+        Ok(Some(recipe)) => (StatusCode::OK, Json(recipe)).into_response(),
+        Ok(None) => StatusCode::NOT_FOUND.into_response(),
+        Err(_) => StatusCode::INTERNAL_SERVER_ERROR.into_response(),
+    }
+}
+
+// Delete a recipe
+pub async fn delete_recipe(
+    State(state): State<AppState>,
+    Path(recipe_id): Path<Uuid>,
+) -> impl IntoResponse {
+    match state.db.delete_recipe(recipe_id).await {
+        Ok(true) => StatusCode::NO_CONTENT,
+        Ok(false) => StatusCode::NOT_FOUND,
+        Err(_) => StatusCode::INTERNAL_SERVER_ERROR,
+    }
+}
+
+// Get recipe statistics
+pub async fn get_stats(State(state): State<AppState>) -> impl IntoResponse {
+    // This is a more complex query showing advanced SQLx usage
+    let stats = sqlx::query!(
+        r#"
+        SELECT
+            COUNT(DISTINCT r.id) as total_recipes,
+            COUNT(i.id) as total_ingredients,
+            AVG(r.cooking_time_minutes) as avg_cooking_time,
+            AVG(r.servings) as avg_servings
+        FROM recipes r
+        LEFT JOIN ingredients i ON r.id = i.recipe_id
+        "#
+    )
+    .fetch_one(&state.db.pool)
+    .await;
+
+    match stats {
+        Ok(row) => {
+            let mut response = HashMap::new();
+            response.insert("total_recipes", row.total_recipes.unwrap_or(0));
+            response.insert("total_ingredients", row.total_ingredients.unwrap_or(0));
+            response.insert("avg_cooking_time", row.avg_cooking_time.unwrap_or(0.0) as i64);
+            response.insert("avg_servings", row.avg_servings.unwrap_or(0.0) as i64);
+
+            (StatusCode::OK, Json(response))
+        }
+        Err(_) => (StatusCode::INTERNAL_SERVER_ERROR, Json(HashMap::new())),
+    }
+}
+```
+
+**What to notice**: We handle different response types, validate input data, use query parameters for search, and demonstrate complex SQL aggregations.
+
+## Step 7: Wire Everything Together
+
+Update `src/main.rs` to use our recipe manager:
+
+```rust
+mod database;
+mod handlers;
+mod models;
+
+use axum::{
+    routing::{get, post, put, delete},
+    Router,
+};
+use database::RecipeDatabase;
+use handlers::AppState;
+use tower_http::cors::CorsLayer;
+
+#[shuttle_runtime::main]
+async fn main(
+    #[shuttle_shared_db::Postgres] pool: sqlx::PgPool,
+) -> shuttle_axum::ShuttleAxum {
+    // Run database migrations
+    sqlx::migrate!("./migrations").run(&pool).await.unwrap();
+
+    // Create database instance
+    let db = RecipeDatabase::new(pool);
+    let state = AppState { db };
+
+    // Build our application routes
+    let router = Router::new()
+        .route("/", get(|| async { "Recipe Manager API - visit /recipes to get started!" }))
+        .route("/recipes", get(handlers::get_recipes).post(handlers::create_recipe))
+        .route("/recipes/:id", get(handlers::get_recipe).put(handlers::update_recipe).delete(handlers::delete_recipe))
+        .route("/stats", get(handlers::get_stats))
+        .layer(CorsLayer::permissive())
+        .with_state(state);
+
+    Ok(router.into())
+}
+```
+
+Build the complete application:
+
+```bash
+cargo build
+```
+
+**What to notice**: Shuttle automatically runs our migrations and provides a database connection pool we can use immediately.
+
+## Step 8: Test Your Recipe Manager
+
+Start your application:
+
+```bash
+shuttle run
+```
+
+You should see the migrations run and the server start.
+
+**Test the API endpoints**:
+
+**Get all recipes** (should return the sample cookie recipe):
+
+```bash
+curl http://localhost:8000/recipes
+```
+
+**Get a specific recipe with ingredients**:
+
+```bash
+curl http://localhost:8000/recipes/550e8400-e29b-41d4-a716-446655440000
+```
+
+**Create a new recipe**:
+
+```bash
+curl -X POST http://localhost:8000/recipes \
+  -H "Content-Type: application/json" \
+  -d '{
+    "name": "Banana Bread",
+    "description": "Moist and delicious banana bread",
+    "instructions": "1. Preheat oven to 350°F. 2. Mash bananas. 3. Mix wet ingredients. 4. Combine with dry ingredients. 5. Bake for 60 minutes.",
+    "cooking_time_minutes": 75,
+    "servings": 8,
+    "ingredients": [
+      {"name": "Ripe bananas", "quantity": 3, "unit": "large"},
+      {"name": "All-purpose flour", "quantity": 1.75, "unit": "cups"},
+      {"name": "Sugar", "quantity": 1, "unit": "cup"},
+      {"name": "Egg", "quantity": 1, "unit": "large"},
+      {"name": "Butter", "quantity": 0.33, "unit": "cup"},
+      {"name": "Baking soda", "quantity": 1, "unit": "teaspoon"}
+    ]
+  }'
+```
+
+**Search for recipes**:
+
+```bash
+curl "http://localhost:8000/recipes?q=banana"
+curl "http://localhost:8000/recipes?q=flour"
+```
+
+**Get statistics**:
+
+```bash
+curl http://localhost:8000/stats
+```
+
+**Update a recipe** (use the ID from your created recipe):
+
+```bash
+curl -X PUT http://localhost:8000/recipes/YOUR_RECIPE_ID \
+  -H "Content-Type: application/json" \
+  -d '{
+    "description": "Updated: The best banana bread recipe ever!",
+    "servings": 10
+  }'
+```
+
+**What to notice**: The API handles complex data relationships, validates input, and provides search functionality across multiple tables.
+
+## Step 9: Test Database Relationships
+
+Let's verify that our database relationships work correctly:
+
+**Test cascade deletion** (this should delete both recipe and ingredients):
+
+```bash
+# First, create a test recipe and note its ID
+curl -X POST http://localhost:8000/recipes \
+  -H "Content-Type: application/json" \
+  -d '{
+    "name": "Test Recipe",
+    "instructions": "Test instructions",
+    "ingredients": [{"name": "Test ingredient", "quantity": 1, "unit": "cup"}]
+  }'
+
+# Then delete it using the returned ID
+curl -X DELETE http://localhost:8000/recipes/YOUR_TEST_RECIPE_ID
+```
+
+**Test search functionality**:
+
+```bash
+# Search should find recipes by recipe name OR ingredient name
+curl "http://localhost:8000/recipes?q=chocolate"  # Finds cookies by ingredient
+curl "http://localhost:8000/recipes?q=cookie"     # Finds cookies by recipe name
+```
+
+**What to notice**: Foreign key constraints ensure data integrity, and our search works across related tables using SQL JOINs.
+
+## Step 10: Deploy to Production
+
+Deploy your recipe manager to the cloud:
+
+```bash
+shuttle deploy
+```
+
+After deployment, test your live API with your production URL:
+
+```bash
+# Replace with your actual URL
+curl https://recipe-manager-xyz.shuttle.app/recipes
+curl https://recipe-manager-xyz.shuttle.app/stats
+```
+
+Your recipe manager is now live with persistent PostgreSQL storage!
+
+**What to notice**: Your production database is separate from local, and data persists between deployments.
+
+## What You've Accomplished
+
+Congratulations! You've built a complete database-driven application with:
+
+- ✅ **PostgreSQL database** with automatically managed connections
+- ✅ **Database migrations** with schema versioning
+- ✅ **Type-safe queries** using SQLx compile-time verification
+- ✅ **CRUD operations** for recipes and ingredients
+- ✅ **Database relationships** with foreign keys and cascade deletion
+- ✅ **Complex queries** with JOINs, aggregations, and search
+- ✅ **Transaction handling** for data consistency
+- ✅ **Production deployment** with persistent data storage
+
+## Key Database Concepts You've Learned
+
+### SQLx Compile-Time Queries
+
+Using `sqlx::query_as!` for type-safe database operations:
+
+```rust
+let recipe = sqlx::query_as!(
+    Recipe,
+    "SELECT id, name, description FROM recipes WHERE id = $1",
+    recipe_id
+)
+.fetch_optional(&self.pool)
+.await?;
+```
+
+### Database Transactions
+
+Ensuring data consistency across multiple operations:
+
+```rust
+let mut tx = self.pool.begin().await?;
+// Multiple database operations...
+tx.commit().await?;
+```
+
+### Relationship Modeling
+
+Creating proper foreign key relationships:
+
+```sql
+CREATE TABLE ingredients (
+    recipe_id UUID NOT NULL REFERENCES recipes(id) ON DELETE CASCADE
+);
+```
+
+### Query Optimization
+
+Using indexes and efficient queries:
+
+```sql
+CREATE INDEX idx_ingredients_recipe_id ON ingredients(recipe_id);
+```
+
+## Next Steps
+
+Now that you understand database operations with Rust, you can:
+
+1. **Add user authentication** - Protect recipes with user accounts
+2. **Implement caching** - Use Redis for faster queries
+3. **Add full-text search** - Implement PostgreSQL's text search features
+4. **Add recipe ratings** - Create a ratings system with aggregations
+5. **Add recipe categories** - Organize recipes with many-to-many relationships
+
+Try our [Authentication tutorial](/tutorials/authentication) to add user management!
+
+## Troubleshooting
+
+**Migration errors?**
+
+- Check that your SQL syntax is valid
+- Ensure migration files are in the `migrations/` directory
+- Verify file naming follows the timestamp pattern
+
+**Connection errors?**
+
+- Make sure Docker is running for local development
+- Check that `shuttle-shared-db` is properly configured
+- Verify your database queries are syntactically correct
+
+**Compile-time query errors?**
+
+- Run `cargo sqlx prepare` to generate query metadata
+- Ensure your database schema matches your queries
+- Check that column names and types match your structs
+
+**Foreign key constraint errors?**
+
+- Verify that referenced IDs actually exist
+- Check the order of operations when creating related data
+- Ensure UUIDs are properly formatted
+
+**Search not working?**
+
+- Test your search queries in a SQL client first
+- Check that ILIKE syntax is correct for case-insensitive search
+- Verify that JOINs are properly constructed
+
+**Data not persisting?**
+
+- Check that transactions are properly committed
+- Verify that your database operations aren't being rolled back
+- Ensure your deployment has persistent storage
+
+You've successfully learned how to build robust database applications with Rust and PostgreSQL!
