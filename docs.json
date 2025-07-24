@@ -61,52 +61,31 @@
     }
   ],
   "navigation": {
-    "global": {
-      "anchors": [
-        {
-          "anchor": "GitHub",
-          "href": "https://github.com/shuttle-hq/shuttle",
-          "icon": "github"
-        },
-        {
-          "anchor": "Community",
-          "href": "https://discord.gg/shuttle",
-          "icon": "discord"
-        },
-        {
-          "anchor": "Releases and Changelog",
-          "href": "https://github.com/shuttle-hq/shuttle/releases",
-          "icon": "rust"
-        }
-      ]
-    },
-    "tabs": [
+    "groups": [
       {
-        "tab": "Getting Started",
-        "groups": [
-          {
-            "group": "Welcome",
-            "pages": [
-              "welcome/introduction",
-              "getting-started/installation"
-            ]
-          }
+        "group": "Getting Started",
+        "pages": [
+          "welcome/introduction",
+          "getting-started/installation"
         ]
       },
       {
-        "tab": "Tutorials",
-        "groups": [
+        "group": "Tutorials",
+        "pages": [
           {
             "group": "Learning Path",
+            "icon": "graduation-cap",
             "pages": [
               "tutorials/your-first-app",
               "tutorials/rest-http-service-with-axum",
               "tutorials/databases-with-rust",
-              "tutorials/authentication"
+              "tutorials/authentication",
+              "docs/telemetry/getting-started"
             ]
           },
           {
             "group": "Project-Based Learning",
+            "icon": "code",
             "pages": [
               "tutorials/discord-weather-forecast",
               "tutorials/serverless-calendar-app",
@@ -116,6 +95,7 @@
           },
           {
             "group": "Advanced Tutorials",
+            "icon": "rocket",
             "pages": [
               "tutorials/custom-service",
               "tutorials/send-your-logs-to-datadog"
@@ -124,10 +104,11 @@
         ]
       },
       {
-        "tab": "How-to Guides",
-        "groups": [
+        "group": "How-to Guides",
+        "pages": [
           {
             "group": "Development",
+            "icon": "laptop-code",
             "pages": [
               "how-to-guides/quick-deployment",
               "how-to-guides/cli-usage",
@@ -136,6 +117,7 @@
           },
           {
             "group": "Deployment & Operations",
+            "icon": "cloud",
             "pages": [
               "docs/builds",
               "docs/deployment-environment",
@@ -146,28 +128,25 @@
           },
           {
             "group": "Database Management",
+            "icon": "database",
             "pages": [
               "how-to-guides/migrate-shared-postgres",
               "docs/migrating-rds-postgres"
             ]
           },
           {
-            "group": "Maintenance",
+            "group": "Troubleshooting",
+            "icon": "bug",
             "pages": [
-              "how-to-guides/upgrade",
-              {
-                "group": "Troubleshooting",
-                "icon": "bug",
-                "pages": [
-                  "how-to-guides/troubleshooting/troubleshooting",
-                  "support/faq"
-                ]
-              }
+              "how-to-guides/troubleshooting/troubleshooting",
+              "support/faq"
             ]
           },
           {
-            "group": "Platform Updates",
+            "group": "Maintenance",
+            "icon": "gear",
             "pages": [
+              "how-to-guides/upgrade",
               "platform-update/platform-update",
               "platform-update/migration"
             ]
@@ -175,16 +154,18 @@
         ]
       },
       {
-        "tab": "Reference",
-        "groups": [
+        "group": "Reference",
+        "pages": [
           {
             "group": "CLI",
+            "icon": "terminal",
             "pages": [
               "reference/cli-reference"
             ]
           },
           {
             "group": "Projects & Configuration",
+            "icon": "folder",
             "pages": [
               "reference/projects",
               "reference/project-configuration",
@@ -194,6 +175,7 @@
           },
           {
             "group": "Resources",
+            "icon": "boxes-stacked",
             "pages": [
               "reference/resources",
               "reference/shuttle-secrets",
@@ -210,15 +192,24 @@
           },
           {
             "group": "Integrations",
+            "icon": "link",
             "pages": [
               {
                 "group": "External Services",
-                "icon": "link",
+                "icon": "plug",
                 "pages": [
                   "reference/shuttle-turso",
                   "reference/shuttle-qdrant",
                   "reference/shuttle-opendal",
                   "reference/shuttle-openai"
+                ]
+              },
+              {
+                "group": "Telemetry & Monitoring",
+                "icon": "telescope",
+                "pages": [
+                  "docs/telemetry/betterstack",
+                  "docs/telemetry/custom-metrics"
                 ]
               },
               "reference/custom-resources",
@@ -228,10 +219,12 @@
           },
           {
             "group": "Examples",
+            "icon": "book",
             "pages": [
               "reference/examples/overview",
               {
                 "group": "Web Frameworks",
+                "icon": "globe",
                 "pages": [
                   {
                     "group": "Axum",
@@ -266,6 +259,7 @@
               },
               {
                 "group": "Discord Bots",
+                "icon": "robot",
                 "pages": [
                   "reference/examples/serenity",
                   "reference/examples/serenity-todo",
@@ -276,36 +270,15 @@
               "reference/examples/other",
               "reference/examples/examples-repo-link"
             ]
-          },
-          {
-            "group": "Account & Billing",
-            "pages": [
-              "docs/account",
-              "docs/teams",
-              "pricing/overview",
-              "pricing/pro-trial",
-              "pricing/billing",
-              "pricing/scaling",
-              "pricing/upgrading",
-              "pricing/faq"
-            ]
-          },
-          {
-            "group": "Telemetry",
-            "pages": [
-              "docs/telemetry/overview",
-              "docs/telemetry/getting-started",
-              "docs/telemetry/betterstack",
-              "docs/telemetry/custom-metrics"
-            ]
           }
         ]
       },
       {
-        "tab": "Explanation",
-        "groups": [
+        "group": "Explanation",
+        "pages": [
           {
             "group": "Core Concepts",
+            "icon": "lightbulb",
             "pages": [
               "explanation/architecture",
               "explanation/infrastructure-from-code"
@@ -313,24 +286,22 @@
           },
           {
             "group": "Platform Understanding",
+            "icon": "compass",
             "pages": [
               "docs/deployment-environment",
-              "migration/guide"
+              "migration/guide",
+              "docs/telemetry/overview"
             ]
           }
         ]
       },
       {
-        "tab": "Templates",
-        "groups": [
-          {
-            "group": "Templates",
-            "pages": [
-              "templates/overview"
-            ]
-          },
+        "group": "Templates",
+        "pages": [
+          "templates/overview",
           {
             "group": "Fullstack Templates",
+            "icon": "layer-group",
             "pages": [
               "templates/fullstack/saas-template"
             ]
@@ -338,10 +309,24 @@
         ]
       },
       {
-        "tab": "Community & Support",
-        "groups": [
+        "group": "Account & Billing",
+        "pages": [
+          "docs/account",
+          "docs/teams",
+          "pricing/overview",
+          "pricing/pro-trial",
+          "pricing/billing",
+          "pricing/scaling",
+          "pricing/upgrading",
+          "pricing/faq"
+        ]
+      },
+      {
+        "group": "Community & Support",
+        "pages": [
           {
             "group": "Community",
+            "icon": "users",
             "pages": [
               "community/get-involved",
               "community/contribute",
@@ -350,6 +335,7 @@
           },
           {
             "group": "Support",
+            "icon": "question-circle",
             "pages": [
               "support/support"
             ]
