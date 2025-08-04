@@ -1,0 +1,406 @@
+---
+title: "Your First Shuttle App"
+description: "Learn Shuttle fundamentals by building and deploying a scheduled background task with Infrastructure from Code"
+icon: "rocket"
+---
+
+## Learning Objectives
+
+By completing this tutorial, you'll master **foundational Shuttle concepts** and learn to:
+
+- **Shuttle Tasks**: Use `@shuttle_task.cron` for scheduled background execution
+- **Infrastructure from Code**: Provision an S3 bucket and PostgreSQL database with type-hinted parameters
+- **Zero-Config Deployment**: Deploy with `shuttle deploy` - no YAML or containers needed
+- **Local Development**: Test locally with `shuttle run` before deploying
+- **CLI Workflow**: Use Shuttle CLI for project management and deployment
+
+## Prerequisites
+
+- **Time Required**: 15 minutes
+- **Python**: Version 3.12 or later ([install here](https://www.python.org/downloads/))
+- **Tools**: [Shuttle CLI installed](/python/getting-started/cli-installation)
+- **Accounts**: Use your own AWS account
+- **Experience**: Basic Python knowledge (functions, async/await, type hints)
+
+## What We're Building
+
+We'll create a **Records Grafana Exporter** - a scheduled background task that processes data from an S3 bucket and inserts record counts into a PostgreSQL database.
+
+This app demonstrates Shuttle's core value: turning Python code into production infrastructure with zero configuration.
+
+**High-level components:**
+
+- **Background Task** (`@shuttle_task.cron`)
+- **S3 Bucket** (auto-provisioned by Shuttle)
+- **PostgreSQL Database** (auto-provisioned by Shuttle)
+- **Database Table Initialization** (SQL via `psycopg`)
+- **S3 Object Processing** (`polars` for JSON parsing)
+
+## Tutorial Steps
+
+### Step 1: Create Your First Project
+
+There is no `shuttle init` command for Python projects. Instead, we'll manually set up the project structure.
+
+First, create a new directory for your project and navigate into it:
+
+```bash
+mkdir records-grafana-exporter
+cd records-grafana-exporter
+```
+
+Next, initialize a `uv` virtual environment and activate it. Activating the virtual environment is recommended to ensure you're using the correct Python interpreter and installed packages.
+
+```bash
+uv venv
+source .venv/bin/activate # On Windows, use `.venv\Scripts\activate`
+```
+
+Now, add the `shuttle` dependency to your project. `uv` will automatically create or update `pyproject.toml` and install the package.
+
+```bash
+uv init
+uv add shuttle-python
+```
+
+Finally, create the main application file `main.py` with the following content:
+
+```python
+# main.py
+import shuttle_runtime
+import shuttle_task
+
+@shuttle_task.cron(schedule="0 3 * * ? *")
+async def main():
+    # Your scheduled task logic goes here
+    print("Hello from your scheduled task!")
+
+if __name__ == "__main__":
+    shuttle_runtime.main(main)
+```
+
+This sets up a new directory with a basic Python project structure and a scheduled task.
+
+### Step 2: Understand the Created Code
+
+Examine `main.py` that you just created.
+
+**Key concepts:**
+
+- `@shuttle_task.cron("0 3 * * ? *")` - Shuttle's decorator to define a scheduled task using a cron expression. This is the AWS EventBridge cron format that has 6 fields, and runs at 3:00AM UTC every day.
+- `async def run()` - The asynchronous function that Shuttle will execute periodically.
+
+### Step 3: Test Locally
+
+Run your task locally:
+
+```bash
+shuttle run # or uv run -m shuttle run
+```
+
+You should see output similar to:
+
+```
+Running locally...
+
+Starting local runner...
+
+2025-07-03T10:00:00Z [task:records-grafana-exporter-1234abcd] Hello from your scheduled task!
+```
+
+**What happened:** Shuttle started a local server that mimicked the production environment for your scheduled task. It executes the `run` function immediately and then at subsequent intervals (if defined by the cron schedule, though for a quick test it runs once).
+
+### Step 4: Add Infrastructure (S3 Bucket & Postgres)
+
+Our task needs an S3 bucket to read from and a PostgreSQL database to write to. We'll add these as parameters to our `run` function, and Shuttle will automatically provision them.
+
+Update `main.py` to include these resources:
+
+```python
+import shuttle_task
+import shuttle_runtime
+from shuttle_aws.s3 import Bucket, BucketOptions
+from shuttle_aws.rds import RdsPostgres, RdsPostgresOptions
+from typing import Annotated
+
+@shuttle_task.cron(schedule="0 3 * * ? *")
+async def main(
+    bucket: Annotated[Bucket, BucketOptions(bucket_name="grafana-exporter-1234abcd", policies=[])],
+    db: Annotated[RdsPostgres, RdsPostgresOptions()],
+):
+    # Your scheduled task logic goes here
+    print(f"Hello from your scheduled task! Bucket: {bucket.options.bucket_name}, Postgres host: {db.output.host.get_value()}")
+
+if __name__ == "__main__":
+    shuttle_runtime.main(main)
+```
+
+### Step 5: Deploy to Production
+
+Deploy your Records Grafana Exporter task to the Shuttle platform. Shuttle will analyze your code, generate a deployment plan, and proceed automatically:
+
+```bash
+shuttle deploy # or uv run -m shuttle deploy
+```
+
+Upon successful deployment, you'll see details of the created resources, similar to:
+
+```
+Deploy complete! Resources created:
+
+- shuttle_aws.s3.Bucket
+    id  = "records-grafana-exporter-bucket-7fd3a2c4"
+    arn = "arn:aws:s3:::records-grafana-exporter-bucket-7fd3a2c4"
+
+- shuttle_db.postgres.Postgres
+    id   = "records-grafana-exporter-db-7fd3a2c4"
+    host = "records-grafana-exporter-db-7fd3a2c4.pg.shuttle.run"
+
+- shuttle_task.cron
+    id        = "records-grafana-exporter-task-7fd3a2c4"
+    schedule  = "0 * * * *"
+    arn       = "arn:aws:ecs:eu-west-2:123456789012:task/records-grafana-exporter/abcdef1234567890"
+
+Use `shuttle logs` to view logs.
+```
+
+Your task is now live! It will run every hour, processing S3 objects and updating your database. You can view its logs with `shuttle logs # or uv run -m shuttle logs`.
+
+### Step 6: Initialize Database Schema
+
+Before we can insert data, we need to ensure our database table exists. We'll add logic to create the `record_counts` table if it doesn't already.
+
+Update `main.py`:
+
+```python
+import shuttle_task
+import shuttle_runtime
+from shuttle_aws.s3 import Bucket, BucketOptions
+from shuttle_aws.rds import RdsPostgres, RdsPostgresOptions
+from typing import Annotated
+
+TABLE = "record_counts"
+
+@shuttle_task.cron(schedule="0 3 * * ? *")
+async def main(
+    bucket: Annotated[Bucket, BucketOptions(bucket_name="grafana-exporter-1234abcd", policies=[])],
+    db: Annotated[RdsPostgres, RdsPostgresOptions()],
+):
+    pg_conn = db.get_connection()
+    with pg_conn.cursor() as cur:
+        cur.execute(f"""
+            CREATE TABLE IF NOT EXISTS {TABLE} (
+                ts TIMESTAMPTZ PRIMARY KEY,
+                count INTEGER NOT NULL
+            );
+        """
+        )
+        pg_conn.commit()
+
+    print(f"Hello from your scheduled task! Bucket: {bucket.name}, Postgres host: {db.host}")
+
+if __name__ == "__main__":
+    shuttle_runtime.main(main)
+```
+
+### Step 7: Implement Business Logic
+
+Now, let's add the core logic for our ETL task: reading JSON files from S3,
+counting records with `polars`, and inserting the total into our Postgres
+database. Add the `polars` dependency:
+
+```bash
+uv add polars
+```
+
+We're also updating the cron schedule to `0 * * * ? *` to run the task
+every hour, instead of daily at 3 AM UTC.
+
+Update `main.py` with the full application logic:
+
+```python
+import io
+import polars as pl
+from datetime import datetime, timedelta, timezone
+
+import shuttle_task
+import shuttle_runtime
+from shuttle_aws.s3 import Bucket, BucketOptions
+from shuttle_aws.rds import RdsPostgres, RdsPostgresOptions
+from typing import Annotated
+
+TABLE = "record_counts"
+
+
+@shuttle_task.cron(schedule="0 3 * * ? *")
+async def main(
+    bucket: Annotated[
+        Bucket, BucketOptions(bucket_name="grafana-exporter-1234abcd", policies=[])
+    ],
+    db: Annotated[RdsPostgres, RdsPostgresOptions()],
+):
+    total_rows = 0
+
+    now = datetime.now(timezone.utc)
+    cutoff = now - timedelta(hours=1)
+
+    pg_conn = db.get_connection()
+    with pg_conn.cursor() as cur:
+        cur.execute(
+            f"""
+                    CREATE TABLE IF NOT EXISTS {TABLE}  (
+                        ts TIMESTAMPTZ PRIMARY KEY,
+                        count INTEGER NOT NULL
+                    );
+                """
+        )
+        pg_conn.commit()
+
+    s3_client = bucket.get_client()
+    objects = s3_client.list_objects_v2(Bucket=bucket.options.bucket_name)
+    if objects["KeyCount"] == 0:
+        print(f"No objects in the bucket {bucket.options.bucket_name}.")
+    else:
+        for obj in objects["Contents"]:
+            if obj["LastModified"] <= cutoff:
+                continue
+
+            try:
+                content = s3_client.get_object(
+                    Bucket=bucket.options.bucket_name, Key=obj["Key"]
+                )
+                body = content["Body"].read()
+                json = io.StringIO(body.decode("utf-8"))
+                df = pl.read_json(json)
+                total_rows += df.height
+            except Exception as e:
+                print(f"Failed to parse {obj.key}: {e}")
+
+    with pg_conn.cursor() as cur:
+        cur.execute(
+            f"""
+                    INSERT INTO {TABLE} (ts, count)
+                    VALUES (%s, %s)
+                    ON CONFLICT(ts) DO UPDATE SET count = EXCLUDED.count
+                """,
+            (now, total_rows),
+        )
+        pg_conn.commit()
+
+    print(f"Inserted {total_rows} records into {TABLE} for {now.isoformat()}")
+
+
+if __name__ == "__main__":
+    shuttle_runtime.main(main)
+```
+
+### Step 8: Test Your Complete App Locally
+
+Run the full application locally again:
+
+```bash
+shuttle run # or uv run -m shuttle run
+```
+
+You'll see logs indicating the task is running. Since there are no objects in a local S3 bucket (Shuttle's local runner does not emulate S3 by default), the `total_rows` will likely be 0. The local runner will attempt to connect to the *remote* S3 bucket and Postgres database if they've been deployed, or simulate them if not.
+
+```
+Running locally...
+
+Using existing deployed resources:
+
+src/records_grafana_exporter/task.py
+  ├── [=] shuttle_aws.s3.Bucket (remote)
+  │       id = "records-grafana-exporter-bucket-xxxx"
+  │
+  └── [=] shuttle_db.postgres.Postgres (remote)
+          id = "records-grafana-exporter-db-xxxx"
+
+Starting local runner...
+
+2025-07-03T10:00:00Z [task:records-grafana-exporter-1234abcd] Inserted 0 records into record_counts for 2025-07-03T10:00:00.000000+00:00
+```
+
+This confirms your code runs and interacts with the (remote or simulated) infrastructure.
+
+### Step 9: Configure S3 Permissions (AllowWrite)
+
+Often, other services need to write to your S3 bucket. Shuttle allows you to grant specific IAM permissions directly in your code. Let's say a microservice with role `SessionTrackerService` in AWS account `842910673255` needs write access.
+
+Update `main.py`:
+
+```python
+# ... (imports and other code)
+from typing import Annotated
+from shuttle_aws.s3 import AllowWrite
+
+TABLE = "record_counts"
+
+@shuttle_task.cron("0 * * * *")
+async def run(
+    bucket: Annotated[
+        Bucket, 
+        BucketOptions(
+            bucket_name="grafana-exporter-1234abcd", 
+            policies=[
+                AllowWrite(account_id="842910673255", role_name="SessionTrackerService")
+            ]
+        )
+    ],
+    db: Annotated[RdsPostgres, RdsPostgresOptions()],
+):
+    # ... (task logic as before)
+```
+
+Now, run `shuttle deploy` again. Shuttle will detect the change and apply it automatically:
+
+```bash
+shuttle deploy # or uv run -m shuttle deploy
+```
+
+Upon successful deployment, the S3 bucket's policy will be updated to grant write access to the specified IAM role.
+
+### Step 10: Access Postgres Connection String
+
+To connect Grafana (or any other external tool) to your PostgreSQL database, you'll need its connection details. Shuttle automatically provisions a secure database. You can find the connection host and other details from the `shuttle deploy` output, or by inspecting your project in the Shuttle console. Typically, you'll construct a connection string like `postgresql://{user}:{password}@{host}:{port}/{database_name}`.
+
+## What You've Learned
+
+You've mastered these **key Shuttle concepts**:
+
+- **Infrastructure from Code** - S3 and Postgres provisioned with simple function parameters
+- **Zero-Config Deployment** - Production deployment without Docker or YAML files
+- **Shuttle Tasks** - `@shuttle_task.cron` handles scheduled execution and infrastructure concerns
+- **Local Development** - `shuttle run` provides production-like local testing
+- **Automatic Infrastructure** - Shuttle automatically handles database and S3 provisioning, including connection details
+- **IAM Permissions** - Configure fine-grained S3 bucket access using `AllowWrite` annotations
+
+## Troubleshooting
+
+**Python environment issues?**
+
+- Ensure you've activated your virtual environment: `source .venv/bin/activate`
+
+**Local task not running?**
+
+- Ensure you're in the project root directory when running `shuttle run # or uv run -m shuttle run`.
+- Check `main.py` for syntax errors.
+
+**Deployment failures?**
+
+- Verify your code runs locally first with `shuttle run # or uv run -m shuttle run`.
+- Check deployment logs with `shuttle logs # or uv run -m shuttle logs`.
+- Ensure your AWS credentials are configured correctly (e.g., `aws configure`).
+
+**S3 or Postgres connection errors (remote)?**
+
+- Shuttle handles provisioning and connection. Ensure your code correctly uses the `Bucket` and `Postgres` objects passed to `run`.
+- For `AllowWrite` policies, double-check the AWS account ID and role name.
+
+## Next Steps
+
+Continue your Shuttle journey:
+
+1.  **Add More Resources**: Explore other available Shuttle resources like queues or caches.
+2.  **Advanced Data Processing**: Dive deeper into using Python libraries like `pandas`, `dask`, or other data tools with Shuttle.
+3.  **Monitor Your Task**: Learn how to integrate with monitoring solutions for your deployed tasks.

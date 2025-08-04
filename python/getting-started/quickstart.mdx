@@ -1,0 +1,82 @@
+---
+title: "Quickstart"
+description: "Follow these steps to deploy your first Shuttle project using Python"
+icon: "circle-play"
+---
+
+## Deploy your project
+
+1.  **Configure AWS Credentials**
+    Before deploying, ensure you have authenticated with AWS using one of the following methods:
+    -   **SSO Enabled**: Use `aws configure sso` for AWS Single Sign-On.
+    -   **IAM User Account**: Use `aws configure` for standard IAM user credentials.
+    -   **Temporary IAM Credentials**: Set the following environment variables:
+        ```sh
+        export AWS_ACCESS_KEY_ID='your_access_key'
+        export AWS_SECRET_ACCESS_KEY='your_secret_key'
+        export AWS_SESSION_TOKEN='your_session_token'
+        ```
+    -   **Other Options**: IAM role metadata and OIDC federation are also supported.
+
+2.  **Install uv for Virtual Environment Management**
+    ```sh
+    pip install uv
+    ```
+
+3.  **Navigate to Your Project Directory**
+    Change into the newly created project directory:
+    ```sh
+    cd <your-project-name>
+    ```
+
+4.  **Create and Activate a Virtual Environment**
+    ```sh
+    uv venv
+    source .venv/bin/activate
+    ```
+
+5.  **Add Shuttle Dependency**
+    ```sh
+    uv init
+    uv add shuttle-python
+    ```
+
+6.  **Create Your Shuttle Project**
+    There is no `shuttle init` command for Python projects. Instead, you must create your project files manually.
+
+    Create a `main.py` file: you can use the [built-in user-project example](https://github.com/shuttle-hq/shuttle-python/blob/main/user-project/__main__.py) as a starting point.
+
+
+7.  **Deploy Your Project**
+    Deploy your application to the Shuttle platform:
+    ```sh
+    shuttle deploy
+    # or
+    uv run -m shuttle deploy
+    ```
+    Follow the prompts to confirm deployment.
+
+8.  **View Application Logs**
+    To view logs from your deployed application:
+    ```sh
+    shuttle logs
+    # or
+    uv run -m shuttle logs
+    ```
+
+9.  **Run Your Project Locally (Optional)**
+    To run your application locally using deployed resources:
+    ```sh
+    shuttle run
+    # or
+    uv run -m shuttle run
+    ```
+    Note: This will execute your application's `main` function (or equivalent entrypoint) and connect to the remote resources provisioned in the cloud.
+
+10. **Destroy Your Project (Cleanup)**
+    When you're finished, you can destroy all provisioned infrastructure and associated resources:
+    ```sh
+    shuttle destroy
+    # or
+    uv run -m shuttle destroy
+    ```

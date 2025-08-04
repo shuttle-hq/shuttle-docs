@@ -1,0 +1,165 @@
+---
+title: "Add an S3 Bucket"
+description: "Step-by-step guide to adding and configuring an S3 bucket in your Shuttle Python project."
+icon: "cloud"
+---
+
+Add a managed S3 bucket to your Shuttle Python project. This allows your application to store and retrieve objects, serving as a flexible and cost-effective object storage solution.
+
+## Prerequisites
+
+- An existing Shuttle project (Python)
+- [Shuttle CLI installed](/getting-started/installation)
+- `uv` installed and a virtual environment activated for dependency management
+- AWS credentials configured locally (e.g., via `aws configure`, environment variables like `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`, etc.)
+
+## Instructions: Provisioning an S3 Bucket
+
+This guide will walk you through adding an S3 bucket to your Shuttle Python application.
+
+### 1. Install Dependencies
+
+First, add the `shuttle-aws[s3]` package to your project using `uv`:
+
+```bash
+uv init
+uv add shuttle-python
+```
+
+This will install the necessary `shuttle-aws` package and its S3-specific dependencies, including `boto3`.
+
+### 2. Define Your S3 Bucket in `main.py`
+
+In your project's `main.py` file, import `Bucket` and `BucketOptions` from `shuttle_aws.s3`. Then, add the `Bucket` resource as an argument to your `@shuttle_task.cron` (or other service) decorated function, using type annotations. You can specify a custom bucket name using `BucketOptions`.
+
+```python
+from typing import Annotated
+
+import shuttle_task
+import shuttle_runtime
+from shuttle_aws.s3 import Bucket, BucketOptions
+
+# Define a constant for your desired bucket name
+BUCKET_NAME = "my-shuttle-python-bucket"
+
+@shuttle_task.cron(schedule="0 * * * ? *") # This task will run hourly
+async def main(
+    bucket: Annotated[
+        Bucket,
+        BucketOptions(bucket_name=BUCKET_NAME, policies=[])
+    ],
+):
+    """An example task that interacts with an S3 bucket."""
+
+    print(f"Accessing S3 bucket: {bucket.options.bucket_name}")
+
+    # Get a boto3 S3 client to interact with the bucket
+    s3_client = bucket.get_client()
+
+    try:
+        # Example: List objects in the bucket
+        response = s3_client.list_objects_v2(Bucket=BUCKET_NAME)
+
+        if "Contents" in response:
+            print(f"Found {response['KeyCount']} objects in '{BUCKET_NAME}':")
+            for obj in response["Contents"]:
+                print(f"- {obj['Key']} ({obj['Size']} bytes)")
+        else:
+            print(f"No objects found in '{BUCKET_NAME}'.")
+
+        # Example: Put a simple object
+        s3_client.put_object(Bucket=BUCKET_NAME, Key="hello.txt", Body="Hello from Shuttle Python!")
+        print("Successfully put 'hello.txt' into the bucket.")
+
+    except Exception as e:
+        print(f"Error interacting with S3 bucket: {e}")
+
+# This line is essential for Shuttle to run your application
+if __name__ == "__main__":
+    shuttle_runtime.main(main)
+```
+
+### 3. Add External Write Permissions (Optional)
+
+If another AWS service or account needs write access to your bucket, you can grant it using the `AllowWrite` annotation from `shuttle_aws.iam`. This will attach an IAM policy to your bucket allowing the specified role/account to write objects.
+
+```python
+from typing import Annotated
+
+import shuttle_runtime
+import shuttle_task
+from shuttle_aws.s3 import Bucket, BucketOptions, AllowWrite
+
+BUCKET_NAME = "my-shuttle-python-bucket"
+
+@shuttle_task.cron("0 * * * ? *")
+async def main(
+    bucket: Annotated[
+        Bucket,
+        BucketOptions(
+            bucket_name=BUCKET_NAME,
+            policies=[
+                AllowWrite(account_id="842910673255", role_name="SessionTrackerService") # Example: Grant write to specific role
+            ]
+        ),
+    ],
+):
+    """An example task with external write permissions for its S3 bucket."""
+    # ... your S3 interaction logic here ...
+```
+
+### 4. Deploy to the Cloud
+
+Deploy your project to the Shuttle cloud:
+
+```bash
+uv run -m shuttle deploy
+```
+
+Shuttle will provision your managed S3 bucket (if it doesn't already exist) and connect your application to it automatically. You will see output similar to this, showing the created resources:
+
+```bash
+Deploying...
+
+Deploy complete! Resources created:
+
+- shuttle_aws.s3.Bucket
+    id  = "my-shuttle-python-bucket-abcdef12"
+    arn = "arn:aws:s3:::my-shuttle-python-bucket-abcdef12"
+
+- shuttle_task.cron
+    id        = "my-shuttle-python-task-abcdef12"
+    schedule  = "0 * * * *"
+    arn       = "arn:aws:ecs:eu-west-2:123456789012:task/my-shuttle-python-project/...
+
+Use `uv run -m shuttle logs` to view logs.
+```
+
+### 5. Test Locally
+
+Run your project locally using the Shuttle CLI:
+
+```bash
+uv run -m shuttle run
+```
+
+Shuttle will execute your Python application locally. For S3 buckets, `shuttle run` will connect to the *remote* S3 bucket provisioned in your AWS account. No local S3 emulation is performed.
+
+## Troubleshooting
+
+- **Deployment failed?**
+  - Check `uv run -m shuttle logs` for detailed error messages.
+  - Ensure your AWS credentials are correctly configured and have sufficient permissions to create S3 buckets and IAM policies.
+  - Verify your `main.py` has no syntax errors and all required `shuttle-aws` imports are correct.
+- **Local run issues?**
+  - Ensure your AWS credentials are set up correctly on your local machine, as `shuttle local` uses the remote S3 bucket.
+  - Check for network connectivity issues if your application struggles to reach AWS S3.
+- **S3 permissions errors?**
+  - Double-check the `account_id` and `role_name` in your `AllowWrite` annotation.
+  - Ensure the external AWS role/service attempting to access the bucket has the correct IAM permissions.
+
+## Next Steps
+
+- [Add other resources](/reference/resources) like a managed database or secrets.
+- Learn more about the [Shuttle Python framework](/getting-started/python).
+- Explore [Shuttle Python examples](/examples/overview) for more advanced use cases.
