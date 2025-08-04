@@ -1,0 +1,48 @@
+---
+title: "CLI Installation"
+description: "How to install the Python-based Shuttle Command Line Interface (CLI) using uv"
+icon: "download"
+---
+
+## <span style={{ fontWeight: 600 }}>Using Shuttle within your projects</span>
+
+<span style={{ fontSize: '1.1em', fontWeight: 500 }}>
+For managing dependencies and running Shuttle commands within your projects, it is recommended to use `uv` directly.
+</span>
+
+1.  <b>Create a Virtual Environment</b>
+
+    Navigate to your project directory and create a virtual environment with `uv`.
+
+        <CodeBlock language="bash" expanded>
+        uv venv
+        source .venv/bin/activate
+        </CodeBlock>
+
+2.  <b>Add Shuttle Dependency</b>
+
+    Add the `shuttle` package to your project's dependencies.
+
+        <CodeBlock language="bash" expanded>
+        uv init
+        uv add shuttle-python
+        </CodeBlock>
+
+3.  <b>Run Shuttle Commands</b>
+
+    Execute Shuttle commands using `uv run -m shuttle` to ensure they run within your project's isolated environment.
+
+        <CodeBlock language="bash" expanded>
+        uv run -m shuttle deploy
+        uv run -m shuttle logs
+        uv run -m shuttle local
+        </CodeBlock>
+
+    Alternatively, if you are activated in your virtual environment, you can use the `shuttle` script.
+
+        <CodeBlock language="bash" expanded>
+        shuttle deploy
+        shuttle logs
+        shuttle local
+        </CodeBlock>
+
