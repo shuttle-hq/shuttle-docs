@@ -6,13 +6,16 @@ icon: "hammer"
 
 Shuttle builds run on AWS CodeBuild, where we compile your Rust app and place it in a Shuttle `runtime` Debian-based Docker image.
 
+## Build architecture
+Unless you are on the Growth tier, your projects will primarily be built and run on an Arm64 (aarch64) architecture.
+
 ## Builder image
 
 The Rust builder image is based on [cargo-chef](https://github.com/LukeMathWalker/cargo-chef) to utilize Docker-layer caching of the build dependencies.
 
 ### Rust toolchain
 
-The Rust version in the image is regularly updated to the latest stable `stable-x86_64-unknown-linux-gnu` toolchain.
+The Rust version in the image is regularly updated to the latest stable `stable-x86_64-unknown-linux-gnu` toolchain or the `stable-aarch64-unknown-linux-gnu` depending on your project's build architecture.
 
 By default, the `wasm32-unknown-unknown` target is installed, which enables compiling WASM frontends.
 
@@ -71,7 +74,7 @@ Create them at the root of your project.
 
 ### Example: Install a custom Rust toolchain
 
-In this example, we install and switch to the `nighlty` toolchain.
+In this example, we install and switch to the `nightly` toolchain.
 
 ```sh shuttle_prebuild.sh
 rustup install nightly --profile minimal

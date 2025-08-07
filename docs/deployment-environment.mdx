@@ -27,6 +27,10 @@ After that, the previous deployment will start shutting down.
 This means that there is a window of time where there are two instances running in parallel.
 If the new deployment fails to become healthy, it will be retried 3 times while the the previous one will stays up.
 
+### Runtime architecture
+
+Unless you are on the Growth tier, your projects will primarily run on an Arm64 (aarch64) architecture, matching the [build architecture](/docs/builds#build-architecture).
+
 ### Incoming HTTPS traffic
 
 HTTPS traffic is proxied to your app on the project's default subdomain and any [custom domains](/docs/domain-names) that have been added.
@@ -61,4 +65,3 @@ See [Shuttle Secrets](/resources/shuttle-secrets)
 ## Customize Runtime container
 
 See [Hook scripts](/docs/builds#experimental-hook-scripts)
-
