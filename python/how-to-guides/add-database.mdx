@@ -1,0 +1,81 @@
+---
+title: "Add a Database"
+description: "How to add a dedicated database to your Shuttle project."
+icon: "database"
+---
+
+# Add a Dedicated Database
+
+Add a managed, dedicated Postgres database to your Shuttle Python project. This allows your application to persist data, serving as a robust and scalable relational database solution without needing to manage the underlying infrastructure yourself. Shuttle automatically handles provisioning, scaling, and connection management.
+
+## Prerequisites
+
+- An existing Shuttle project (Python)
+- [Shuttle CLI installed](/getting-started/installation)
+- `uv` installed and a virtual environment activated for dependency management
+- AWS credentials configured locally (e.g., via `aws configure`, environment variables like `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`, etc.)
+
+## Instructions: Provisioning a Dedicated Postgres Database
+
+This guide will walk you through adding a dedicated Postgres database to your Shuttle Python application.
+
+### 1. Install Dependencies
+
+First, add the `shuttle-db[postgres]` package to your project using `uv`:
+
+```bash
+uv init
+uv add shuttle-python
+```
+
+This will install the necessary `shuttle-rds` package and its Postgres-specific dependencies, including database drivers like `psycopg`.
+
+### 2. Define Your Database in `main.py`
+
+In your project's `main.py` file, import `RdsPostgres` and `RdsPostgresOptions` from `shuttle_aws.rds`. Then, add the `RdsPostgres` resource as an argument to your `@shuttle_task.cron` (or other service) decorated function, using type annotations. You can customize the database using `RdsPostgresOptions` (e.g., instance size, storage, etc., though for a basic guide, default options are sufficient).
+
+```python
+from typing import Annotated
+
+import shuttle_task
+import shuttle_runtime
+from shuttle_aws.rds import RdsPostgres, RdsPostgresOptions
+
+@shuttle_task.cron(schedule="0 * * * ? *") # This task will run hourly
+async def main(
+    postgres: Annotated[
+        RdsPostgres,
+        RdsPostgresOptions(), # Default options for a basic Postgres instance
+    ],
+):
+    """An example task that interacts with a dedicated Postgres database."""
+
+    print("Accessing dedicated Postgres database...")
+
+    # Get a database connection
+    # The connection object returned is compatible with psycopg's connection interface
+    # For async contexts, you might use asyncpg, and get_connection() would return an asyncpg connection.
+    try:
+        conn = postgres.get_connection()
+        with conn.cursor() as cur:
+            # Example: Create a simple table if it doesn't exist
+            cur.execute("CREATE TABLE IF NOT EXISTS shuttle_test (id SERIAL PRIMARY KEY, message VARCHAR(255));")
+            conn.commit()
+            print("Table 'shuttle_test' ensured.")
+
+            # Example: Insert data
+            cur.execute("INSERT INTO shuttle_test (message) VALUES (%s);", ("Hello from Shuttle Postgres!",))
+            conn.commit()
+            print("Successfully inserted data.")
+
+            # Example: Select data
+            cur.execute("SELECT message FROM shuttle_test ORDER BY id DESC LIMIT 1;")
+            result = cur.fetchone()
+            print(f"Retrieved from DB: {result[0]}")
+
+    except Exception as e:
+        print(f"Error interacting with Postgres database: {e}")
+
+# This line is essential for Shuttle to run your application locally or deploy
+if __name__ == "__main__":
+    shuttle_runtime.main(main)

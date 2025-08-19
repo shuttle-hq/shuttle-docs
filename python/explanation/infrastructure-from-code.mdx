@@ -1,0 +1,167 @@
+---
+title: "Infrastructure from Code"
+description: "Deep dive into Shuttle's Infrastructure from Code philosophy and how it differs from traditional approaches"
+icon: "code"
+---
+
+## What is Infrastructure from Code?
+
+Infrastructure from Code (IfC) is Shuttle's foundational approach where infrastructure requirements are expressed directly in your application code through language-native constructs like type hints, attributes, or decorators, rather than in separate configuration files or management consoles.
+
+## The Philosophy
+
+Traditional cloud development often separates concerns:
+
+-   **Application Logic**: Your business code
+-   **Infrastructure Configuration**: YAML files, Terraform, CloudFormation
+-   **Deployment Scripts**: CI/CD pipelines, Docker configurations
+
+This separation, while architecturally sound, can introduce friction:
+
+-   Context switching between code and infrastructure definitions.
+-   Synchronization challenges between different environments.
+-   Complex dependency management.
+-   A higher barrier to entry for new developers.
+
+Shuttle's Infrastructure from Code collapses this complexity by enabling you to express infrastructure needs directly alongside where they are used in your application code.
+
+## How Shuttle's IfC Works
+
+At its core, IfC means that your application code becomes the single source of truth for both your business logic and your infrastructure requirements.
+
+### 1. Declarative Resource Requirements
+
+You declare the resources your application needs directly in your code, typically as function parameters or class members, using language-native features. Shuttle then interprets these declarations to provision the necessary cloud infrastructure.
+
+For example, you might declare a database, a storage bucket, or a secret manager entry. Shuttle understands these declarations and handles the provisioning, configuration, and injection of the actual resources into your running application.
+
+### 2. Automatic Lifecycle Management
+
+When you deploy your application with Shuttle:
+
+-   **Provisioning**: Required resources are automatically created on first deployment.
+-   **Persistence**: Resources like databases or storage buckets persist across deployments, maintaining their state.
+-   **Management**: Shuttle manages updates, backups, and scaling of these resources where applicable.
+-   **Cleanup**: Resources are automatically torn down when they are no longer declared in your code, preventing orphaned infrastructure.
+
+## IfC vs. Traditional Infrastructure Provisioning
+
+To illustrate the difference, consider provisioning a PostgreSQL database for your application:
+
+### Traditional Approach Example
+
+With traditional methods, you'd define your infrastructure in separate files and manage environment variables:
+
+```yaml
+# docker-compose.yml or similar IaC tool
+services:
+  database:
+    image: postgres:13
+    environment:
+      POSTGRES_DB: myapp
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: password
+
+  app:
+    build: .
+    depends_on:
+      - database
+    environment:
+      DATABASE_URL: postgres://user:password@database:5432/myapp
+```
+
+And your application code would retrieve the connection string from environment variables:
+
+```python
+# Your app code
+import os
+import psycopg
+from psycopg_pool import ConnectionPool
+
+DATABASE_URL = os.environ.get("DATABASE_URL")
+if not DATABASE_URL:
+    raise ValueError("DATABASE_URL environment variable is not set")
+
+pool = ConnectionPool(DATABASE_URL)
+# ... use pool to interact with the database ...
+```
+
+This approach requires manual synchronization between the infrastructure definition and the application's environment variable consumption.
+
+### Infrastructure from Code in Python Example
+
+With Shuttle's IfC in Python, the database requirement is expressed directly in your application code:
+
+```python
+from typing import Annotated
+
+import shuttle_runtime
+import shuttle_task
+from shuttle_aws.s3 import Bucket, BucketOptions, AllowWrite
+from shuttle_aws.rds import RdsPostgres, RdsPostgresOptions
+from shuttle_runtime import Secrets
+
+@shuttle_task.cron(schedule="0 3 * * ? *")
+async def run(
+    # Dedicated AWS RDS Postgres with custom options
+    production_db: Annotated[
+        RdsPostgres,
+        RdsPostgresOptions(
+            database_name="prod_metrics",
+            allocated_storage_gb=20,
+        ),
+    ],
+    # Dedicated AWS S3 Bucket with write permissions
+    data_bucket: Annotated[Bucket,
+        BucketOptions(
+            bucket_name="my-app-data-bucket-unique", # Must be globally unique
+            policies=[
+                AllowWrite(
+                    account_id="123456789012",  # Example AWS account ID
+                    role_name="MyExternalServiceRole",
+                ),
+            ],
+        ),
+    ],
+    # A secret automatically managed by Shuttle
+    secrets: Secrets,
+):
+    # All resources are ready to use as function arguments
+    print(f"Connected to production DB host: {production_db.get_connection().dsn}")
+    print(f"Data bucket name: {data_bucket.options.bucket_name}")
+    print(f"Secrets available: {secrets.get('MY_SECRET')}")
+```
+
+In this Python example, `RdsPostgres` and `Bucket` are type hints that tell Shuttle what resources are needed. The `Annotated` type allows for additional configuration (e.g., `RdsPostgresOptions`). Shuttle automatically provisions these resources and injects fully configured, ready-to-use instances into your function at runtime.
+
+## Developer Experience & Efficiency
+
+### Unified Codebase for App & Infra
+
+Infrastructure requirements are defined directly within your application code using type hints and decorators. This creates a single source of truth, eliminating the need for separate configuration files (like Terraform or CloudFormation) and reducing context switching.
+
+-   **Version Control**: Since infrastructure is code, all changes to your application and its underlying resources are tracked together in version control, simplifying collaboration, code reviews, and rollbacks.
+
+With commands like `shuttle deploy`, `shuttle logs`, and `shuttle destroy`, the platform automatically provisions, updates, and tears down resources. The CLI provides immediate, human-readable feedback (diffs) on planned infrastructure changes, ensuring consistency and reproducibility across environments.
+
+### Enhanced Local Development
+
+## Limitations and Considerations
+
+### When IfC Might Not Be Ideal and Working Within Constraints
+
+Infrastructure from Code may not be ideal in scenarios such as complex multi-service architectures not fully managed by Shuttle, strict compliance requirements that demand external auditing of infrastructure, legacy system integration, or highly diverse multi-language environments where a common IaC tool might be preferred. In these cases, consider:
+
+-   **Hybrid Approaches**: Integrating Shuttle-managed parts with external infrastructure definitions managed by traditional IaC tools.
+-   **Custom Resources**: For complex infrastructure needs not directly supported by Shuttle's built-in types, you might define them externally and integrate them into your Shuttle project.
+-   **Traditional IaC**: Combining Shuttle with traditional Infrastructure as Code tools for legacy components or highly specialized requirements that fall outside Shuttle's immediate scope.
+
+## The Future of Infrastructure from Code
+
+As AI and machine learning technologies advance, they are poised to revolutionize Infrastructure from Code by making it even more approachable and efficient. AI tools combined with succinct syntax will lower the barrier to entry for developers, making it easier to manage infrastructure through code.
+
+-   **AI-Enhanced Tooling**: AI will enable more intuitive interaction with infrastructure, allowing developers to focus on application logic rather than complex configurations.
+-   **Streamlined Orchestration**: With AI-driven command-line tools, orchestrating infrastructure provisioning will become more streamlined, reducing the need for verbose commands.
+-   **Short Context Prompting**: AI will enhance the accuracy of infrastructure management tasks by understanding short context prompts, improving over verbose and error-prone infrastructure tools.
+
+Understanding Infrastructure from Code helps you leverage Shuttle's full potential and design applications that are both powerful and maintainable.

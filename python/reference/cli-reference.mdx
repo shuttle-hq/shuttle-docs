@@ -1,0 +1,261 @@
+---
+title: "CLI Reference"
+description: "Complete reference for all Shuttle CLI commands and options for Python projects."
+icon: "terminal"
+---
+
+## Overview
+
+The Shuttle CLI for Python is your primary interface for developing, deploying, and managing applications on the Shuttle platform. This reference provides comprehensive documentation for all commands and options.
+
+## Installation
+
+It is recommended to use `uv` for dependency management and running the Shuttle CLI.
+
+```bash
+uv venv
+source .venv/bin/activate
+uv add shuttle-python
+```
+
+Once installed, you can invoke the Shuttle CLI using `uv run -m shuttle`. If your virtual environment is activated, you can also run commands directly using `shuttle`.
+For example:
+
+```bash
+uv run -m shuttle deploy
+# OR
+shuttle deploy
+```
+
+## Global Options
+
+These options are common to many command-line interfaces and may be supported by the underlying Python `click` framework, but are not explicitly defined or handled by the `shuttle` Python application's `__main__.py` for all cases.
+
+| Option                       | Description                                                                      |
+| ---------------------------- | -------------------------------------------------------------------------------- |
+| `--debug`                    | Turn on tracing output for Shuttle libraries (WARNING: can print sensitive data) |
+
+## Commands Reference
+
+### Project Management
+
+### Deployment
+
+#### `shuttle deploy`
+
+Provision, build, and deploy the application.
+
+```bash
+uv run -m shuttle deploy [PATH]
+# OR
+shuttle deploy [PATH]
+```
+
+**Arguments:**
+
+- `[PATH]` - The path to your Shuttle project's root directory (defaults to current directory).
+
+**Examples:**
+
+```bash
+uv run -m shuttle deploy # Deploy the project in the current directory
+shuttle deploy # Deploy the project in the current directory
+
+uv run -m shuttle deploy my-project # Deploy a project located in 'my-project' directory
+shuttle deploy my-project # Deploy a project located in 'my-project' directory
+```
+
+#### `shuttle destroy`
+
+Destroy the deployed stack and all associated resources for a project.
+
+```bash
+uv run -m shuttle destroy [PATH]
+# OR
+shuttle destroy [PATH]
+```
+
+**Arguments:**
+
+- `[PATH]` - The path to your Shuttle project's root directory (defaults to current directory).
+
+**Examples:**
+
+```bash
+uv run -m shuttle destroy # Destroy the project in the current directory
+shuttle destroy # Destroy the project in the current directory
+
+uv run -m shuttle destroy my-project # Destroy a project located in 'my-project' directory
+shuttle destroy my-project # Destroy a project located in 'my-project' directory
+```
+
+### Local Development
+
+#### `shuttle run`
+
+Run your Shuttle project locally.
+
+```bash
+uv run -m shuttle run [PATH]
+# OR
+shuttle run [PATH]
+```
+
+**Arguments:**
+
+- `[PATH]` - The path to your Shuttle project's root directory (defaults to current directory).
+
+**Examples:**
+
+```bash
+uv run -m shuttle run # Run the project in the current directory locally
+shuttle run # Run the project in the current directory locally
+
+uv run -m shuttle run my-project # Run a project located in 'my-project' directory locally
+shuttle run my-project # Run a project located in 'my-project' directory locally
+```
+
+### Logs
+
+#### `shuttle logs`
+
+Show logs from the deployed application.
+
+```bash
+uv run -m shuttle logs [PATH]
+# OR
+shuttle logs [PATH]
+```
+
+**Arguments:**
+
+- `[PATH]` - The path to your Shuttle project's root directory (defaults to current directory).
+
+**Examples:**
+
+```bash
+uv run -m shuttle logs # View logs for the project in the current directory
+shuttle logs # View logs for the project in the current directory
+
+uv run -m shuttle logs my-project # View logs for a project located in 'my-project' directory
+shuttle logs my-project # View logs for a project located in 'my-project' directory
+```
+
+## Environment Variables
+
+The Shuttle Python CLI primarily relies on AWS authentication configured in your environment.
+
+| Variable                 | Description                                                                                             |
+| ------------------------ | ------------------------------------------------------------------------------------------------------- |
+| `AWS_ACCESS_KEY_ID`      | Your AWS access key ID. Used for programmatic access to AWS.                                            |
+| `AWS_SECRET_ACCESS_KEY`  | Your AWS secret access key. Used in conjunction with `AWS_ACCESS_KEY_ID`.                               |
+| `AWS_SESSION_TOKEN`      | (Optional) The session token for temporary AWS credentials.                                             |
+| `AWS_PROFILE`            | The name of the AWS profile to use from your AWS credentials file (`~/.aws/credentials`).               |
+| `LOCALSTACK_AUTH_TOKEN`  | Used for testing with LocalStack; typically not needed for standard deployments.                        |
+
+You can configure your AWS credentials using `aws configure` or `aws configure sso` via the AWS CLI.
+
+## Configuration Files
+
+### `pyproject.toml` (and project structure)
+
+Shuttle Python projects are standard Python projects, typically managed with `pyproject.toml`. Your application code, including `@shuttle_task.cron` decorated functions, resides within your project's Python source files (e.g., `main.py` or `src/my_project/task.py`).
+
+```toml
+[project]
+name = "my-shuttle-project"
+version = "0.1.0"
+dependencies = [
+    "shuttle-python",
+    # ... other dependencies
+]
+```
+
+## Common Workflows
+
+### First Deployment
+
+```bash
+uv venv
+source .venv/bin/activate
+uv add shuttle
+# Add your Shuttle Python code and dependencies (e.g., shuttle-aws, shuttle-db)
+uv run -m shuttle deploy  # Deploy to AWS infrastructure managed by Shuttle
+# OR
+shuttle deploy
+uv run -m shuttle run     # Test locally against provisioned infrastructure
+# OR
+shuttle run
+```
+
+### Development Cycle
+
+```bash
+uv run -m shuttle deploy  # Deploy changes
+# OR
+shuttle deploy
+uv run -m shuttle run     # Develop locally against provisioned infrastructure
+# OR
+shuttle run
+uv run -m shuttle logs    # Check deployment logs
+# OR
+shuttle logs
+```
+
+### Project Management
+
+```bash
+# The Python CLI manages projects through their local paths.
+# To remove a project and its deployed resources:
+uv run -m shuttle destroy
+# OR
+shuttle destroy
+```
+
+### Debugging
+
+```bash
+uv run -m shuttle logs                  # Check recent logs
+# OR
+shuttle logs
+uv run -m shuttle deploy --debug        # Verbose deployment (if --debug is implemented)
+# OR
+shuttle deploy --debug
+```
+
+## Troubleshooting
+
+### Common Issues
+
+**AWS Authentication issues:**
+
+- Ensure your AWS credentials are correctly configured via environment variables or `~/.aws/credentials`.
+- Use `aws configure` or `aws configure sso`.
+
+**Local development issues:**
+
+- Ensure you are in the correct virtual environment (`source .venv/bin/activate`).
+- Verify that your project path is correct (e.g., `.` for the current directory).
+- Check for `FileNotFoundError` if `main.py` or `__main__.py` is missing in your project root.
+
+**Deployment issues:**
+
+- Check `uv run -m shuttle logs` for build or deployment errors.
+- Ensure all Python dependencies are specified in `pyproject.toml` and installed (`uv add shuttle` or `uv sync` as appropriate).
+
+## Getting Help
+
+```bash
+uv run -m shuttle --help                   # General help
+# OR
+shuttle --help
+uv run -m shuttle <command> --help        # Command-specific help (if supported by click)
+# OR
+shuttle <command> --help
+```
+
+For additional support:
+
+- [Discord Community](https://discord.gg/shuttle)
+- [GitHub Issues](https://github.com/shuttle-hq/shuttle/issues)
+- [Documentation](https://docs.shuttle.dev)
