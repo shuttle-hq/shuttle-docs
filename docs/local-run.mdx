@@ -34,6 +34,10 @@ async fn main(
 
 <Note>**IMPORTANT:** If Docker isn't started, you may receive an "os error 2" error. This is typically related to your Docker installation. If you're using Docker via the CLI, you can use any Docker command to start it up. If you're using Docker Desktop, you will need to start Docker Desktop.</Note>
 
+<Note>If Docker fails to launch the database container, sometimes pulling the image manually (`docker pull postgres:16`) can help resolve it.</Note>
+
+<Note>To recreate a local database, use `docker ps` to find the postgres container, then `docker stop` and `docker rm` to delete it. On the next run, a new one will be created.</Note>
+
 ## Expose your application to your local network
 
 If you'd like to expose your application to you local network, for example if you're serving a static

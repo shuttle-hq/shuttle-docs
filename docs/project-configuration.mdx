@@ -42,10 +42,10 @@ This is an example of a workspace structure with shared code between a backend a
 
 If the cargo feature `shuttle` exists, Shuttle activates it and disables default features.
 
+In this example, Shuttle will enable the features `shuttle` and `bar`.
+To use default features on Shuttle, add `default` to the shuttle array.
+
 ```toml Cargo.toml
-# Compiling this package on Shuttle will enable the features
-# "shuttle" and "bar". To use default features on Shuttle, add
-# "default" to the shuttle array.
 [features]
 default = ["foo"]
 shuttle = ["bar"]
