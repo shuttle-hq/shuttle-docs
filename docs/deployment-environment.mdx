@@ -29,7 +29,7 @@ If the new deployment fails to become healthy, it will be retried 3 times while 
 
 ### Runtime architecture
 
-Unless you are on the Growth tier, your projects will primarily run on an Arm64 (aarch64) architecture, matching the [build architecture](/docs/builds#build-architecture).
+The runtime container will run on the architecture the Docker image was built for. See [build architecture](/docs/builds#build-architecture).
 
 ### Incoming HTTPS traffic
 
