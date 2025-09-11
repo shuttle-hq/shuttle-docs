@@ -29,7 +29,6 @@ use axum::{
     Json, Router,
 };
 use serde::{Deserialize, Serialize};
-use shuttle_runtime::CustomError;
 use sqlx::{FromRow, PgPool};
 
 async fn retrieve(
@@ -66,16 +65,16 @@ struct MyState {
 }
 
 #[shuttle_runtime::main]
-async fn axum(#[shuttle_shared_db::Postgres] pool: PgPool) -> shuttle_axum::ShuttleAxum {
+async fn main(#[shuttle_shared_db::Postgres] pool: PgPool) -> shuttle_axum::ShuttleAxum {
     sqlx::migrate!()
         .run(&pool)
         .await
-        .map_err(CustomError::new)?;
+        .expect("Failed to run migrations");
 
     let state = MyState { pool };
     let router = Router::new()
         .route("/todos", post(add))
-        .route("/todos/:id", get(retrieve))
+        .route("/todos/{id}", get(retrieve))
         .with_state(state);
 
     Ok(router.into())
@@ -100,12 +99,12 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
-axum = "0.7.3"
-serde = { version = "1.0.188", features = ["derive"] }
+axum = "0.8"
+serde = { version = "1", features = ["derive"] }
 shuttle-axum = "0.57.0"
 shuttle-runtime = "0.57.0"
 shuttle-shared-db = { version = "0.57.0", features = ["postgres", "sqlx"] }
-sqlx = "0.8.2"
+sqlx = "0.8"
 tokio = "1.28.2"
 ```
 </CodeGroup>
