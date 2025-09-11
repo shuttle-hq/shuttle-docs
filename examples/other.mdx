@@ -1,6 +1,6 @@
 ---
 title: "Other Examples"
-description: "This section contains examples for the following frameworks: Rama, Tower, Warp, Salvo, Poem, Thruster, and Tide."
+description: "This section contains examples for the following frameworks: Rama, Tower, Warp, Salvo, and Poem."
 ---
 
 ### Hello World
@@ -131,40 +131,6 @@ fn hello_world() -> &'static str {
 #[shuttle_runtime::main]
 async fn poem() -> ShuttlePoem<impl poem::Endpoint> {
     let app = Route::new().at("/", get(hello_world));
-
-    Ok(app.into())
-}
-```
-
-```rust Thruster
-use thruster::{
-    context::basic_hyper_context::{generate_context, BasicHyperContext as Ctx, HyperRequest},
-    m, middleware_fn, App, HyperServer, MiddlewareNext, MiddlewareResult, ThrusterServer,
-};
-
-#[middleware_fn]
-async fn hello(mut context: Ctx, _next: MiddlewareNext<Ctx>) -> MiddlewareResult<Ctx> {
-    context.body("Hello, World!");
-    Ok(context)
-}
-
-#[shuttle_runtime::main]
-async fn thruster() -> shuttle_thruster::ShuttleThruster<HyperServer<Ctx, ()>> {
-    let server = HyperServer::new(
-        App::<HyperRequest, Ctx, ()>::create(generate_context, ()).get("/", m![hello]),
-    );
-
-    Ok(server.into())
-}
-```
-
-```rust Tide
-#[shuttle_runtime::main]
-async fn tide() -> shuttle_tide::ShuttleTide<()> {
-    let mut app = tide::new();
-    app.with(tide::log::LogMiddleware::new());
-
-    app.at("/").get(|_| async { Ok("Hello, world!") });
 
     Ok(app.into())
 }

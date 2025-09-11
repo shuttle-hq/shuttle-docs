@@ -111,25 +111,23 @@ the Docker engine.
 
 ## Example
 
-This snippet shows the main function of a tide app that uses the `#[shuttle_aws_rds::Postgres]` attribute macro to provision an RDS Postgres database,
+This snippet shows the main function of an Axum app that uses the `#[shuttle_aws_rds::Postgres]` attribute macro to provision an RDS Postgres database,
 which can be accessed with an [sqlx Pool](https://docs.rs/sqlx/latest/sqlx/pool/index.html).
 
 ```rust main.rs
 #[shuttle_runtime::main]
-async fn tide(
+async fn main(
     #[shuttle_aws_rds::Postgres] pool: PgPool,
-) -> ShuttleTide<MyState> {
+) -> ShuttleAxum {
     pool.execute(include_str!("../schema.sql"))
         .await
         .map_err(CustomError::new)?;
 
     let state = MyState { pool };
-    let mut app = tide::with_state(state);
+    let router = Router::new()
+        .route("/todo", post(add));
+        .route("/todo/:id", get(retrieve));
 
-    app.with(tide::log::LogMiddleware::new());
-    app.at("/todo").post(add);
-    app.at("/todo/:id").get(retrieve);
-
-    Ok(app.into())
+    Ok(router.into())
 }
 ```
