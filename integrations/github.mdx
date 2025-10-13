@@ -1,0 +1,67 @@
+---
+title: GitHub
+description: Connect your GitHub repository for automatic deployments on push
+icon: github
+---
+
+# GitHub Integration
+
+Connect your GitHub repository to Shuttle for automatic deployments whenever you push code. This integration streamlines your deployment workflow by automatically rebuilding and redeploying your application when changes are detected.
+
+## How It Works
+
+When you connect a GitHub repository to your Shuttle project, we establish a direct link between your codebase and your deployment pipeline. Each time you push to GitHub, Shuttle pulls the latest code from your connected repository, rebuilds your application, and redeploys it automatically.
+
+This means you can manage your entire deployment workflow through git. Push to your connected branch, trigger a deployment, and your changes go live.
+
+## Connecting Your GitHub Account
+
+To integrate GitHub with your Shuttle project, follow these steps:
+
+Navigate to [console.shuttle.dev/account/integrations](https://console.shuttle.dev/account/integrations) to access your account integrations page.
+
+[IMAGE PLACEHOLDER: Screenshot of Shuttle dashboard with GitHub integration button highlighted]
+
+Click "Connect to GitHub" to authorize Shuttle to access your repositories. You'll be redirected to GitHub to grant the necessary permissions.
+
+[IMAGE PLACEHOLDER: GitHub OAuth authorization screen]
+
+Once authorized, you'll see a list of your available repositories. Select the repository you want to connect to this Shuttle project.
+
+[IMAGE PLACEHOLDER: Repository selection interface showing list of user's GitHub repos]
+
+After selecting your repository, confirm the connection. Your Shuttle project is now linked to your GitHub repository.
+
+[IMAGE PLACEHOLDER: Success confirmation screen showing connected repository]
+
+## Automatic Deployments
+
+With GitHub connected, your deployment workflow becomes straightforward. When you push to GitHub, Shuttle pulls the latest code from your connected repository, builds it, and deploys the updated application.
+
+This approach keeps your Shuttle production environment synchronized with your git repository. You maintain full control over when deployments happen while Shuttle handles the build and deployment process.
+
+## Multiple Environments
+
+You can connect different Shuttle projects to different branches in the same repository. This pattern works well for managing multiple environments:
+
+Connect your production Shuttle project to your `main` branch and your staging project to a `staging` branch. Each project automatically pulls from its designated branch, giving you isolated environments that reflect different stages of your codebase.
+
+[IMAGE PLACEHOLDER: Diagram showing multiple Shuttle projects connected to different branches]
+
+This approach lets you test changes in staging before promoting them to production, all while using the same repository. You can have as many environments as you want by creating different projects and connecting them to different branches.
+
+## Deploy from Templates
+
+We maintain a collection of templates you can deploy with a single click. These templates come pre-configured with GitHub integration, so you can start with a working application and immediately begin making changes. You can find the templates in the [Shuttle Templates](console.shuttle.dev/templates?utm_source=shuttle_docs&utm_campaign=github_integration) page.
+
+[IMAGE PLACEHOLDER: Templates gallery with "Deploy" buttons]
+
+Deploying a template sets up both the Shuttle project and a new GitHub repository in your connected GitHub account, connecting them automatically. You get a fully functional application deployed on Shuttle with the complete source code in your GitHub account.
+
+Browse available templates at [console.shuttle.dev/templates](https://console.shuttle.dev/templates?utm_source=shuttle_docs&utm_campaign=github_integration).
+
+## Managing Your Connection
+
+You can disconnect or reconnect your GitHub repository at any time from your project settings. Disconnecting removes the link between Shuttle and your repository but doesn't affect your deployed application or your GitHub repository itself.
+
+To connect a different repository, disconnect the current one first, then follow the connection process again with your new repository selection.
