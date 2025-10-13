@@ -137,6 +137,7 @@
           {
             "group": "Integrations",
             "pages": [
+              "integrations/github",
               {
                 "group": "Databases",
                 "icon": "database",
@@ -149,8 +150,7 @@
               "integrations/shuttle-openai",
               "integrations/custom-resources",
               "integrations/ci-cd",
-              "integrations/mcp-server",
-              "integrations/github"
+              "integrations/mcp-server"
             ]
           },
           {
