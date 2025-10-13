@@ -149,7 +149,8 @@
               "integrations/shuttle-openai",
               "integrations/custom-resources",
               "integrations/ci-cd",
-              "integrations/mcp-server"
+              "integrations/mcp-server",
+              "integrations/github"
             ]
           },
           {
@@ -253,15 +254,11 @@
         "groups": [
           {
             "group": "Templates and Tutorials",
-            "pages": [
-              "templates/overview"
-            ]
+            "pages": ["templates/overview"]
           },
           {
             "group": "Fullstack Templates",
-            "pages": [
-              "templates/fullstack/saas-template"
-            ]
+            "pages": ["templates/fullstack/saas-template"]
           },
           {
             "group": "Tutorials",
