@@ -4,13 +4,9 @@ description: "Streamline your Rust projects with Shuttle CI/CD"
 icon: "code-branch"
 ---
 
-Shuttle provides a GitHub Action for automating deployments.
+Shuttle provides a GitHub Action for automating deployments. This action can run the `shuttle deploy` command for you, enabling continuous deployments on every push.
 
-<Frame type="glass">
-  <img src="/images/shuttle-deploy-action.png" />
-</Frame>
-
-This action can run the `shuttle deploy` command for you, enabling continuous deployments on every push.
+Here's an example of a GitHub Actions workflow that uses the Shuttle Deploy Action:
 
 ```yaml
 name: Deploy to Shuttle
