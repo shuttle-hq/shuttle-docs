@@ -1,6 +1,6 @@
 ---
-title: GitHub
-description: Connect your GitHub repository for automatic deployments
+title: GitHub Integration
+description: Connect a GitHub repository for automatic deployments
 icon: github
 ---
 
@@ -16,168 +16,62 @@ When you connect a GitHub repository to your Shuttle project, we establish a dir
 - **Automatic Deployments on Git Push**: Enable automatic deployments so that pushing code to your selected branch triggers an immediate rebuild and redeployment
 - **Deploy Templates**: Choose from our pre-configured GitHub templates and deploy them instantly to get started quickly- no CLI installation required
 - **Deploy From Dashboard**: Deploy any branch from your repository directly using the "Deploy" button in the console dashboard
-- **Connect Repositories to Projects**: Link your existing GitHub repositories to new or existing Shuttle projects for seamless integration
 
-- Warning: Shuttle's automatic deployments from GitHub are designed for projects where the codebase is fully ready to run with `shuttle run` without extra build steps, particularly for static files.
-  If your project relies on **other build scripts** (like building front-end assets) that need to run _before_ `shuttle deploy`, Shuttle's simple automatic GitHub push deployment will likely fail.
+<Warning>
+### Use-cases and limitations
+
+If your project relies on gitignored assets that are needed when running `shuttle deploy`, you can instead use our [GitHub Deploy Action](https://docs.shuttle.dev/integrations/ci-cd), and build/configure these assets prior to deployment.
+
+Shuttle's automatic deployments from GitHub are designed for projects where the codebase is fully ready to deploy with `shuttle deploy` after checkout.
+
+</Warning>
 
 ## Connecting Your GitHub Account
 
 To integrate GitHub with your Shuttle project, follow these steps:
 
-1. Navigate to [console.shuttle.dev/account/integrations](https://console.shuttle.dev/account/integrations) to access your account integrations page.
-
-   <img
-     src="/images/github/integrations-page.png"
-     alt="Shuttle console integrations page showing GitHub connection option"
-     className="rounded-lg"
-   />
-
-2. Click "Connect to GitHub" to authorize Shuttle to access your repositories. You'll be redirected to GitHub to grant the necessary permissions.
-
-   <img
-     src="/images/github/install-shuttle-app.png"
-     alt="GitHub authorization page for installing Shuttle app with repository access options"
-     className="rounded-lg"
-   />
-
-3. GitHub will prompt you to select specific repositories you want to grant Shuttle access to. You can authorize all repositories or select individual ones.
+1. Go to [Integrations page](https://www.notion.so/GitHub-Docs-Version-2-28ffb1d34dbf80159d91f20b76bf4715?pvs=21) to in Shuttle Console.
+2. Click "Connect to GitHub" to authorise Shuttle to access your selected repositories.
+3. GitHub will prompt you to provide access.
 
 ## Deploying a GitHub Repository
 
-1. Navigate to [https://console.shuttle.dev/new-project](https://console.dev.shuttle.dev/new-project) and select "**Github Repository**".
+1. Navigate to [new project](https://www.notion.so/GitHub-Docs-Version-2-28ffb1d34dbf80159d91f20b76bf4715?pvs=21) and select "**Github Repository".**
+2. Once authorised, select the repository you want to deploy.
+3. Confirm the repository is configured to run on Shuttle. See the [migration docs](https://docs.shuttle.dev/migration/guide) for guidance.
+4. Select the branch and add secrets if required.
+5. Confirm deployment and your project will be deployed to Shuttle 🚀
 
-   <img
-     src="/images/github/new-project-page.png"
-     alt="Shuttle new project page with GitHub Repository option selected"
-     className="rounded-lg"
-   />
+## Connecting a GitHub Repository to an Existing Project
 
-2. Once authorized, you'll see a list of your available repositories. Select the repository you want to deploy.
-
-   <img
-     src="/images/github/github-projects-list.png"
-     alt="List of available GitHub repositories for deployment selection"
-     className="rounded-lg"
-   />
-
-3. Confirm the repo is configured to run on Shuttle. See [migration docs](/migration/guide).
-
-   <img
-     src="/images/github/disclaimer-step.png"
-     alt="Shuttle configuration disclaimer step for GitHub repository setup"
-     className="rounded-lg"
-   />
-
-4. Select the branch you would like to deploy.
-
-   <img
-     src="/images/github/select-branch.png"
-     alt="Branch selection interface for GitHub repository deployment"
-     className="rounded-lg"
-   />
-
-5. If required, add secrets to your project.
-
-   <img
-     src="/images/github/secrets.png"
-     alt="Project secrets configuration interface for GitHub deployment"
-     className="rounded-lg"
-   />
-
-6. Confirm deployment and your project will be deployed to Shuttle.
-
-   <img
-     src="/images/github/confirm-deploy.png"
-     alt="Deployment confirmation dialog for GitHub repository"
-     className="rounded-lg"
-   />
-
-7. Once deployment is complete, your application will be live and accessible. You can view your deployed project in the Shuttle console, where you'll find the deployment logs, status, and your application's URL.
-
-## Connecting a Github Repository to an existing project
-
-1. Navigate to **project** **settings** of your desired project. If you haven't already connect your Github account to Shuttle.
-2. Once authorized, you'll see a list of your available repositories. Select the repository you want to connect to this Shuttle project.
-
-   <img
-     src="/images/github/manage-connection.png"
-     alt="GitHub repository connection management interface for existing projects"
-     className="rounded-lg"
-   />
-
+1. Navigate to **project** **settings** of your desired project.
+2. Once authorised, select the repository you want to connect to this Shuttle project.
 3. After selecting your repository, confirm the connection. Your Shuttle project is now linked to your GitHub repository.
+
+_Disconnecting removes the link between Shuttle and your repository but doesn't affect your deployed application or your GitHub repository itself._
 
 ## Automatic Deployments
 
-With GitHub connected, your deployment workflow becomes straightforward. When you push to GitHub, Shuttle pulls the latest code from your connected repository, builds it, and deploys the updated application.
+Once you've connected a GitHub repository to your Shuttle project, you can push to GitHub, Shuttle pulls the latest code from your connected repository, builds it, and deploys the updated application.
 
-1. Navigate to project settings and ensure a Github repo is connected to the project.
+1. Navigate to project settings and ensure a GitHub repository is connected.
 2. Enable **Automatic Deployments**
-
-   <img
-     src="/images/github/auto-deploy-button.png"
-     alt="Automatic deployments toggle button in project settings"
-     className="rounded-lg"
-   />
-
 3. Select and confirm branch.
+4. Push to GitHub and a deployment will automatically begin.
 
-   <img
-     src="/images/github/auto-deploy-button-on.png"
-     alt="Automatic deployments enabled with branch selection interface"
-     className="rounded-lg"
-   />
-
-4. Git.push to selected branch and a deployment will automatically begin.
-
-## Deploying a Github Template
-
-We maintain a collection of templates you can deploy with a single click. These templates come pre-configured with GitHub integration, so you can start with a working application and immediately begin making changes. You can find the templates in the [Shuttle Templates](https://www.notion.so/shuttle-hq/console.shuttle.dev/templates?utm_source=shuttle_docs&utm_campaign=github_integration) page.
+## Deploying a GitHub Template
 
 Deploying a template sets up both the Shuttle project and a new GitHub repository in your connected GitHub account. You get a fully functional application deployed on Shuttle with the complete source code in your GitHub account.
 
-1. Navigate to [https://console.shuttle.dev/new-project](https://console.dev.shuttle.dev/new-project) and select "**Template**".
+1. Navigate to [Shuttle Console](https://console.dev.shuttle.dev/new-project) and select "**Template".**
 2. Select desired template.
-
-   <img
-     src="/images/github/deploy-template-page.png"
-     alt="Shuttle template selection page for GitHub deployment"
-     className="rounded-lg"
-   />
-
-3. Choose "**Deploy from Github**" development flow and authorise if required.
-
-   <img
-     src="/images/github/template-step-2.png"
-     alt="Template deployment step 2 showing GitHub development flow selection"
-     className="rounded-lg"
-   />
-
-4. Select which Github account you would like the template to be generated to and name repo.
-
-   <img
-     src="/images/github/template-step-3.png"
-     alt="Template deployment step 3 showing GitHub account selection and repository naming"
-     className="rounded-lg"
-   />
-
+3. Choose "**Deploy from GitHub**" development flow and authorise if required.
+4. Select which GitHub account you would like the template to be generated to and name repository.
 5. If required, add secrets and **deploy**.
 
-## Permissions on Growth tier
+## Permissions for Growth Tier
 
-On the Growth tier, you have full access to all GitHub features. You can connect your GitHub account, link repositories to your projects, enable automatic deployments, and manage your connections as needed.
+**Team members on a Growth plan** have **view access** to GitHub integration settings but cannot modify them.
 
-**Team members on a Growth plan** have **view access** to GitHub integration settings but cannot modify them. Specifically, team members are unable to connect a repository, disconnect an existing repository, or change a linked repository. These actions are restricted to the account owner.
-
-## Managing Your Connection
-
-You can disconnect or reconnect your GitHub repository at any time from your project settings. Disconnecting removes the link between Shuttle and your repository but doesn't affect your deployed application or your GitHub repository itself.
-
-<img
-  src="/images/github/settings-page-github.png"
-  alt="Project settings page showing GitHub integration management options"
-  className="rounded-lg"
-/>
-
-To connect a different repository, disconnect the current one first, then follow the connection process again with your new repository selection.
+- Team members are unable to connect a repository, disconnect or change a linked repository.
+- **Both** account **owners** and **team** members can **enable** **automatic** **deployments** and **deploy** a **connected** **repository**.
