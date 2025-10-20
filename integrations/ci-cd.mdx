@@ -4,6 +4,14 @@ description: "Streamline your Rust projects with Shuttle CI/CD"
 icon: "code-branch"
 ---
 
+<Callout>
+  Connecting your GitHub account via the [GitHub
+  integration](/integrations/github) is easier and simpler for automatic
+  deployments. However, if your deployment requires building other static assets
+  like React or Vue builds, you'll need to set up a custom GitHub Action and run
+  the build script first before deploying to Shuttle.
+</Callout>
+
 Shuttle provides a GitHub Action for automating deployments. This action can run the `shuttle deploy` command for you, enabling continuous deployments on every push.
 
 Here's an example of a GitHub Actions workflow that uses the Shuttle Deploy Action:

@@ -20,7 +20,7 @@ When you connect a GitHub repository to your Shuttle project, we establish a dir
 <Warning>
 ### Use-cases and limitations
 
-If your project relies on gitignored assets that are needed when running `shuttle deploy`, you can instead use our [GitHub Deploy Action](https://docs.shuttle.dev/integrations/ci-cd), and build/configure these assets prior to deployment.
+If your project relies on gitignored assets that are needed when running `shuttle deploy`, you can instead use our [GitHub Deploy Action](/integrations/ci-cd), and build/configure these assets prior to deployment.
 
 Shuttle's automatic deployments from GitHub are designed for projects where the codebase is fully ready to deploy with `shuttle deploy` after checkout.
 
@@ -30,15 +30,15 @@ Shuttle's automatic deployments from GitHub are designed for projects where the 
 
 To integrate GitHub with your Shuttle project, follow these steps:
 
-1. Go to [Integrations page](https://www.notion.so/GitHub-Docs-Version-2-28ffb1d34dbf80159d91f20b76bf4715?pvs=21) to in Shuttle Console.
+1. Navigate to the [Integrations page](https://console.shuttle.dev/account/integrations) in Shuttle Console.
 2. Click "Connect to GitHub" to authorise Shuttle to access your selected repositories.
 3. GitHub will prompt you to provide access.
 
 ## Deploying a GitHub Repository
 
-1. Navigate to [new project](https://www.notion.so/GitHub-Docs-Version-2-28ffb1d34dbf80159d91f20b76bf4715?pvs=21) and select "**Github Repository".**
+1. Navigate to [new project](https://console.shuttle.dev/new-project) and select "**Github Repository".**
 2. Once authorised, select the repository you want to deploy.
-3. Confirm the repository is configured to run on Shuttle. See the [migration docs](https://docs.shuttle.dev/migration/guide) for guidance.
+3. Confirm the repository is configured to run on Shuttle. See the [migration docs](/migration/guide) for guidance.
 4. Select the branch and add secrets if required.
 5. Confirm deployment and your project will be deployed to Shuttle 🚀
 
