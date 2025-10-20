@@ -42,8 +42,16 @@ You can opt out by setting any of these environment variables to `1` or `true`:
 - `CI`
 
 The scripts for both platforms are open source [[1]](https://github.com/shuttle-hq/shuttle/blob/main/install.sh) [[2]](https://github.com/shuttle-hq/shuttle/blob/main/install.ps1). Improvements are always welcome!
+
 </Accordion>
 </Info>
+
+<Tip>
+  You can install the [Shuttle MCP](/integrations/mcp-server) to enable AI
+  coding assistants like Claude and Cursor to access Shuttle documentation,
+  deploy projects, and fetch logs directly from your editor. Making your coding
+  experience even faster and more efficient.
+</Tip>
 
 ## Alternative Installation Methods
 
@@ -63,7 +71,10 @@ For those who prefer building from source:
 cargo install cargo-shuttle
 ```
 
-<Note>Building from source requires a Rust toolchain and may take longer than other installation methods.</Note>
+<Note>
+  Building from source requires a Rust toolchain and may take longer than other
+  installation methods.
+</Note>
 
 ### Pre-built Binaries
 
@@ -80,6 +91,7 @@ Shuttle CLI is also available on other package managers through community-mainta
     ```sh
     brew install cargo-shuttle
     ```
+
   </Accordion>
   <Accordion title="Arch Linux (pacman)">
     Available in the [community repository](https://archlinux.org/packages/extra/x86_64/cargo-shuttle/).
@@ -87,6 +99,7 @@ Shuttle CLI is also available on other package managers through community-mainta
     ```sh
     pacman -S cargo-shuttle
     ```
+
   </Accordion>
   <Accordion title="Alpine Linux (apk)">
     Available on [Alpine Edge](https://pkgs.alpinelinux.org/packages?name=cargo-shuttle&branch=edge) after enabling the [testing repository](https://wiki.alpinelinux.org/wiki/Repositories).
@@ -94,6 +107,7 @@ Shuttle CLI is also available on other package managers through community-mainta
     ```sh
     apk add cargo-shuttle
     ```
+
   </Accordion>
 </AccordionGroup>
 
@@ -120,12 +134,7 @@ You should see the current version number displayed.
   >
     Get started with your first Shuttle project
   </Card>
-  <Card
-    title="Examples"
-    icon="book"
-    href="/examples"
-    color="#f8b5F2"
-  >
+  <Card title="Examples" icon="book" href="/examples" color="#f8b5F2">
     Explore our example projects
   </Card>
 </CardGroup>
