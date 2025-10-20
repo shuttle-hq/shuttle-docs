@@ -26,6 +26,16 @@ Shuttle's automatic deployments from GitHub are designed for projects where the 
 
 </Warning>
 
+## Which Should I Use?
+
+| Your Project                                  | Use This               |
+| --------------------------------------------- | ---------------------- |
+| Pure Rust backend (Axum, Actix, Rocket)       | **GitHub Integration** |
+| Rust + pre-built static files commited to git | **GitHub Integration** |
+| Rust + React/Vue build step                   | **GitHub Actions**     |
+| Rust + Asset compilation (SCSS, Tailwind)     | **GitHub Actions**     |
+| Rust + Code generation before deploy          | **GitHub Actions**     |
+
 ## Connecting Your GitHub Account
 
 To integrate GitHub with your Shuttle project, follow these steps:

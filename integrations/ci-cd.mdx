@@ -12,6 +12,16 @@ icon: "code-branch"
   the build script first before deploying to Shuttle.
 </Callout>
 
+## Which Should I Use?
+
+| Your Project                                  | Use This               |
+| --------------------------------------------- | ---------------------- |
+| Pure Rust backend (Axum, Actix, Rocket)       | **GitHub Integration** |
+| Rust + pre-built static files commited to git | **GitHub Integration** |
+| Rust + React/Vue build step                   | **GitHub Actions**     |
+| Rust + Asset compilation (SCSS, Tailwind)     | **GitHub Actions**     |
+| Rust + Code generation before deploy          | **GitHub Actions**     |
+
 Shuttle provides a GitHub Action for automating deployments. This action can run the `shuttle deploy` command for you, enabling continuous deployments on every push.
 
 Here's an example of a GitHub Actions workflow that uses the Shuttle Deploy Action:
