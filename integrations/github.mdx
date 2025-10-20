@@ -14,7 +14,7 @@ When you connect a GitHub repository to your Shuttle project, we establish a dir
 
 - **Deploy Your Own Repository**: Connect your existing GitHub repository to Shuttle, configure your secrets, and deploy your application from Shuttle dashboard
 - **Automatic Deployments on Git Push**: Enable automatic deployments so that pushing code to your selected branch triggers an immediate rebuild and redeployment
-- **Deploy Templates**: Choose from our pre-configured GitHub templates and deploy them instantly to get started quickly- no CLI installation required
+- **Deploy Templates**: Choose from our pre-configured GitHub templates and deploy them instantly to get started quickly - no CLI installation required
 - **Deploy From Dashboard**: Deploy any branch from your repository directly using the "Deploy" button in the console dashboard
 
 <Warning>
@@ -28,13 +28,13 @@ Shuttle's automatic deployments from GitHub are designed for projects where the 
 
 ## Which Should I Use?
 
-| Your Project                                  | Use This               |
-| :-------------------------------------------- | :--------------------- |
-| Pure Rust backend (Axum, Actix, Rocket)       | **GitHub Integration** |
-| Rust + pre-built static files commited to git | **GitHub Integration** |
-| Rust + React/Vue build step                   | **GitHub Actions**     |
-| Rust + Asset compilation (SCSS, Tailwind)     | **GitHub Actions**     |
-| Rust + Code generation before deploy          | **GitHub Actions**     |
+| Your Project                                   | Use This               |
+| :--------------------------------------------- | :--------------------- |
+| Pure Rust backend (Axum, Actix, Rocket)        | **GitHub Integration** |
+| Rust + pre-built static files committed to git | **GitHub Integration** |
+| Rust + React/Vue build step                    | **GitHub Actions**     |
+| Rust + Asset compilation (SCSS, Tailwind)      | **GitHub Actions**     |
+| Rust + Code generation before deploy           | **GitHub Actions**     |
 
 ## Connecting Your GitHub Account
 
@@ -46,7 +46,7 @@ To integrate GitHub with your Shuttle project, follow these steps:
 
 ## Deploying a GitHub Repository
 
-1. Navigate to [new project](https://console.shuttle.dev/new-project) and select "**Github Repository".**
+1. Navigate to [new project](https://console.shuttle.dev/new-project) and select "**GitHub Repository".**
 2. Once authorised, select the repository you want to deploy.
 3. Confirm the repository is configured to run on Shuttle. See the [migration docs](/migration/guide) for guidance.
 4. Select the branch and add secrets if required.
@@ -62,7 +62,7 @@ _Disconnecting removes the link between Shuttle and your repository but doesn't 
 
 ## Automatic Deployments
 
-Once you've connected a GitHub repository to your Shuttle project, you can push to GitHub, Shuttle pulls the latest code from your connected repository, builds it, and deploys the updated application.
+Once you've connected a GitHub repository to your Shuttle project, you can push to GitHub and Shuttle will automatically pull the latest code from your connected repository, build it, and deploy the updated application.
 
 1. Navigate to project settings and ensure a GitHub repository is connected.
 2. Enable **Automatic Deployments**
