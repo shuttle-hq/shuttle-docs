@@ -173,7 +173,6 @@
             "group": "Pricing",
             "pages": [
               "pricing/overview",
-              "pricing/pro-trial",
               "pricing/billing",
               "pricing/scaling",
               "pricing/upgrading",
