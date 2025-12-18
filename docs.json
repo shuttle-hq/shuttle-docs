@@ -90,7 +90,8 @@
               "welcome/introduction",
               "getting-started/installation",
               "getting-started/quick-start",
-              "migration/guide"
+              "migration/guide",
+              "docs/shuttle-shutdown"
             ]
           },
           {
