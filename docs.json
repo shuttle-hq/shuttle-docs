@@ -45,9 +45,6 @@
     "posthog": {
       "apiKey": "phc_cQMQqF5QmcEzXEaVlrhv3yBSNRyaabXYAyiCV7xKHUH",
       "apiHost": "https://eu.posthog.com"
-    },
-    "intercom": {
-      "appId": "rwqmvfqn"
     }
   },
   "redirects": [
